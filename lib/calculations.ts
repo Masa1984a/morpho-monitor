@@ -134,10 +134,10 @@ export function formatUsdValue(value: number): string {
 }
 
 /**
- * Format token amount
+ * Format token amount (amount is already formatted as string)
  */
 export function formatTokenAmount(amount: string, decimals: number): string {
-  const value = parseFloat(amount) / Math.pow(10, decimals);
+  const value = parseFloat(amount);
   if (value === 0) return '0';
   if (value < 0.0001) return '<0.0001';
   if (value < 1) return value.toFixed(4);
