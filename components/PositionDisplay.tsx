@@ -2,15 +2,16 @@
 
 import React from 'react';
 import { MarketPosition, HealthFactorData } from '@/types/morpho';
-import { formatUsdValue, formatTokenAmount, calculateHealthFactor, getHealthFactorColor } from '@/lib/calculations';
+import { formatUsdValue, formatTokenAmount, calculateHealthFactor, getHealthFactorColor, HealthFactorThresholds } from '@/lib/calculations';
 
 interface PositionDisplayProps {
   position: MarketPosition;
+  thresholds?: HealthFactorThresholds;
 }
 
-export function PositionDisplay({ position }: PositionDisplayProps) {
+export function PositionDisplay({ position, thresholds }: PositionDisplayProps) {
   const { market, state } = position;
-  const healthFactor = calculateHealthFactor(position);
+  const healthFactor = calculateHealthFactor(position, thresholds);
 
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
@@ -106,13 +107,14 @@ function HealthBadge({ healthFactor }: HealthBadgeProps) {
 
 interface PositionListProps {
   positions: MarketPosition[];
+  thresholds?: HealthFactorThresholds;
 }
 
-export function PositionList({ positions }: PositionListProps) {
+export function PositionList({ positions, thresholds }: PositionListProps) {
   if (positions.length === 0) {
     return (
       <div className="bg-gray-50 rounded-lg p-8 text-center">
-        <p className="text-gray-600">No Morpho positions found on Base chain</p>
+        <p className="text-gray-600">No Morpho positions found on World Chain</p>
         <p className="text-sm text-gray-500 mt-2">
           Open positions on Morpho Blue to see them here
         </p>
@@ -123,7 +125,7 @@ export function PositionList({ positions }: PositionListProps) {
   return (
     <div className="space-y-4">
       {positions.map((position, index) => (
-        <PositionDisplay key={position.market.uniqueKey || index} position={position} />
+        <PositionDisplay key={position.market.uniqueKey || index} position={position} thresholds={thresholds} />
       ))}
     </div>
   );

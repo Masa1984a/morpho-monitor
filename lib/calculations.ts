@@ -1,12 +1,23 @@
 import { MarketPosition, HealthFactorData } from '@/types/morpho';
 
-const HEALTH_FACTOR_THRESHOLD = parseFloat(process.env.NEXT_PUBLIC_HEALTH_FACTOR_THRESHOLD || '1.10');
+export interface HealthFactorThresholds {
+  warningThreshold: number;
+  dangerThreshold: number;
+}
+
+const DEFAULT_THRESHOLDS: HealthFactorThresholds = {
+  warningThreshold: 1.5,
+  dangerThreshold: 1.2,
+};
 
 /**
  * Calculate health factor for a position
  * Health Factor = (Collateral Value × LLTV) / Borrow Value
  */
-export function calculateHealthFactor(position: MarketPosition): HealthFactorData {
+export function calculateHealthFactor(
+  position: MarketPosition,
+  thresholds: HealthFactorThresholds = DEFAULT_THRESHOLDS
+): HealthFactorData {
   const { state, market } = position;
   const collateralUsd = state.collateralUsd;
   const borrowAssetsUsd = state.borrowAssetsUsd;
@@ -26,14 +37,14 @@ export function calculateHealthFactor(position: MarketPosition): HealthFactorDat
   // Calculate health factor
   const healthFactor = (collateralUsd * lltv) / borrowAssetsUsd;
 
-  // Determine status
+  // Determine status based on thresholds
   let status: 'healthy' | 'warning' | 'danger';
-  if (healthFactor < 1.0) {
-    status = 'danger'; // Liquidatable
-  } else if (healthFactor < HEALTH_FACTOR_THRESHOLD) {
-    status = 'warning'; // Close to liquidation
+  if (healthFactor < thresholds.dangerThreshold) {
+    status = 'danger'; // Below danger threshold
+  } else if (healthFactor < thresholds.warningThreshold) {
+    status = 'warning'; // Below warning threshold
   } else {
-    status = 'healthy';
+    status = 'healthy'; // Above warning threshold
   }
 
   return {
@@ -48,7 +59,10 @@ export function calculateHealthFactor(position: MarketPosition): HealthFactorDat
 /**
  * Calculate aggregate health factor for multiple positions
  */
-export function calculateAggregateHealthFactor(positions: MarketPosition[]): HealthFactorData | null {
+export function calculateAggregateHealthFactor(
+  positions: MarketPosition[],
+  thresholds: HealthFactorThresholds = DEFAULT_THRESHOLDS
+): HealthFactorData | null {
   if (positions.length === 0) return null;
 
   let totalCollateralValue = 0;
@@ -87,11 +101,11 @@ export function calculateAggregateHealthFactor(positions: MarketPosition[]): Hea
   // Calculate aggregate health factor
   const healthFactor = (totalCollateralValue * avgLltv) / totalBorrowValue;
 
-  // Determine status
+  // Determine status based on thresholds
   let status: 'healthy' | 'warning' | 'danger';
-  if (healthFactor < 1.0) {
+  if (healthFactor < thresholds.dangerThreshold) {
     status = 'danger';
-  } else if (healthFactor < HEALTH_FACTOR_THRESHOLD) {
+  } else if (healthFactor < thresholds.warningThreshold) {
     status = 'warning';
   } else {
     status = 'healthy';

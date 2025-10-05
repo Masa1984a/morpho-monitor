@@ -10,6 +10,8 @@ import { WalletConnect } from '@/components/WalletConnect';
 import { LoadingState } from '@/components/LoadingState';
 import { HealthFactorCard } from '@/components/HealthFactorCard';
 import { PositionList } from '@/components/PositionDisplay';
+import { SettingsModal } from '@/components/SettingsModal';
+import { useSettings } from '@/hooks/useSettings';
 
 export default function Home() {
   const [isWorldApp, setIsWorldApp] = useState<boolean | null>(null);
@@ -20,6 +22,10 @@ export default function Home() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [chainDebug, setChainDebug] = useState<string>('');
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Settings hook
+  const { settings, isLoaded: settingsLoaded, saveSettings, resetSettings, defaultSettings } = useSettings();
 
   // Check if running in World App
   useEffect(() => {
@@ -139,8 +145,8 @@ export default function Home() {
     return <WalletConnect onConnect={handleWalletConnect} />;
   }
 
-  // Calculate aggregate health factor
-  const aggregateHealth = calculateAggregateHealthFactor(positions);
+  // Calculate aggregate health factor with thresholds
+  const aggregateHealth = calculateAggregateHealthFactor(positions, settings);
 
   return (
     <div className="min-h-screen px-4 py-6">
@@ -152,12 +158,24 @@ export default function Home() {
             {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
           </p>
         </div>
-        <button
-          onClick={handleDisconnect}
-          className="text-sm text-gray-600 hover:text-gray-900"
-        >
-          Disconnect
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => setShowSettings(true)}
+            className="p-2 text-gray-600 hover:text-morpho-blue hover:bg-gray-100 rounded-lg transition-colors"
+            title="Settings"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+          <button
+            onClick={handleDisconnect}
+            className="text-sm text-gray-600 hover:text-gray-900"
+          >
+            Disconnect
+          </button>
+        </div>
       </header>
 
       {/* Error Message */}
@@ -198,7 +216,7 @@ export default function Home() {
                 <span>Refresh</span>
               </button>
             </div>
-            <PositionList positions={positions} />
+            <PositionList positions={positions} thresholds={settings} />
 
             {/* Chain Debug Info */}
             {chainDebug && (
@@ -225,6 +243,16 @@ export default function Home() {
           </div>
         </>
       )}
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        currentSettings={settings}
+        onSave={saveSettings}
+        onReset={resetSettings}
+        defaultSettings={defaultSettings}
+      />
     </div>
   );
 }
