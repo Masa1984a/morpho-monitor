@@ -11,6 +11,7 @@ import { LoadingState } from '@/components/LoadingState';
 import { HealthFactorCard } from '@/components/HealthFactorCard';
 import { PositionList } from '@/components/PositionDisplay';
 import { SettingsModal } from '@/components/SettingsModal';
+import { SimulationModal } from '@/components/SimulationModal';
 import { NotificationToast } from '@/components/NotificationToast';
 import { useSettings } from '@/hooks/useSettings';
 import { useHealthMonitor } from '@/hooks/useHealthMonitor';
@@ -25,6 +26,7 @@ export default function Home() {
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [chainDebug, setChainDebug] = useState<string>('');
   const [showSettings, setShowSettings] = useState(false);
+  const [showSimulation, setShowSimulation] = useState(false);
 
   // Settings hook
   const { settings, isLoaded: settingsLoaded, saveSettings, resetSettings, defaultSettings } = useSettings();
@@ -171,6 +173,16 @@ export default function Home() {
         </div>
         <div className="flex items-center space-x-3">
           <button
+            onClick={() => setShowSimulation(true)}
+            disabled={positions.length === 0}
+            className="p-2 text-gray-600 hover:text-morpho-blue hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Simulation"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </button>
+          <button
             onClick={() => setShowSettings(true)}
             className="p-2 text-gray-600 hover:text-morpho-blue hover:bg-gray-100 rounded-lg transition-colors"
             title="Settings"
@@ -263,6 +275,19 @@ export default function Home() {
         onSave={saveSettings}
         onReset={resetSettings}
         defaultSettings={defaultSettings}
+      />
+
+      {/* Simulation Modal */}
+      <SimulationModal
+        isOpen={showSimulation}
+        onClose={() => setShowSimulation(false)}
+        position={positions.length > 0 ? positions[0] : null}
+        wldPrice={
+          positions.length > 0 && parseFloat(positions[0].state.collateral) > 0
+            ? positions[0].state.collateralUsd / parseFloat(positions[0].state.collateral)
+            : 0
+        }
+        thresholds={settings}
       />
     </div>
   );
