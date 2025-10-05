@@ -9,6 +9,7 @@ export interface HealthFactorSettings {
   notifyOnWarning: boolean;
   notifyOnDanger: boolean;
   checkInterval: number; // in minutes
+  showDebugInfo: boolean;
 }
 
 const DEFAULT_SETTINGS: HealthFactorSettings = {
@@ -18,6 +19,7 @@ const DEFAULT_SETTINGS: HealthFactorSettings = {
   notifyOnWarning: true,
   notifyOnDanger: true,
   checkInterval: 60, // 1 hour
+  showDebugInfo: false,
 };
 
 const STORAGE_KEY = 'morpho-monitor-settings';
@@ -41,6 +43,7 @@ export function useSettings() {
           notifyOnWarning: parsed.notifyOnWarning ?? DEFAULT_SETTINGS.notifyOnWarning,
           notifyOnDanger: parsed.notifyOnDanger ?? DEFAULT_SETTINGS.notifyOnDanger,
           checkInterval: parsed.checkInterval ?? DEFAULT_SETTINGS.checkInterval,
+          showDebugInfo: parsed.showDebugInfo ?? DEFAULT_SETTINGS.showDebugInfo,
         });
       }
     } catch (error) {

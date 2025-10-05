@@ -141,14 +141,16 @@ export default function Home() {
             Please open this application through World App.
           </p>
           {/* Debug information */}
-          <details className="mt-6 text-left">
-            <summary className="cursor-pointer text-xs text-gray-400 hover:text-gray-600">
-              Debug Info
-            </summary>
-            <pre className="mt-2 p-2 bg-gray-100 rounded text-xs overflow-auto max-h-60">
-              {debugInfo}
-            </pre>
-          </details>
+          {settings.showDebugInfo && (
+            <details className="mt-6 text-left">
+              <summary className="cursor-pointer text-xs text-gray-400 hover:text-gray-600">
+                Debug Info
+              </summary>
+              <pre className="mt-2 p-2 bg-gray-100 rounded text-xs overflow-auto max-h-60">
+                {debugInfo}
+              </pre>
+            </details>
+          )}
         </div>
       </div>
     );
@@ -166,7 +168,7 @@ export default function Home() {
       {/* Header */}
       <header className="bg-white rounded-lg shadow-sm px-4 py-3 mb-6 flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Morpho Monitor</h1>
+          <h1 className="text-xl font-bold text-gray-900">CTS</h1>
           <p className="text-xs text-gray-500">
             {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
           </p>
@@ -227,7 +229,7 @@ export default function Home() {
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">
-                Your Positions ({positions.length})
+                Your Positions
               </h2>
               <button
                 onClick={handleRefresh}
@@ -242,7 +244,7 @@ export default function Home() {
             <PositionList positions={positions} thresholds={settings} />
 
             {/* Chain Debug Info */}
-            {chainDebug && (
+            {settings.showDebugInfo && chainDebug && (
               <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600 whitespace-pre-wrap">
                 <strong>Debug Info:</strong><br />
                 {chainDebug}

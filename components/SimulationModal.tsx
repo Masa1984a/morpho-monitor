@@ -79,7 +79,7 @@ export function SimulationModal({
           <h2 className="text-xl font-bold text-gray-900">Position Simulator</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
+            className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
           >
             ×
           </button>

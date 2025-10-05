@@ -26,6 +26,7 @@ export function SettingsModal({
   const [notifyOnWarning, setNotifyOnWarning] = useState(currentSettings.notifyOnWarning);
   const [notifyOnDanger, setNotifyOnDanger] = useState(currentSettings.notifyOnDanger);
   const [checkInterval, setCheckInterval] = useState(currentSettings.checkInterval.toString());
+  const [showDebugInfo, setShowDebugInfo] = useState(currentSettings.showDebugInfo);
   const [error, setError] = useState<string>('');
 
   // Update local state when currentSettings changes
@@ -36,6 +37,7 @@ export function SettingsModal({
     setNotifyOnWarning(currentSettings.notifyOnWarning);
     setNotifyOnDanger(currentSettings.notifyOnDanger);
     setCheckInterval(currentSettings.checkInterval.toString());
+    setShowDebugInfo(currentSettings.showDebugInfo);
     setError('');
   }, [currentSettings, isOpen]);
 
@@ -75,6 +77,7 @@ export function SettingsModal({
         notifyOnWarning,
         notifyOnDanger,
         checkInterval: interval,
+        showDebugInfo,
       });
       setError('');
       onClose();
@@ -90,6 +93,7 @@ export function SettingsModal({
     setNotifyOnWarning(defaultSettings.notifyOnWarning);
     setNotifyOnDanger(defaultSettings.notifyOnDanger);
     setCheckInterval(defaultSettings.checkInterval.toString());
+    setShowDebugInfo(defaultSettings.showDebugInfo);
     setError('');
     onReset();
   };
@@ -148,6 +152,27 @@ export function SettingsModal({
             <p className="text-xs text-gray-500 mt-1">
               Default: {defaultSettings.dangerThreshold.toFixed(1)}
             </p>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-200 my-6"></div>
+
+          {/* Debug Info Section */}
+          <div className="flex items-center justify-between mb-6">
+            <label className="text-sm font-medium text-gray-700">Show Debug Info</label>
+            <button
+              type="button"
+              onClick={() => setShowDebugInfo(!showDebugInfo)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                showDebugInfo ? 'bg-morpho-blue' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  showDebugInfo ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
           </div>
 
           {/* Divider */}

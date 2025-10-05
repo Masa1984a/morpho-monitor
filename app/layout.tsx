@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Morpho Monitor',
-  description: 'Monitor your Morpho positions and health factor in World App',
+  title: 'CTS',
+  description: 'Monitor your WLD/USDC borrow health factor in World App',
   icons: {
     icon: '/favicon.ico',
   },
