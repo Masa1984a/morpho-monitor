@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { MiniKit } from '@worldcoin/minikit-js';
 import { MiniKitService } from '@/lib/minikit';
 import { MorphoAPIClient } from '@/lib/morpho-api';
 import { calculateAggregateHealthFactor } from '@/lib/calculations';
@@ -17,15 +18,33 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>('');
 
   // Check if running in World App
   useEffect(() => {
     const checkWorldApp = () => {
       try {
+        // MiniKitをインストール（World App IDは不要な場合が多い）
+        const installResult = MiniKit.install();
+
         const minikit = MiniKitService.getInstance();
-        setIsWorldApp(minikit.isWorldApp());
+        const result = minikit.isWorldApp();
+
+        // デバッグ情報を収集
+        const debug = {
+          installResult,
+          isWorldApp: result,
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A',
+          windowMiniKit: typeof window !== 'undefined' ? !!(window as any).MiniKit : false,
+          miniKitInstalled: MiniKit.isInstalled(),
+          timestamp: new Date().toISOString()
+        };
+
+        setDebugInfo(JSON.stringify(debug, null, 2));
+        setIsWorldApp(result);
       } catch (err) {
         console.error('Error checking World App:', err);
+        setDebugInfo(`Error: ${err instanceof Error ? err.message : String(err)}`);
         setIsWorldApp(false);
       }
     };
@@ -97,6 +116,15 @@ export default function Home() {
           <p className="text-sm text-gray-500 mt-4">
             Please open this application through World App.
           </p>
+          {/* デバッグ情報 */}
+          <details className="mt-6 text-left">
+            <summary className="cursor-pointer text-xs text-gray-400 hover:text-gray-600">
+              Debug Info
+            </summary>
+            <pre className="mt-2 p-2 bg-gray-100 rounded text-xs overflow-auto max-h-60">
+              {debugInfo}
+            </pre>
+          </details>
         </div>
       </div>
     );

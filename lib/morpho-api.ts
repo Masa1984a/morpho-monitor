@@ -2,7 +2,8 @@ import { ApolloClient, InMemoryCache, gql, NormalizedCacheObject } from '@apollo
 import { UserByAddressResponse, MarketPosition } from '@/types/morpho';
 
 const MORPHO_API_URL = process.env.NEXT_PUBLIC_MORPHO_API_URL || 'https://api.morpho.org/graphql';
-const CHAIN_ID = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '8453'); // Base chain
+// Support multiple chains: Base, Optimism, World Chain, Ethereum
+const SUPPORTED_CHAINS = [8453, 10, 480, 1]; // Base, Optimism, World Chain, Ethereum
 
 export class MorphoAPIClient {
   private static instance: MorphoAPIClient;
@@ -87,21 +88,34 @@ export class MorphoAPIClient {
     `;
 
     try {
-      const { data } = await this.apolloClient.query<UserByAddressResponse>({
-        query: USER_POSITIONS_QUERY,
-        variables: {
-          address: address.toLowerCase(),
-          chainId: CHAIN_ID,
-        },
-      });
+      // 全チェーンから並列でデータ取得
+      const allPositions: MarketPosition[] = [];
 
-      const positions = data?.userByAddress?.marketPositions || [];
+      for (const chainId of SUPPORTED_CHAINS) {
+        try {
+          const { data } = await this.apolloClient.query<UserByAddressResponse>({
+            query: USER_POSITIONS_QUERY,
+            variables: {
+              address: address.toLowerCase(),
+              chainId,
+            },
+          });
+
+          const positions = data?.userByAddress?.marketPositions || [];
+          if (positions.length > 0) {
+            console.log(`Found ${positions.length} positions on chain ${chainId}`);
+            allPositions.push(...positions);
+          }
+        } catch (chainError) {
+          console.log(`No positions on chain ${chainId}`, chainError);
+        }
+      }
 
       // Update cache
-      this.cachedData.set(cacheKey, positions);
+      this.cachedData.set(cacheKey, allPositions);
       this.lastFetchTime.set(cacheKey, Date.now());
 
-      return positions;
+      return allPositions;
     } catch (error) {
       console.error('Error fetching user positions:', error);
 

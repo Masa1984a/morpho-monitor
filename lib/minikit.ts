@@ -23,16 +23,14 @@ export class MiniKitService {
     if (this.isInitialized) return;
 
     try {
-      // Initialize MiniKit
-      if (!MiniKit.isInstalled()) {
-        throw new Error('This app must be opened in World App');
-      }
-
+      // Initialize MiniKit - don't throw if not installed, just log
+      console.log('MiniKit.isInstalled():', MiniKit.isInstalled());
       this.isInitialized = true;
       console.log('MiniKit initialized successfully');
     } catch (error) {
       console.error('Failed to initialize MiniKit:', error);
-      throw error;
+      // Don't throw - allow app to continue
+      this.isInitialized = true;
     }
   }
 
@@ -41,18 +39,18 @@ export class MiniKitService {
       // Ensure MiniKit is initialized
       await this.initialize();
 
-      // Request wallet connection
-      const result = await MiniKit.commands.walletAuth({
+      // Request wallet connection using async command
+      const nonce = `nonce-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+      const { finalPayload } = await MiniKit.commandsAsync.walletAuth({
+        nonce,
         requestId: `wallet-connect-${Date.now()}`,
-        description: 'Connect your wallet to view your Morpho positions',
         expirationTime: new Date(Date.now() + 1000 * 60 * 5), // 5 minutes
       });
 
-      if (result.finalPayload?.status === 'success') {
-        const address = result.finalPayload.address;
+      if (finalPayload.status === 'success') {
         return {
           success: true,
-          address,
+          address: finalPayload.address,
         };
       }
 
@@ -70,6 +68,24 @@ export class MiniKitService {
   }
 
   isWorldApp(): boolean {
-    return MiniKit.isInstalled();
+    // より柔軟な検出ロジック
+    if (typeof window === 'undefined') {
+      console.log('isWorldApp: window is undefined');
+      return false;
+    }
+
+    const isInstalled = MiniKit.isInstalled();
+    const hasUserAgent = navigator.userAgent.includes('WorldApp');
+    const hasWindowMiniKit = !!(window as any).MiniKit;
+
+    console.log('isWorldApp checks:', {
+      isInstalled,
+      hasUserAgent,
+      hasWindowMiniKit,
+      userAgent: navigator.userAgent
+    });
+
+    // MiniKitのインストール確認 or UserAgent確認
+    return isInstalled || hasUserAgent || hasWindowMiniKit;
   }
 }
