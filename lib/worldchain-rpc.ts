@@ -133,6 +133,24 @@ const ERC20_ABI = [
   }
 ] as const;
 
+// Oracle ABI for price feeds
+const ORACLE_ABI = [
+  {
+    type: 'function',
+    name: 'price',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ type: 'uint256' }]
+  },
+  {
+    type: 'function',
+    name: 'latestAnswer',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ type: 'int256' }]
+  }
+] as const;
+
 // World App Price API
 interface PriceResponse {
   result: {
@@ -224,26 +242,90 @@ export class WorldChainRPCClient {
     }
   }
 
+  async getPriceFromOracle(
+    oracleAddress: `0x${string}`,
+    loanDecimals: number,
+    collateralDecimals: number
+  ): Promise<number> {
+    try {
+      this.log(`  Reading price from oracle: ${oracleAddress}`);
+
+      // Try Morpho Oracle interface first (price())
+      try {
+        const priceResult = await this.client.readContract({
+          address: oracleAddress,
+          abi: ORACLE_ABI,
+          functionName: 'price'
+        }) as bigint;
+
+        // Morpho oracles return: USDC per WLD * 10^(36 + loanDecimals - collateralDecimals)
+        // For WLD/USDC: scale = 36 + 6 - 18 = 24
+        const scale = 36 + loanDecimals - collateralDecimals;
+        const price = Number(priceResult) / Math.pow(10, scale);
+        this.log(`  Oracle price raw: ${priceResult.toString()}`);
+        this.log(`  Scale: 10^${scale} (36 + ${loanDecimals} - ${collateralDecimals})`);
+        this.log(`  Oracle price calculated: $${price}`);
+        return price;
+      } catch (e) {
+        this.log(`  price() method failed, trying latestAnswer()...`);
+      }
+
+      // Try Chainlink interface (latestAnswer())
+      try {
+        const answer = await this.client.readContract({
+          address: oracleAddress,
+          abi: ORACLE_ABI,
+          functionName: 'latestAnswer'
+        }) as bigint;
+
+        // Chainlink typically uses 8 decimals
+        const price = Number(answer) / 1e8;
+        this.log(`  Oracle price (via latestAnswer()): ${answer.toString()} -> $${price}`);
+        return price;
+      } catch (e) {
+        this.log(`  latestAnswer() method failed`);
+      }
+
+      return 0;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      this.log(`  ERROR reading oracle: ${errorMsg}`);
+      return 0;
+    }
+  }
+
   async getWLDPrice(): Promise<number> {
     const cacheKey = 'WLD-USD';
     const cached = this.priceCache.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < this.PRICE_CACHE_DURATION) {
+      this.log(`  Using cached WLD price: $${cached.price}`);
       return cached.price;
     }
 
     try {
+      this.log(`  Fetching WLD price from API...`);
       const response = await fetch(
         'https://app-backend.worldcoin.dev/public/v1/miniapps/prices?cryptoCurrencies=WLD&fiatCurrencies=USD'
       );
+
+      if (!response.ok) {
+        this.log(`  API response error: ${response.status} ${response.statusText}`);
+        return cached?.price || 0;
+      }
+
       const data: PriceResponse = await response.json();
+      this.log(`  API response received: ${JSON.stringify(data).substring(0, 200)}`);
 
       const priceData = data.result.prices.WLD.USD;
       const price = parseFloat(priceData.amount) / Math.pow(10, priceData.decimals);
 
+      this.log(`  WLD price calculated: $${price}`);
       this.priceCache.set(cacheKey, { price, timestamp: Date.now() });
       return price;
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      this.log(`  ERROR fetching WLD price: ${errorMsg}`);
       console.error('Failed to fetch WLD price:', error);
       return cached?.price || 0;
     }
@@ -311,6 +393,7 @@ export class WorldChainRPCClient {
               ]);
 
               this.log(`  Tokens: ${loanToken.symbol}/${collateralToken.symbol}`);
+              this.log(`  Token decimals: ${loanToken.decimals}/${collateralToken.decimals}`);
 
               // Convert shares to assets
               const supplyAssets = marketInfo[1] > 0n
@@ -320,15 +403,32 @@ export class WorldChainRPCClient {
                 ? (BigInt(position[1]) * marketInfo[2]) / marketInfo[3]
                 : 0n;
 
+              this.log(`  Raw values - Supply: ${supplyAssets}, Borrow: ${borrowAssets}, Collateral: ${position[2]}`);
+
               // Format amounts
               const collateralAmount = formatUnits(position[2], collateralToken.decimals);
               const supplyAmount = formatUnits(supplyAssets, loanToken.decimals);
               const borrowAmount = formatUnits(borrowAssets, loanToken.decimals);
 
-              // Get price for USD conversion (simplified - only WLD for now)
-              const wldPrice = await this.getWLDPrice();
+              this.log(`  Formatted - Supply: ${supplyAmount}, Borrow: ${borrowAmount}, Collateral: ${collateralAmount}`);
+
+              // Get price from oracle (WLD/USDC price)
+              let wldPrice = await this.getPriceFromOracle(
+                marketParams.oracle,
+                loanToken.decimals,
+                collateralToken.decimals
+              );
+
+              // If oracle fails, try API as fallback
+              if (wldPrice === 0) {
+                this.log(`  Oracle price unavailable, trying API...`);
+                wldPrice = await this.getWLDPrice();
+              }
+
+              this.log(`  Final WLD Price: $${wldPrice}`);
 
               // Calculate USD values (simplified)
+              this.log(`  Checking collateral: symbol='${collateralToken.symbol}' (is WLD: ${collateralToken.symbol === 'WLD'})`);
               const collateralUsd = collateralToken.symbol === 'WLD'
                 ? parseFloat(collateralAmount) * wldPrice
                 : 0;
@@ -338,6 +438,8 @@ export class WorldChainRPCClient {
               const borrowAssetsUsd = loanToken.symbol === 'USDC'
                 ? parseFloat(borrowAmount)
                 : 0;
+
+              this.log(`  USD values - Collateral: $${collateralUsd}, Supply: $${supplyAssetsUsd}, Borrow: $${borrowAssetsUsd}`);
 
               positions.push({
                 market: {
