@@ -1,112 +1,48 @@
-# Morpho Monitor - World App Mini-App
+# CTS (Collateral Tracking System)
 
-A monitoring tool for Morpho Blue positions on Base chain, built as a World App mini-app. Track your lending and borrowing positions, monitor health factors, and receive visual alerts for liquidation risks.
+A World App mini-app for monitoring WLD/USDC borrow health factor on Morpho Blue (World Chain).
 
 ## Features
 
 - 🔗 **World App Integration**: Seamless wallet connection through World App
-- 📊 **Position Monitoring**: View all your Morpho Blue positions on Base chain
-- 🏥 **Health Factor Tracking**: Real-time health factor calculation with visual status indicators
-- ⚠️ **Risk Alerts**: Visual warnings when positions approach liquidation
+- 📊 **WLD/USDC Position Monitoring**: Track your WLD/USDC Morpho positions on World Chain
+- 🏥 **Health Factor Tracking**: Real-time health factor monitoring with customizable thresholds
+- ⚠️ **Configurable Alerts**: Set custom warning and danger thresholds
+- 🔔 **Notifications**: In-app notifications when positions reach threshold levels
+- 🧮 **Position Simulator**: Simulate collateral and borrow adjustments
 - 📱 **Mobile Optimized**: Designed for World App's WebView environment
-- 🔄 **Manual Refresh**: Update positions data on demand
+- ⚙️ **Settings**: Customize thresholds, notification preferences, and debug info visibility
 
-## Installation
-
-1. **Install dependencies:**
-   ```bash
-   cd morpho-monitor
-   npm install
-   ```
-
-2. **Configure environment variables:**
-   The `.env.local` file is already configured with default values:
-   - `NEXT_PUBLIC_MORPHO_API_URL`: Morpho GraphQL API endpoint
-   - `NEXT_PUBLIC_CHAIN_ID`: Base chain ID (8453)
-   - `NEXT_PUBLIC_HEALTH_FACTOR_THRESHOLD`: Warning threshold (1.10)
-   - `NEXT_PUBLIC_CACHE_DURATION`: Cache duration in seconds (60)
-
-3. **Run development server:**
-   ```bash
-   npm run dev
-   ```
-
-4. **Build for production:**
-   ```bash
-   npm run build
-   npm start
-   ```
-
-## Testing in World App
-
-To test this mini-app in World App:
-
-1. Deploy the application to a public URL
-2. Register your mini-app with World App through their developer portal
-3. Access the mini-app through World App's mini-app section
-
-## Project Structure
-
-```
-morpho-monitor/
-├── app/
-│   ├── layout.tsx       # Root layout with viewport configuration
-│   ├── page.tsx         # Main application page
-│   └── globals.css      # Global styles and WebView optimizations
-├── components/
-│   ├── WalletConnect.tsx     # Wallet connection component
-│   ├── PositionDisplay.tsx   # Position list and cards
-│   ├── HealthFactorCard.tsx  # Health factor visualization
-│   └── LoadingState.tsx      # Loading indicators
-├── lib/
-│   ├── minikit.ts       # MiniKit SDK integration
-│   ├── morpho-api.ts    # Morpho GraphQL API client
-│   └── calculations.ts  # Health factor calculations
-└── types/
-    └── morpho.ts        # TypeScript type definitions
-```
-
-## Health Factor Calculation
+## Health Factor
 
 Health Factor = (Collateral Value × LLTV) / Borrowed Value
 
-- **Healthy (>1.10)**: Green status, position is safe
-- **Warning (1.00-1.10)**: Yellow status, approaching liquidation
-- **Danger (<1.00)**: Red status, position can be liquidated
+- **Healthy**: HF ≥ Warning Threshold (default: 1.5)
+- **Warning**: Danger Threshold ≤ HF < Warning Threshold (default: 1.2)
+- **Danger**: HF < Danger Threshold (default: 1.2)
 
-## Important Notes
-
-- This is a third-party monitoring tool, not affiliated with Morpho Protocol
-- Always verify positions on the official Morpho interface before making decisions
-- The app only works within World App's WebView environment
-- Data is cached for 60 seconds to prevent excessive API calls
-
-## Security Considerations
-
-- No private keys or sensitive data are stored
-- All API calls are made directly to Morpho's public GraphQL endpoint
-- Wallet connection is handled securely through World App's MiniKit SDK
-- Position data is only stored in memory during the session
-
-## Troubleshooting
-
-**"World App Required" error:**
-- Ensure you're opening the app within World App, not in a regular browser
-
-**No positions showing:**
-- Verify you have active positions on Morpho Blue (Base chain)
-- Try refreshing the data using the refresh button
-- Check that your wallet address has positions on Base chain (chainId: 8453)
-
-**Connection issues:**
-- Ensure you have a stable internet connection
-- Try disconnecting and reconnecting your wallet
-- Check if Morpho API is operational
+Thresholds can be customized in the settings.
 
 ## License
 
-This project is provided as-is for monitoring purposes. Users are responsible for their own trading decisions.
+MIT License
 
-## Disclaimer
+Copyright (c) 2025
 
-This tool is for informational purposes only. It is not affiliated with, endorsed by, or officially connected to Morpho Protocol. Always verify your positions and make financial decisions based on official sources.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
