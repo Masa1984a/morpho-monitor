@@ -27,7 +27,7 @@ export class MiniKitService {
     try {
       if (typeof window !== 'undefined') {
         if (MINI_APP_ID) {
-          MiniKit.install({ app_id: MINI_APP_ID });
+          MiniKit.install(MINI_APP_ID);
         } else {
           MiniKit.install();
         }
