@@ -51,18 +51,12 @@ export class MorphoAPIClient {
 
     try {
       console.log('Fetching positions from World Chain RPC...');
-      this.detailedDebug.push(`Querying address: ${address}`);
-      this.detailedDebug.push(`Morpho Blue contract: ${process.env.NEXT_PUBLIC_MORPHO_BLUE_ADDRESS || '0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb'}`);
 
       const positions = await this.worldChainClient.getUserPositions(address);
 
+      // Get debug logs from the RPC client
+      this.detailedDebug = this.worldChainClient.debugLogs;
       this.debugInfo = `World Chain: ${positions.length} positions found (via RPC)`;
-      this.detailedDebug.push(`Result: ${positions.length} positions found`);
-
-      if (positions.length === 0) {
-        this.detailedDebug.push('No events found for this address on World Chain');
-        this.detailedDebug.push('Check: 1) Correct address? 2) Correct chain? 3) Contract address correct?');
-      }
 
       console.log(this.debugInfo);
 
@@ -74,6 +68,9 @@ export class MorphoAPIClient {
     } catch (error) {
       console.error('Error fetching user positions:', error);
       this.debugInfo = `World Chain: error - ${error instanceof Error ? error.message : 'unknown'}`;
+
+      // Get debug logs even on error
+      this.detailedDebug = this.worldChainClient.debugLogs;
       this.detailedDebug.push(`ERROR: ${error instanceof Error ? error.stack : String(error)}`);
 
       // Return cached data if available on error

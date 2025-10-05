@@ -160,12 +160,22 @@ export class WorldChainRPCClient {
   private priceCache: Map<string, { price: number; timestamp: number }> = new Map();
   private tokenCache: Map<string, TokenInfo> = new Map();
   private readonly PRICE_CACHE_DURATION = 60000; // 1 minute
+  public debugLogs: string[] = [];
 
   private constructor() {
     this.client = createPublicClient({
       chain: WORLD_CHAIN,
       transport: http()
     });
+  }
+
+  private log(message: string) {
+    console.log(message);
+    this.debugLogs.push(message);
+  }
+
+  clearDebugLogs() {
+    this.debugLogs = [];
   }
 
   static getInstance(): WorldChainRPCClient {
@@ -239,16 +249,20 @@ export class WorldChainRPCClient {
   // No longer needed - using known market IDs instead of event log scanning
 
   async getUserPositions(address: string): Promise<MarketPosition[]> {
+    this.clearDebugLogs();
+
     try {
       const userAddress = address as `0x${string}`;
 
-      console.log(`[DEBUG] Checking positions for ${userAddress} across ${KNOWN_MARKET_IDS.length} known markets`);
+      this.log(`Checking ${KNOWN_MARKET_IDS.length} known market(s)`);
+      this.log(`User address: ${userAddress}`);
+      this.log(`Morpho Blue: ${MORPHO_BLUE_ADDRESS}`);
 
       const positions: MarketPosition[] = [];
 
       // Check each known market ID
       for (const marketId of KNOWN_MARKET_IDS) {
-        console.log(`[DEBUG] Checking market ${marketId}`);
+        this.log(`\nChecking market: ${marketId}`);
         try {
           const position = await this.client.readContract({
             address: MORPHO_BLUE_ADDRESS,
@@ -257,14 +271,12 @@ export class WorldChainRPCClient {
             args: [marketId, userAddress]
           });
 
-          console.log(`[DEBUG] Position data:`, {
-            supplyShares: position[0].toString(),
-            borrowShares: position[1].toString(),
-            collateral: position[2].toString()
-          });
+          this.log(`  Supply shares: ${position[0].toString()}`);
+          this.log(`  Borrow shares: ${position[1].toString()}`);
+          this.log(`  Collateral: ${position[2].toString()}`);
 
           if (position && (position[0] > 0n || position[1] > 0n || position[2] > 0n)) {
-            console.log(`[DEBUG] Found active position in market ${marketId}`);
+            this.log(`  ✓ Active position found!`);
             // Get market parameters
             const marketParams = await this.client.readContract({
               address: MORPHO_BLUE_ADDRESS,
@@ -341,17 +353,17 @@ export class WorldChainRPCClient {
               }
             });
           } else {
-            console.log(`[DEBUG] No position in market ${marketId} (all values are 0)`);
+            this.log(`  No position (all values are 0)`);
           }
         } catch (marketError) {
-          console.error(`[ERROR] Error fetching position for market ${marketId}:`, marketError);
+          this.log(`  ERROR: ${marketError instanceof Error ? marketError.message : String(marketError)}`);
         }
       }
 
-      console.log(`[DEBUG] Total positions found: ${positions.length}`);
+      this.log(`\n=== TOTAL: ${positions.length} position(s) found ===`);
       return positions;
     } catch (error) {
-      console.error('[ERROR] Error fetching positions from World Chain:', error);
+      this.log(`FATAL ERROR: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
     }
   }
