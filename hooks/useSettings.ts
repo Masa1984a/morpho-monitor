@@ -5,11 +5,19 @@ import { useState, useEffect } from 'react';
 export interface HealthFactorSettings {
   warningThreshold: number;
   dangerThreshold: number;
+  notificationsEnabled: boolean;
+  notifyOnWarning: boolean;
+  notifyOnDanger: boolean;
+  checkInterval: number; // in minutes
 }
 
 const DEFAULT_SETTINGS: HealthFactorSettings = {
   warningThreshold: 1.5,
   dangerThreshold: 1.2,
+  notificationsEnabled: true,
+  notifyOnWarning: true,
+  notifyOnDanger: true,
+  checkInterval: 60, // 1 hour
 };
 
 const STORAGE_KEY = 'morpho-monitor-settings';
@@ -29,6 +37,10 @@ export function useSettings() {
         setSettings({
           warningThreshold: parsed.warningThreshold ?? DEFAULT_SETTINGS.warningThreshold,
           dangerThreshold: parsed.dangerThreshold ?? DEFAULT_SETTINGS.dangerThreshold,
+          notificationsEnabled: parsed.notificationsEnabled ?? DEFAULT_SETTINGS.notificationsEnabled,
+          notifyOnWarning: parsed.notifyOnWarning ?? DEFAULT_SETTINGS.notifyOnWarning,
+          notifyOnDanger: parsed.notifyOnDanger ?? DEFAULT_SETTINGS.notifyOnDanger,
+          checkInterval: parsed.checkInterval ?? DEFAULT_SETTINGS.checkInterval,
         });
       }
     } catch (error) {

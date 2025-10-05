@@ -22,12 +22,20 @@ export function SettingsModal({
 }: SettingsModalProps) {
   const [warningThreshold, setWarningThreshold] = useState(currentSettings.warningThreshold.toString());
   const [dangerThreshold, setDangerThreshold] = useState(currentSettings.dangerThreshold.toString());
+  const [notificationsEnabled, setNotificationsEnabled] = useState(currentSettings.notificationsEnabled);
+  const [notifyOnWarning, setNotifyOnWarning] = useState(currentSettings.notifyOnWarning);
+  const [notifyOnDanger, setNotifyOnDanger] = useState(currentSettings.notifyOnDanger);
+  const [checkInterval, setCheckInterval] = useState(currentSettings.checkInterval.toString());
   const [error, setError] = useState<string>('');
 
   // Update local state when currentSettings changes
   useEffect(() => {
     setWarningThreshold(currentSettings.warningThreshold.toString());
     setDangerThreshold(currentSettings.dangerThreshold.toString());
+    setNotificationsEnabled(currentSettings.notificationsEnabled);
+    setNotifyOnWarning(currentSettings.notifyOnWarning);
+    setNotifyOnDanger(currentSettings.notifyOnDanger);
+    setCheckInterval(currentSettings.checkInterval.toString());
     setError('');
   }, [currentSettings, isOpen]);
 
@@ -36,10 +44,11 @@ export function SettingsModal({
   const handleSave = () => {
     const warning = parseFloat(warningThreshold);
     const danger = parseFloat(dangerThreshold);
+    const interval = parseInt(checkInterval);
 
     // Validation
     if (isNaN(warning) || isNaN(danger)) {
-      setError('Please enter valid numbers');
+      setError('Please enter valid numbers for thresholds');
       return;
     }
 
@@ -53,8 +62,20 @@ export function SettingsModal({
       return;
     }
 
+    if (isNaN(interval) || interval < 5) {
+      setError('Check interval must be at least 5 minutes');
+      return;
+    }
+
     try {
-      onSave({ warningThreshold: warning, dangerThreshold: danger });
+      onSave({
+        warningThreshold: warning,
+        dangerThreshold: danger,
+        notificationsEnabled,
+        notifyOnWarning,
+        notifyOnDanger,
+        checkInterval: interval,
+      });
       setError('');
       onClose();
     } catch (err) {
@@ -65,6 +86,10 @@ export function SettingsModal({
   const handleReset = () => {
     setWarningThreshold(defaultSettings.warningThreshold.toString());
     setDangerThreshold(defaultSettings.dangerThreshold.toString());
+    setNotificationsEnabled(defaultSettings.notificationsEnabled);
+    setNotifyOnWarning(defaultSettings.notifyOnWarning);
+    setNotifyOnDanger(defaultSettings.notifyOnDanger);
+    setCheckInterval(defaultSettings.checkInterval.toString());
     setError('');
     onReset();
   };
@@ -123,6 +148,77 @@ export function SettingsModal({
             <p className="text-xs text-gray-500 mt-1">
               Default: {defaultSettings.dangerThreshold.toFixed(1)}
             </p>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-200 my-6"></div>
+
+          {/* Notifications Section */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Notifications (通知)</h3>
+
+            {/* Enable Notifications Toggle */}
+            <div className="flex items-center justify-between mb-4">
+              <label className="text-sm text-gray-700">Enable Notifications</label>
+              <button
+                type="button"
+                onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  notificationsEnabled ? 'bg-morpho-blue' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    notificationsEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Notification Options (only shown when enabled) */}
+            {notificationsEnabled && (
+              <div className="space-y-3 pl-4 border-l-2 border-gray-200">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm text-gray-600 flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-warning"></div>
+                    <span>Notify on Warning</span>
+                  </label>
+                  <input
+                    type="checkbox"
+                    checked={notifyOnWarning}
+                    onChange={(e) => setNotifyOnWarning(e.target.checked)}
+                    className="w-4 h-4 text-morpho-blue rounded focus:ring-2 focus:ring-morpho-blue"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="text-sm text-gray-600 flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-danger"></div>
+                    <span>Notify on Danger</span>
+                  </label>
+                  <input
+                    type="checkbox"
+                    checked={notifyOnDanger}
+                    onChange={(e) => setNotifyOnDanger(e.target.checked)}
+                    className="w-4 h-4 text-morpho-blue rounded focus:ring-2 focus:ring-morpho-blue"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-600 mb-2">Check Interval</label>
+                  <select
+                    value={checkInterval}
+                    onChange={(e) => setCheckInterval(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-morpho-blue focus:border-transparent text-sm"
+                  >
+                    <option value="30">30 minutes</option>
+                    <option value="60">1 hour</option>
+                    <option value="120">2 hours</option>
+                    <option value="360">6 hours</option>
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Description */}

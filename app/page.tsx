@@ -11,7 +11,9 @@ import { LoadingState } from '@/components/LoadingState';
 import { HealthFactorCard } from '@/components/HealthFactorCard';
 import { PositionList } from '@/components/PositionDisplay';
 import { SettingsModal } from '@/components/SettingsModal';
+import { NotificationToast } from '@/components/NotificationToast';
 import { useSettings } from '@/hooks/useSettings';
+import { useHealthMonitor } from '@/hooks/useHealthMonitor';
 
 export default function Home() {
   const [isWorldApp, setIsWorldApp] = useState<boolean | null>(null);
@@ -107,6 +109,16 @@ export default function Home() {
     setLastUpdate(null);
   };
 
+  // Calculate aggregate health factor with thresholds (before early returns)
+  const aggregateHealth = walletAddress ? calculateAggregateHealthFactor(positions, settings) : null;
+
+  // Health monitoring (must be called before early returns)
+  const { notifications, removeNotification } = useHealthMonitor(
+    aggregateHealth,
+    settings,
+    walletAddress
+  );
+
   // Show loading while checking World App
   if (isWorldApp === null) {
     return <LoadingState message="Initializing..." />;
@@ -145,11 +157,10 @@ export default function Home() {
     return <WalletConnect onConnect={handleWalletConnect} />;
   }
 
-  // Calculate aggregate health factor with thresholds
-  const aggregateHealth = calculateAggregateHealthFactor(positions, settings);
-
   return (
     <div className="min-h-screen px-4 py-6">
+      {/* Notifications */}
+      <NotificationToast notifications={notifications} onRemove={removeNotification} />
       {/* Header */}
       <header className="bg-white rounded-lg shadow-sm px-4 py-3 mb-6 flex justify-between items-center">
         <div>
