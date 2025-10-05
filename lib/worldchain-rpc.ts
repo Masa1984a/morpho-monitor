@@ -16,7 +16,7 @@ const WORLD_CHAIN = {
 } as const;
 
 // Morpho Blue contract address on World Chain
-// 正しいアドレス（調査結果より: 0xBBBBB... は他チェーン用）
+// Correct address (0xBBBBB... is for other chains)
 const MORPHO_BLUE_ADDRESS = '0xe741bc7c34758b4cae05062794e8ae24978af432';
 
 // Known Market IDs on World Chain (from Morpho Blue)

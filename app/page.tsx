@@ -35,13 +35,13 @@ export default function Home() {
   useEffect(() => {
     const checkWorldApp = () => {
       try {
-        // MiniKitをインストール（World App IDは不要な場合が多い）
+        // Install MiniKit (World App ID is usually not required)
         const installResult = MiniKit.install();
 
         const minikit = MiniKitService.getInstance();
         const result = minikit.isWorldApp();
 
-        // デバッグ情報を収集
+        // Collect debug information
         const debug = {
           installResult,
           isWorldApp: result,
@@ -140,7 +140,7 @@ export default function Home() {
           <p className="text-sm text-gray-500 mt-4">
             Please open this application through World App.
           </p>
-          {/* デバッグ情報 */}
+          {/* Debug information */}
           <details className="mt-6 text-left">
             <summary className="cursor-pointer text-xs text-gray-400 hover:text-gray-600">
               Debug Info

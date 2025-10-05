@@ -111,7 +111,7 @@ export function SettingsModal({
           {/* Warning Threshold */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Warning Threshold (注意)
+              Warning Threshold
             </label>
             <div className="flex items-center space-x-3">
               <input
@@ -132,7 +132,7 @@ export function SettingsModal({
           {/* Danger Threshold */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Danger Threshold (危険)
+              Danger Threshold
             </label>
             <div className="flex items-center space-x-3">
               <input
@@ -155,7 +155,7 @@ export function SettingsModal({
 
           {/* Notifications Section */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Notifications (通知)</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Notifications</h3>
 
             {/* Enable Notifications Toggle */}
             <div className="flex items-center justify-between mb-4">

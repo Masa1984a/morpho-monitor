@@ -68,7 +68,7 @@ export class MiniKitService {
   }
 
   isWorldApp(): boolean {
-    // より柔軟な検出ロジック
+    // More flexible detection logic
     if (typeof window === 'undefined') {
       console.log('isWorldApp: window is undefined');
       return false;
@@ -85,7 +85,7 @@ export class MiniKitService {
       userAgent: navigator.userAgent
     });
 
-    // MiniKitのインストール確認 or UserAgent確認
+    // Check MiniKit installation or UserAgent
     return isInstalled || hasUserAgent || hasWindowMiniKit;
   }
 }
