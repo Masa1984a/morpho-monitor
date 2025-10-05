@@ -19,6 +19,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
+  const [chainDebug, setChainDebug] = useState<string>('');
 
   // Check if running in World App
   useEffect(() => {
@@ -69,10 +70,13 @@ export default function Home() {
       const morphoClient = MorphoAPIClient.getInstance();
       const userPositions = await morphoClient.getUserPositions(walletAddress);
       setPositions(userPositions);
+      setChainDebug(morphoClient.getChainDebugInfo());
       setLastUpdate(new Date());
     } catch (err) {
       console.error('Error fetching positions:', err);
       setError('Failed to fetch Morpho positions. Please try again later.');
+      const morphoClient = MorphoAPIClient.getInstance();
+      setChainDebug(morphoClient.getChainDebugInfo());
     } finally {
       setLoading(false);
     }
@@ -195,6 +199,13 @@ export default function Home() {
               </button>
             </div>
             <PositionList positions={positions} />
+
+            {/* Chain Debug Info */}
+            {chainDebug && (
+              <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600">
+                <strong>Chains checked:</strong> {chainDebug}
+              </div>
+            )}
           </div>
 
           {/* Last Update */}

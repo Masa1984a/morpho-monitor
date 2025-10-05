@@ -41,6 +41,25 @@ export class MorphoAPIClient {
     return Date.now() - lastFetch < this.cacheDuration;
   }
 
+  private chainResults: Map<number, string> = new Map();
+
+  getChainDebugInfo(): string {
+    const results: string[] = [];
+    const chainNames: {[key: number]: string} = {
+      8453: 'Base',
+      10: 'Optimism',
+      480: 'World Chain',
+      1: 'Ethereum'
+    };
+
+    SUPPORTED_CHAINS.forEach(chainId => {
+      const result = this.chainResults.get(chainId) || 'not queried';
+      results.push(`${chainNames[chainId]}: ${result}`);
+    });
+
+    return results.join(', ');
+  }
+
   async getUserPositions(address: string): Promise<MarketPosition[]> {
     const cacheKey = `positions-${address}`;
 
@@ -102,12 +121,16 @@ export class MorphoAPIClient {
           });
 
           const positions = data?.userByAddress?.marketPositions || [];
+          this.chainResults.set(chainId, `${positions.length} positions`);
+
           if (positions.length > 0) {
             console.log(`Found ${positions.length} positions on chain ${chainId}`);
             allPositions.push(...positions);
           }
         } catch (chainError) {
-          console.log(`No positions on chain ${chainId}`, chainError);
+          const errorMsg = chainError instanceof Error ? chainError.message : 'error';
+          this.chainResults.set(chainId, `error: ${errorMsg}`);
+          console.error(`Error on chain ${chainId}:`, chainError);
         }
       }
 
