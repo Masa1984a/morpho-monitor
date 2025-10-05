@@ -1,5 +1,7 @@
 import { MiniKit } from '@worldcoin/minikit-js';
 
+const MINI_APP_ID = process.env.NEXT_PUBLIC_MINI_APP_ID;
+
 export interface WalletAuthResult {
   success: boolean;
   address?: string;
@@ -23,6 +25,14 @@ export class MiniKitService {
     if (this.isInitialized) return;
 
     try {
+      if (typeof window !== 'undefined') {
+        if (MINI_APP_ID) {
+          MiniKit.install({ app_id: MINI_APP_ID });
+        } else {
+          MiniKit.install();
+        }
+      }
+
       // Initialize MiniKit - don't throw if not installed, just log
       console.log('MiniKit.isInstalled():', MiniKit.isInstalled());
       this.isInitialized = true;

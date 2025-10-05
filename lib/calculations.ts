@@ -123,14 +123,17 @@ export function formatHealthFactor(value: number): string {
  * Format USD value
  */
 export function formatUsdValue(value: number): string {
-  if (value === 0) return '$0.00';
-  if (value < 0.01) return '<$0.01';
-  if (value < 1) return `$${value.toFixed(4)}`;
-  if (value < 1000) return `$${value.toFixed(2)}`;
-  if (value < 1000000) {
-    return `$${(value / 1000).toFixed(1)}K`;
+  const sign = value < 0 ? '-' : '';
+  const absolute = Math.abs(value);
+
+  if (absolute === 0) return '$0.00';
+  if (absolute < 0.01) return `${sign}<${'$'}0.01`;
+  if (absolute < 1) return `${sign}$${absolute.toFixed(4)}`;
+  if (absolute < 1000) return `${sign}$${absolute.toFixed(2)}`;
+  if (absolute < 1000000) {
+    return `${sign}$${(absolute / 1000).toFixed(1)}K`;
   }
-  return `$${(value / 1000000).toFixed(2)}M`;
+  return `${sign}$${(absolute / 1000000).toFixed(2)}M`;
 }
 
 /**
@@ -175,4 +178,59 @@ export function getHealthFactorBgColor(status: 'healthy' | 'warning' | 'danger')
     default:
       return 'bg-gray-100';
   }
+}
+
+export interface PositionTotals {
+  totalCollateralUsd: number;
+  totalBorrowUsd: number;
+  totalSuppliedUsd: number;
+  netSupplyUsd: number;
+}
+
+export function calculatePositionTotals(positions: MarketPosition[]): PositionTotals {
+  return positions.reduce<PositionTotals>((totals, position) => {
+    const { state } = position;
+    const collateral = state.collateralUsd || 0;
+    const borrow = state.borrowAssetsUsd || 0;
+    const supplied = state.supplyAssetsUsd || 0;
+
+    totals.totalCollateralUsd += collateral;
+    totals.totalBorrowUsd += borrow;
+    totals.totalSuppliedUsd += supplied;
+    totals.netSupplyUsd += supplied - borrow;
+
+    return totals;
+  }, {
+    totalCollateralUsd: 0,
+    totalBorrowUsd: 0,
+    totalSuppliedUsd: 0,
+    netSupplyUsd: 0,
+  });
+}
+
+export function separatePositions(positions: MarketPosition[]): {
+  lendingPositions: MarketPosition[];
+  borrowingPositions: MarketPosition[];
+} {
+  const lendingPositions: MarketPosition[] = [];
+  const borrowingPositions: MarketPosition[] = [];
+
+  positions.forEach(position => {
+    const { state } = position;
+
+    const supplyAmount = parseFloat(state.supplyAssets || '0');
+    const borrowAmount = parseFloat(state.borrowAssets || '0');
+    const supplyUsd = state.supplyAssetsUsd || 0;
+    const borrowUsd = state.borrowAssetsUsd || 0;
+
+    if (supplyAmount > 0 || supplyUsd > 0) {
+      lendingPositions.push(position);
+    }
+
+    if (borrowAmount > 0 || borrowUsd > 0) {
+      borrowingPositions.push(position);
+    }
+  });
+
+  return { lendingPositions, borrowingPositions };
 }

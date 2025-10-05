@@ -2,7 +2,12 @@
 
 import React from 'react';
 import { MarketPosition, HealthFactorData } from '@/types/morpho';
-import { formatUsdValue, formatTokenAmount, calculateHealthFactor, getHealthFactorColor } from '@/lib/calculations';
+import {
+  formatUsdValue,
+  formatTokenAmount,
+  calculateHealthFactor,
+  separatePositions,
+} from '@/lib/calculations';
 
 interface PositionDisplayProps {
   position: MarketPosition;
@@ -112,7 +117,7 @@ export function PositionList({ positions }: PositionListProps) {
   if (positions.length === 0) {
     return (
       <div className="bg-gray-50 rounded-lg p-8 text-center">
-        <p className="text-gray-600">No Morpho positions found on Base chain</p>
+        <p className="text-gray-600">No Morpho positions found on supported chains</p>
         <p className="text-sm text-gray-500 mt-2">
           Open positions on Morpho Blue to see them here
         </p>
@@ -120,11 +125,56 @@ export function PositionList({ positions }: PositionListProps) {
     );
   }
 
+  const { lendingPositions, borrowingPositions } = separatePositions(positions);
+
   return (
-    <div className="space-y-4">
-      {positions.map((position, index) => (
-        <PositionDisplay key={position.market.uniqueKey || index} position={position} />
-      ))}
+    <div className="space-y-6">
+      <PositionSection
+        title="Lending"
+        description="Deposits supplying liquidity to Morpho markets"
+        emptyMessage="No active lending positions"
+        positions={lendingPositions}
+      />
+
+      <PositionSection
+        title="Borrowing"
+        description="Loans currently taken against your collateral"
+        emptyMessage="No active borrowing positions"
+        positions={borrowingPositions}
+      />
     </div>
+  );
+}
+
+interface PositionSectionProps {
+  title: string;
+  description: string;
+  emptyMessage: string;
+  positions: MarketPosition[];
+}
+
+function PositionSection({ title, description, emptyMessage, positions }: PositionSectionProps) {
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+          <p className="text-xs text-gray-500">{description}</p>
+        </div>
+        <span className="text-xs text-gray-500">{positions.length} markets</span>
+      </div>
+
+      {positions.length === 0 ? (
+        <div className="bg-gray-50 rounded-lg p-6 text-center text-sm text-gray-500">
+          {emptyMessage}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {positions.map((position, index) => (
+            <PositionDisplay key={position.market.uniqueKey || index} position={position} />
+          ))}
+        </div>
+      )}
+    </section>
   );
 }

@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MiniKit } from '@worldcoin/minikit-js';
 import { MiniKitService } from '@/lib/minikit';
 import { MorphoAPIClient } from '@/lib/morpho-api';
-import { calculateAggregateHealthFactor } from '@/lib/calculations';
+import { calculateAggregateHealthFactor, calculatePositionTotals, separatePositions, formatUsdValue } from '@/lib/calculations';
 import { MarketPosition } from '@/types/morpho';
 import { WalletConnect } from '@/components/WalletConnect';
 import { LoadingState } from '@/components/LoadingState';
@@ -19,24 +19,29 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
+  const bypassWorldAppCheck = process.env.NEXT_PUBLIC_BYPASS_WORLD_APP_CHECK === 'true';
 
   // Check if running in World App
   useEffect(() => {
-    const checkWorldApp = () => {
-      try {
-        // MiniKitをインストール（World App IDは不要な場合が多い）
-        const installResult = MiniKit.install();
+    const checkWorldApp = async () => {
+      if (bypassWorldAppCheck) {
+        setDebugInfo('World App check bypassed via NEXT_PUBLIC_BYPASS_WORLD_APP_CHECK');
+        setIsWorldApp(true);
+        return;
+      }
 
+      try {
         const minikit = MiniKitService.getInstance();
+        await minikit.initialize();
         const result = minikit.isWorldApp();
 
         // デバッグ情報を収集
         const debug = {
-          installResult,
           isWorldApp: result,
           userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A',
           windowMiniKit: typeof window !== 'undefined' ? !!(window as any).MiniKit : false,
           miniKitInstalled: MiniKit.isInstalled(),
+          bypassWorldAppCheck,
           timestamp: new Date().toISOString()
         };
 
@@ -50,7 +55,7 @@ export default function Home() {
     };
 
     checkWorldApp();
-  }, []);
+  }, [bypassWorldAppCheck]);
 
   // Fetch positions when wallet is connected
   useEffect(() => {
@@ -103,7 +108,7 @@ export default function Home() {
   }
 
   // Show error if not in World App
-  if (!isWorldApp) {
+  if (!isWorldApp && !bypassWorldAppCheck) {
     return (
       <div className="flex items-center justify-center min-h-screen px-4">
         <div className="bg-white rounded-lg shadow-xl p-8 max-w-md text-center">
@@ -137,6 +142,11 @@ export default function Home() {
 
   // Calculate aggregate health factor
   const aggregateHealth = calculateAggregateHealthFactor(positions);
+  const totals = useMemo(() => calculatePositionTotals(positions), [positions]);
+  const { lendingPositions, borrowingPositions } = useMemo(
+    () => separatePositions(positions),
+    [positions]
+  );
 
   return (
     <div className="min-h-screen px-4 py-6">
@@ -178,6 +188,29 @@ export default function Home() {
             </div>
           )}
 
+          {positions.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <SummaryCard
+                label="Total Supplied"
+                helper={`${lendingPositions.length} markets`}
+                value={formatUsdValue(totals.totalSuppliedUsd)}
+                accent="from-morpho-blue/10 to-morpho-purple/10"
+              />
+              <SummaryCard
+                label="Total Borrowed"
+                helper={`${borrowingPositions.length} markets`}
+                value={formatUsdValue(totals.totalBorrowUsd)}
+                accent="from-warning/10 to-warning/5"
+              />
+              <SummaryCard
+                label="Net Exposure"
+                helper="Supplied - Borrowed"
+                value={formatUsdValue(totals.netSupplyUsd)}
+                accent="from-success/10 to-success/5"
+              />
+            </div>
+          )}
+
           {/* Positions */}
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
@@ -213,6 +246,23 @@ export default function Home() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+interface SummaryCardProps {
+  label: string;
+  value: string;
+  helper: string;
+  accent: string;
+}
+
+function SummaryCard({ label, value, helper, accent }: SummaryCardProps) {
+  return (
+    <div className={`rounded-xl border border-gray-200 bg-gradient-to-br ${accent} p-4 shadow-sm`}>
+      <p className="text-xs text-gray-500 uppercase tracking-wide">{label}</p>
+      <p className="mt-2 text-lg font-semibold text-gray-900">{value}</p>
+      <p className="mt-1 text-xs text-gray-500">{helper}</p>
     </div>
   );
 }
