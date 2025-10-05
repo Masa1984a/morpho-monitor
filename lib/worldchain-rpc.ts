@@ -16,7 +16,8 @@ const WORLD_CHAIN = {
 } as const;
 
 // Morpho Blue contract address on World Chain
-const MORPHO_BLUE_ADDRESS = '0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb';
+// 正しいアドレス（調査結果より: 0xBBBBB... は他チェーン用）
+const MORPHO_BLUE_ADDRESS = '0xe741bc7c34758b4cae05062794e8ae24978af432';
 
 // Known Market IDs on World Chain (from Morpho Blue)
 // You can find more at: https://app.morpho.org or by checking World Chain explorer
@@ -212,6 +213,8 @@ export class WorldChainRPCClient {
       this.tokenCache.set(tokenAddress, tokenInfo);
       return tokenInfo;
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      this.log(`  ERROR getting token info for ${tokenAddress}: ${errorMsg}`);
       console.error(`Failed to get token info for ${tokenAddress}:`, error);
       return {
         address: tokenAddress,
@@ -277,81 +280,96 @@ export class WorldChainRPCClient {
 
           if (position && (position[0] > 0n || position[1] > 0n || position[2] > 0n)) {
             this.log(`  ✓ Active position found!`);
-            // Get market parameters
-            const marketParams = await this.client.readContract({
-              address: MORPHO_BLUE_ADDRESS,
-              abi: MORPHO_BLUE_ABI,
-              functionName: 'idToMarketParams',
-              args: [marketId]
-            }) as any;
 
-            // Get market state
-            const marketInfo = await this.client.readContract({
-              address: MORPHO_BLUE_ADDRESS,
-              abi: MORPHO_BLUE_ABI,
-              functionName: 'market',
-              args: [marketId]
-            });
+            try {
+              // Get market parameters
+              const marketParams = await this.client.readContract({
+                address: MORPHO_BLUE_ADDRESS,
+                abi: MORPHO_BLUE_ABI,
+                functionName: 'idToMarketParams',
+                args: [marketId]
+              }) as any;
 
-            // Get token info
-            const [loanToken, collateralToken] = await Promise.all([
-              this.getTokenInfo(marketParams[0]),
-              this.getTokenInfo(marketParams[1])
-            ]);
+              this.log(`  Loan token: ${marketParams.loanToken}`);
+              this.log(`  Collateral token: ${marketParams.collateralToken}`);
+              this.log(`  LLTV: ${formatUnits(marketParams.lltv, 18)}`);
 
-            // Convert shares to assets
-            const supplyAssets = marketInfo[1] > 0n
-              ? (position[0] * marketInfo[0]) / marketInfo[1]
-              : 0n;
-            const borrowAssets = marketInfo[3] > 0n
-              ? (BigInt(position[1]) * marketInfo[2]) / marketInfo[3]
-              : 0n;
+              // Get market state
+              const marketInfo = await this.client.readContract({
+                address: MORPHO_BLUE_ADDRESS,
+                abi: MORPHO_BLUE_ABI,
+                functionName: 'market',
+                args: [marketId]
+              });
 
-            // Format amounts
-            const collateralAmount = formatUnits(position[2], collateralToken.decimals);
-            const supplyAmount = formatUnits(supplyAssets, loanToken.decimals);
-            const borrowAmount = formatUnits(borrowAssets, loanToken.decimals);
+              this.log(`  Market info received`);
 
-            // Get price for USD conversion (simplified - only WLD for now)
-            const wldPrice = await this.getWLDPrice();
+              // Get token info (using named properties, not array indices)
+              const [loanToken, collateralToken] = await Promise.all([
+                this.getTokenInfo(marketParams.loanToken),
+                this.getTokenInfo(marketParams.collateralToken)
+              ]);
 
-            // Calculate USD values (simplified)
-            const collateralUsd = collateralToken.symbol === 'WLD'
-              ? parseFloat(collateralAmount) * wldPrice
-              : 0;
-            const supplyAssetsUsd = loanToken.symbol === 'USDC'
-              ? parseFloat(supplyAmount)
-              : 0;
-            const borrowAssetsUsd = loanToken.symbol === 'USDC'
-              ? parseFloat(borrowAmount)
-              : 0;
+              this.log(`  Tokens: ${loanToken.symbol}/${collateralToken.symbol}`);
 
-            positions.push({
-              market: {
-                uniqueKey: marketId,
-                lltv: formatUnits(marketParams[4], 18),
-                loanAsset: {
-                  address: loanToken.address,
-                  symbol: loanToken.symbol,
-                  decimals: loanToken.decimals
+              // Convert shares to assets
+              const supplyAssets = marketInfo[1] > 0n
+                ? (position[0] * marketInfo[0]) / marketInfo[1]
+                : 0n;
+              const borrowAssets = marketInfo[3] > 0n
+                ? (BigInt(position[1]) * marketInfo[2]) / marketInfo[3]
+                : 0n;
+
+              // Format amounts
+              const collateralAmount = formatUnits(position[2], collateralToken.decimals);
+              const supplyAmount = formatUnits(supplyAssets, loanToken.decimals);
+              const borrowAmount = formatUnits(borrowAssets, loanToken.decimals);
+
+              // Get price for USD conversion (simplified - only WLD for now)
+              const wldPrice = await this.getWLDPrice();
+
+              // Calculate USD values (simplified)
+              const collateralUsd = collateralToken.symbol === 'WLD'
+                ? parseFloat(collateralAmount) * wldPrice
+                : 0;
+              const supplyAssetsUsd = loanToken.symbol === 'USDC'
+                ? parseFloat(supplyAmount)
+                : 0;
+              const borrowAssetsUsd = loanToken.symbol === 'USDC'
+                ? parseFloat(borrowAmount)
+                : 0;
+
+              positions.push({
+                market: {
+                  uniqueKey: marketId,
+                  lltv: formatUnits(marketParams.lltv, 18),
+                  loanAsset: {
+                    address: loanToken.address,
+                    symbol: loanToken.symbol,
+                    decimals: loanToken.decimals
+                  },
+                  collateralAsset: {
+                    address: collateralToken.address,
+                    symbol: collateralToken.symbol,
+                    decimals: collateralToken.decimals
+                  }
                 },
-                collateralAsset: {
-                  address: collateralToken.address,
-                  symbol: collateralToken.symbol,
-                  decimals: collateralToken.decimals
+                state: {
+                  collateral: collateralAmount,
+                  collateralUsd,
+                  borrowAssets: borrowAmount,
+                  borrowAssetsUsd,
+                  borrowShares: position[1].toString(),
+                  supplyAssets: supplyAmount,
+                  supplyAssetsUsd,
+                  supplyShares: position[0].toString()
                 }
-              },
-              state: {
-                collateral: collateralAmount,
-                collateralUsd,
-                borrowAssets: borrowAmount,
-                borrowAssetsUsd,
-                borrowShares: position[1].toString(),
-                supplyAssets: supplyAmount,
-                supplyAssetsUsd,
-                supplyShares: position[0].toString()
-              }
-            });
+              });
+
+              this.log(`  ✓ Position processed successfully!`);
+            } catch (innerError) {
+              this.log(`  ERROR processing position: ${innerError instanceof Error ? innerError.message : String(innerError)}`);
+            }
           } else {
             this.log(`  No position (all values are 0)`);
           }
