@@ -202,8 +202,9 @@ export default function Home() {
 
             {/* Chain Debug Info */}
             {chainDebug && (
-              <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600">
-                <strong>Chains checked:</strong> {chainDebug}
+              <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600 whitespace-pre-wrap">
+                <strong>Debug Info:</strong><br />
+                {chainDebug}
               </div>
             )}
           </div>

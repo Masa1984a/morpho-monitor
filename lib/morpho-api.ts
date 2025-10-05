@@ -1,31 +1,15 @@
-import { ApolloClient, InMemoryCache, gql, NormalizedCacheObject } from '@apollo/client';
-import { UserByAddressResponse, MarketPosition } from '@/types/morpho';
-
-const MORPHO_API_URL = process.env.NEXT_PUBLIC_MORPHO_API_URL || 'https://api.morpho.org/graphql';
-// Support multiple chains: Base, Optimism, World Chain, Ethereum
-const SUPPORTED_CHAINS = [8453, 10, 480, 1]; // Base, Optimism, World Chain, Ethereum
+import { MarketPosition } from '@/types/morpho';
+import { WorldChainRPCClient } from './worldchain-rpc';
 
 export class MorphoAPIClient {
   private static instance: MorphoAPIClient;
-  private apolloClient: ApolloClient<NormalizedCacheObject>;
+  private worldChainClient: WorldChainRPCClient;
   private lastFetchTime: Map<string, number> = new Map();
   private cachedData: Map<string, any> = new Map();
   private cacheDuration = parseInt(process.env.NEXT_PUBLIC_CACHE_DURATION || '60') * 1000;
 
   private constructor() {
-    this.apolloClient = new ApolloClient({
-      uri: MORPHO_API_URL,
-      cache: new InMemoryCache(),
-      defaultOptions: {
-        watchQuery: {
-          fetchPolicy: 'cache-first',
-        },
-        query: {
-          fetchPolicy: 'network-only',
-          errorPolicy: 'all',
-        },
-      },
-    });
+    this.worldChainClient = WorldChainRPCClient.getInstance();
   }
 
   static getInstance(): MorphoAPIClient {
@@ -41,111 +25,62 @@ export class MorphoAPIClient {
     return Date.now() - lastFetch < this.cacheDuration;
   }
 
-  private chainResults: Map<number, string> = new Map();
+  private debugInfo: string = '';
+  private detailedDebug: string[] = [];
 
   getChainDebugInfo(): string {
-    const results: string[] = [];
-    const chainNames: {[key: number]: string} = {
-      8453: 'Base',
-      10: 'Optimism',
-      480: 'World Chain',
-      1: 'Ethereum'
-    };
-
-    SUPPORTED_CHAINS.forEach(chainId => {
-      const result = this.chainResults.get(chainId) || 'not queried';
-      results.push(`${chainNames[chainId]}: ${result}`);
-    });
-
-    return results.join(', ');
+    if (this.detailedDebug.length > 0) {
+      return this.debugInfo + '\n' + this.detailedDebug.join('\n');
+    }
+    return this.debugInfo;
   }
 
   async getUserPositions(address: string): Promise<MarketPosition[]> {
     const cacheKey = `positions-${address}`;
+    this.detailedDebug = [];
 
     // Check cache
     if (this.isCacheValid(cacheKey)) {
       const cached = this.cachedData.get(cacheKey);
       if (cached) {
         console.log('Returning cached positions data');
+        this.detailedDebug.push('Using cached data');
         return cached;
       }
     }
 
-    const USER_POSITIONS_QUERY = gql`
-      query UserPosition($address: String!, $chainId: Int!) {
-        userByAddress(chainId: $chainId, address: $address) {
-          address
-          marketPositions {
-            market {
-              uniqueKey
-              lltv
-              loanAsset {
-                address
-                symbol
-                decimals
-              }
-              collateralAsset {
-                address
-                symbol
-                decimals
-              }
-            }
-            state {
-              collateral
-              collateralUsd
-              borrowAssets
-              borrowAssetsUsd
-              borrowShares
-              supplyAssets
-              supplyAssetsUsd
-              supplyShares
-            }
-          }
-        }
-      }
-    `;
-
     try {
-      // 全チェーンから並列でデータ取得
-      const allPositions: MarketPosition[] = [];
+      console.log('Fetching positions from World Chain RPC...');
+      this.detailedDebug.push(`Querying address: ${address}`);
+      this.detailedDebug.push(`Morpho Blue contract: ${process.env.NEXT_PUBLIC_MORPHO_BLUE_ADDRESS || '0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb'}`);
 
-      for (const chainId of SUPPORTED_CHAINS) {
-        try {
-          const { data } = await this.apolloClient.query<UserByAddressResponse>({
-            query: USER_POSITIONS_QUERY,
-            variables: {
-              address: address.toLowerCase(),
-              chainId,
-            },
-          });
+      const positions = await this.worldChainClient.getUserPositions(address);
 
-          const positions = data?.userByAddress?.marketPositions || [];
-          this.chainResults.set(chainId, `${positions.length} positions`);
+      this.debugInfo = `World Chain: ${positions.length} positions found (via RPC)`;
+      this.detailedDebug.push(`Result: ${positions.length} positions found`);
 
-          if (positions.length > 0) {
-            console.log(`Found ${positions.length} positions on chain ${chainId}`);
-            allPositions.push(...positions);
-          }
-        } catch (chainError) {
-          const errorMsg = chainError instanceof Error ? chainError.message : 'error';
-          this.chainResults.set(chainId, `error: ${errorMsg}`);
-          console.error(`Error on chain ${chainId}:`, chainError);
-        }
+      if (positions.length === 0) {
+        this.detailedDebug.push('No events found for this address on World Chain');
+        this.detailedDebug.push('Check: 1) Correct address? 2) Correct chain? 3) Contract address correct?');
       }
+
+      console.log(this.debugInfo);
 
       // Update cache
-      this.cachedData.set(cacheKey, allPositions);
+      this.cachedData.set(cacheKey, positions);
       this.lastFetchTime.set(cacheKey, Date.now());
 
-      return allPositions;
+      return positions;
     } catch (error) {
       console.error('Error fetching user positions:', error);
+      this.debugInfo = `World Chain: error - ${error instanceof Error ? error.message : 'unknown'}`;
+      this.detailedDebug.push(`ERROR: ${error instanceof Error ? error.stack : String(error)}`);
 
       // Return cached data if available on error
       const cached = this.cachedData.get(cacheKey);
       if (cached) {
         console.log('Returning cached data after error');
+        this.detailedDebug.push('Returned cached data after error');
         return cached;
       }
 
