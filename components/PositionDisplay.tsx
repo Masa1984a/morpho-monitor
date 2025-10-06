@@ -114,9 +114,12 @@ export function PositionList({ positions, thresholds }: PositionListProps) {
   if (positions.length === 0) {
     return (
       <div className="bg-gray-50 rounded-lg p-8 text-center">
-        <p className="text-gray-600">No WLD/USDC positions found on World Chain</p>
+        <p className="text-gray-600">No Morpho positions found on World Chain</p>
         <p className="text-sm text-gray-500 mt-2">
-          Open WLD/USDC positions on Morpho Blue to see them here
+          Open positions on Morpho Blue to see them here
+        </p>
+        <p className="text-xs text-gray-400 mt-1">
+          Supported markets: WLD/USDC, WETH/USDC, WBTC/USDC, WBTC/WETH
         </p>
       </div>
     );

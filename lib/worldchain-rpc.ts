@@ -1,5 +1,6 @@
 import { createPublicClient, http, formatUnits } from 'viem';
 import { MarketPosition } from '@/types/morpho';
+import { getConfirmedMarketIds, TOKEN_ADDRESSES } from '@/constants/markets';
 
 // World Chain configuration
 const WORLD_CHAIN = {
@@ -16,16 +17,10 @@ const WORLD_CHAIN = {
 } as const;
 
 // Morpho Blue contract address on World Chain
-// Correct address (0xBBBBB... is for other chains)
 const MORPHO_BLUE_ADDRESS = '0xe741bc7c34758b4cae05062794e8ae24978af432';
 
-// Known Market IDs on World Chain (from Morpho Blue)
-// You can find more at: https://app.morpho.org or by checking World Chain explorer
-const KNOWN_MARKET_IDS: `0x${string}`[] = [
-  // Main market provided by user
-  '0xba0ae12a5cdbf9a458566be68055f30c859771612950b5e43428a51becc6f6e9',
-  // Add more market IDs here as needed
-];
+// Get known market IDs from configuration
+const KNOWN_MARKET_IDS: `0x${string}`[] = getConfirmedMarketIds();
 
 // Minimal Morpho Blue ABI for reading positions
 const MORPHO_BLUE_ABI = [
@@ -295,18 +290,26 @@ export class WorldChainRPCClient {
   }
 
   async getWLDPrice(): Promise<number> {
-    const cacheKey = 'WLD-USD';
+    return this.getTokenPrice('WLD');
+  }
+
+  /**
+   * Get token price from World App API
+   * Supports: WLD, WETH, WBTC
+   */
+  async getTokenPrice(symbol: string): Promise<number> {
+    const cacheKey = `${symbol}-USD`;
     const cached = this.priceCache.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < this.PRICE_CACHE_DURATION) {
-      this.log(`  Using cached WLD price: $${cached.price}`);
+      this.log(`  Using cached ${symbol} price: $${cached.price}`);
       return cached.price;
     }
 
     try {
-      this.log(`  Fetching WLD price from API...`);
+      this.log(`  Fetching ${symbol} price from API...`);
       const response = await fetch(
-        'https://app-backend.worldcoin.dev/public/v1/miniapps/prices?cryptoCurrencies=WLD&fiatCurrencies=USD'
+        `https://app-backend.worldcoin.dev/public/v1/miniapps/prices?cryptoCurrencies=${symbol}&fiatCurrencies=USD`
       );
 
       if (!response.ok) {
@@ -317,18 +320,38 @@ export class WorldChainRPCClient {
       const data: PriceResponse = await response.json();
       this.log(`  API response received: ${JSON.stringify(data).substring(0, 200)}`);
 
-      const priceData = data.result.prices.WLD.USD;
+      const priceData = data.result.prices[symbol]?.USD;
+      if (!priceData) {
+        this.log(`  No price data for ${symbol}`);
+        return cached?.price || 0;
+      }
+
       const price = parseFloat(priceData.amount) / Math.pow(10, priceData.decimals);
 
-      this.log(`  WLD price calculated: $${price}`);
+      this.log(`  ${symbol} price calculated: $${price}`);
       this.priceCache.set(cacheKey, { price, timestamp: Date.now() });
       return price;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      this.log(`  ERROR fetching WLD price: ${errorMsg}`);
-      console.error('Failed to fetch WLD price:', error);
+      this.log(`  ERROR fetching ${symbol} price: ${errorMsg}`);
+      console.error(`Failed to fetch ${symbol} price:`, error);
       return cached?.price || 0;
     }
+  }
+
+  /**
+   * Get USD value for a token amount
+   * Handles price fetching based on token symbol
+   */
+  async getTokenUsdValue(tokenSymbol: string, amount: number): Promise<number> {
+    // USDC is pegged to USD, so 1 USDC = $1
+    if (tokenSymbol === 'USDC') {
+      return amount;
+    }
+
+    // For other tokens, fetch the price
+    const price = await this.getTokenPrice(tokenSymbol);
+    return amount * price;
   }
 
   // No longer needed - using known market IDs instead of event log scanning
@@ -412,32 +435,37 @@ export class WorldChainRPCClient {
 
               this.log(`  Formatted - Supply: ${supplyAmount}, Borrow: ${borrowAmount}, Collateral: ${collateralAmount}`);
 
-              // Get price from oracle (WLD/USDC price)
-              let wldPrice = await this.getPriceFromOracle(
+              // Calculate USD values for all tokens
+              this.log(`  Calculating USD values for ${collateralToken.symbol}/${loanToken.symbol} market`);
+
+              // Try oracle first for collateral price
+              let collateralPrice = await this.getPriceFromOracle(
                 marketParams.oracle,
                 loanToken.decimals,
                 collateralToken.decimals
               );
 
               // If oracle fails, try API as fallback
-              if (wldPrice === 0) {
-                this.log(`  Oracle price unavailable, trying API...`);
-                wldPrice = await this.getWLDPrice();
+              if (collateralPrice === 0 && collateralToken.symbol !== 'USDC') {
+                this.log(`  Oracle price unavailable, trying API for ${collateralToken.symbol}...`);
+                collateralPrice = await this.getTokenPrice(collateralToken.symbol);
               }
 
-              this.log(`  Final WLD Price: $${wldPrice}`);
+              this.log(`  Collateral (${collateralToken.symbol}) price: $${collateralPrice}`);
 
-              // Calculate USD values (simplified)
-              this.log(`  Checking collateral: symbol='${collateralToken.symbol}' (is WLD: ${collateralToken.symbol === 'WLD'})`);
-              const collateralUsd = collateralToken.symbol === 'WLD'
-                ? parseFloat(collateralAmount) * wldPrice
-                : 0;
-              const supplyAssetsUsd = loanToken.symbol === 'USDC'
-                ? parseFloat(supplyAmount)
-                : 0;
-              const borrowAssetsUsd = loanToken.symbol === 'USDC'
-                ? parseFloat(borrowAmount)
-                : 0;
+              // Calculate USD values
+              const collateralUsd = await this.getTokenUsdValue(
+                collateralToken.symbol,
+                parseFloat(collateralAmount)
+              );
+              const supplyAssetsUsd = await this.getTokenUsdValue(
+                loanToken.symbol,
+                parseFloat(supplyAmount)
+              );
+              const borrowAssetsUsd = await this.getTokenUsdValue(
+                loanToken.symbol,
+                parseFloat(borrowAmount)
+              );
 
               this.log(`  USD values - Collateral: $${collateralUsd}, Supply: $${supplyAssetsUsd}, Borrow: $${borrowAssetsUsd}`);
 
