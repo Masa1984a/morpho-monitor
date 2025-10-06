@@ -28,6 +28,7 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [showSimulation, setShowSimulation] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<MarketPosition | null>(null);
+  const [debugCopied, setDebugCopied] = useState(false);
 
   // Settings hook
   const { settings, isLoaded: settingsLoaded, saveSettings, resetSettings, defaultSettings } = useSettings();
@@ -110,6 +111,16 @@ export default function Home() {
     setPositions([]);
     setError(null);
     setLastUpdate(null);
+  };
+
+  const handleCopyDebugInfo = async () => {
+    try {
+      await navigator.clipboard.writeText(chainDebug);
+      setDebugCopied(true);
+      setTimeout(() => setDebugCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy debug info:', err);
+    }
   };
 
   const handleSimulatePosition = (position: MarketPosition) => {
@@ -236,9 +247,19 @@ export default function Home() {
 
             {/* Chain Debug Info */}
             {settings.showDebugInfo && chainDebug && (
-              <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600 whitespace-pre-wrap">
-                <strong>Debug Info:</strong><br />
-                {chainDebug}
+              <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600">
+                <div className="flex justify-between items-center mb-2">
+                  <strong>Debug Info:</strong>
+                  <button
+                    onClick={handleCopyDebugInfo}
+                    className="px-3 py-1 bg-morpho-blue text-white rounded hover:bg-morpho-purple transition-colors text-xs font-medium"
+                  >
+                    {debugCopied ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+                <div className="whitespace-pre-wrap">
+                  {chainDebug}
+                </div>
               </div>
             )}
           </div>
