@@ -290,13 +290,14 @@ export class WorldChainRPCClient {
     }
   }
 
-  // Fetch World Coin API supported tokens (WLD, USDC) in batch
+  // Fetch World Coin API supported tokens (WLD, USDC) in batch via proxy
   private async fetchWorldCoinPrices(): Promise<void> {
     try {
-      this.log(`  Fetching WLD, USDC prices from World Coin API (batch)...`);
+      this.log(`  Fetching WLD, USDC prices from World Coin API (batch via proxy)...`);
 
+      // Use our Next.js API Route as proxy to avoid CORS issues
       const response = await fetch(
-        `https://app-backend.worldcoin.dev/public/v1/miniapps/prices?cryptoCurrencies=WLD,USDC&fiatCurrencies=USD`
+        `/api/prices?cryptoCurrencies=WLD,USDC&fiatCurrencies=USD`
       );
 
       if (response.ok) {
@@ -319,10 +320,10 @@ export class WorldChainRPCClient {
           this.log(`  USDC price from World Coin API: $${price}`);
         }
       } else {
-        this.log(`  World Coin API batch error: ${response.status} ${response.statusText}`);
+        this.log(`  World Coin API proxy error: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      this.log(`  World Coin API batch failed: ${error instanceof Error ? error.message : String(error)}`);
+      this.log(`  World Coin API proxy failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
