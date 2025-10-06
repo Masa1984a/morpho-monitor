@@ -1,5 +1,6 @@
 import { createPublicClient, http, formatUnits } from 'viem';
 import { MarketPosition } from '@/types/morpho';
+import { getActiveMarketIds } from './market-config';
 
 // World Chain configuration
 const WORLD_CHAIN = {
@@ -19,13 +20,8 @@ const WORLD_CHAIN = {
 // Correct address (0xBBBBB... is for other chains)
 const MORPHO_BLUE_ADDRESS = '0xe741bc7c34758b4cae05062794e8ae24978af432';
 
-// Known Market IDs on World Chain (from Morpho Blue)
-// You can find more at: https://app.morpho.org or by checking World Chain explorer
-const KNOWN_MARKET_IDS: `0x${string}`[] = [
-  // Main market provided by user
-  '0xba0ae12a5cdbf9a458566be68055f30c859771612950b5e43428a51becc6f6e9',
-  // Add more market IDs here as needed
-];
+// Get known market IDs from configuration
+const KNOWN_MARKET_IDS: `0x${string}`[] = getActiveMarketIds();
 
 // Minimal Morpho Blue ABI for reading positions
 const MORPHO_BLUE_ABI = [
@@ -294,41 +290,94 @@ export class WorldChainRPCClient {
     }
   }
 
-  async getWLDPrice(): Promise<number> {
-    const cacheKey = 'WLD-USD';
+  async getTokenPrice(symbol: string): Promise<number> {
+    // USDC is a stablecoin, always $1.00
+    if (symbol === 'USDC') {
+      return 1.0;
+    }
+
+    const cacheKey = `${symbol}-USD`;
     const cached = this.priceCache.get(cacheKey);
 
     if (cached && Date.now() - cached.timestamp < this.PRICE_CACHE_DURATION) {
-      this.log(`  Using cached WLD price: $${cached.price}`);
+      this.log(`  Using cached ${symbol} price: $${cached.price}`);
       return cached.price;
     }
 
+    // Try World Coin API first
     try {
-      this.log(`  Fetching WLD price from API...`);
+      this.log(`  Fetching ${symbol} price from World Coin API...`);
+
+      // Map token symbols to API currency codes
+      const currencyMap: { [key: string]: string } = {
+        'WLD': 'WLD',
+        'WETH': 'ETH',
+        'WBTC': 'BTC'
+      };
+
+      const apiCurrency = currencyMap[symbol] || symbol;
+
       const response = await fetch(
-        'https://app-backend.worldcoin.dev/public/v1/miniapps/prices?cryptoCurrencies=WLD&fiatCurrencies=USD'
+        `https://app-backend.worldcoin.dev/public/v1/miniapps/prices?cryptoCurrencies=${apiCurrency}&fiatCurrencies=USD`
       );
 
-      if (!response.ok) {
-        this.log(`  API response error: ${response.status} ${response.statusText}`);
+      if (response.ok) {
+        const data: PriceResponse = await response.json();
+        this.log(`  World Coin API response: ${JSON.stringify(data).substring(0, 200)}`);
+
+        const priceData = data.result.prices[apiCurrency]?.USD;
+        if (priceData) {
+          const price = parseFloat(priceData.amount) / Math.pow(10, priceData.decimals);
+          this.log(`  ${symbol} price from World Coin API: $${price}`);
+          this.priceCache.set(cacheKey, { price, timestamp: Date.now() });
+          return price;
+        }
+      } else {
+        this.log(`  World Coin API error: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      this.log(`  World Coin API failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+
+    // Fallback to CoinGecko API
+    try {
+      this.log(`  Trying CoinGecko API as fallback...`);
+
+      const coinGeckoIds: { [key: string]: string } = {
+        'WLD': 'worldcoin-wld',
+        'WETH': 'weth',
+        'WBTC': 'wrapped-bitcoin'
+      };
+
+      const coinId = coinGeckoIds[symbol];
+      if (!coinId) {
+        this.log(`  No CoinGecko ID mapping for ${symbol}`);
         return cached?.price || 0;
       }
 
-      const data: PriceResponse = await response.json();
-      this.log(`  API response received: ${JSON.stringify(data).substring(0, 200)}`);
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`
+      );
 
-      const priceData = data.result.prices.WLD.USD;
-      const price = parseFloat(priceData.amount) / Math.pow(10, priceData.decimals);
+      if (response.ok) {
+        const data = await response.json();
+        const price = data[coinId]?.usd;
 
-      this.log(`  WLD price calculated: $${price}`);
-      this.priceCache.set(cacheKey, { price, timestamp: Date.now() });
-      return price;
+        if (price && typeof price === 'number') {
+          this.log(`  ${symbol} price from CoinGecko: $${price}`);
+          this.priceCache.set(cacheKey, { price, timestamp: Date.now() });
+          return price;
+        }
+      } else {
+        this.log(`  CoinGecko API error: ${response.status} ${response.statusText}`);
+      }
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      this.log(`  ERROR fetching WLD price: ${errorMsg}`);
-      console.error('Failed to fetch WLD price:', error);
-      return cached?.price || 0;
+      this.log(`  CoinGecko API failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+
+    // If all APIs fail, return cached price or 0
+    this.log(`  ⚠️  All price APIs failed for ${symbol}, returning ${cached?.price || 0}`);
+    return cached?.price || 0;
   }
 
   // No longer needed - using known market IDs instead of event log scanning
@@ -412,32 +461,34 @@ export class WorldChainRPCClient {
 
               this.log(`  Formatted - Supply: ${supplyAmount}, Borrow: ${borrowAmount}, Collateral: ${collateralAmount}`);
 
-              // Get price from oracle (WLD/USDC price)
-              let wldPrice = await this.getPriceFromOracle(
-                marketParams.oracle,
-                loanToken.decimals,
-                collateralToken.decimals
-              );
+              // Get prices for collateral and loan tokens
+              let collateralPrice = 0;
+              let loanPrice = 0;
 
-              // If oracle fails, try API as fallback
-              if (wldPrice === 0) {
-                this.log(`  Oracle price unavailable, trying API...`);
-                wldPrice = await this.getWLDPrice();
+              // Try oracle first if available (for collateral/loan price ratio)
+              if (marketParams.oracle !== '0x0000000000000000000000000000000000000000') {
+                const oraclePrice = await this.getPriceFromOracle(
+                  marketParams.oracle,
+                  loanToken.decimals,
+                  collateralToken.decimals
+                );
+                if (oraclePrice > 0) {
+                  this.log(`  Using oracle price ratio: ${oraclePrice}`);
+                  // Oracle gives us loan/collateral ratio, we need absolute prices
+                  // For now, fall back to API for absolute prices
+                }
               }
 
-              this.log(`  Final WLD Price: $${wldPrice}`);
+              // Get token prices from API
+              collateralPrice = await this.getTokenPrice(collateralToken.symbol);
+              loanPrice = await this.getTokenPrice(loanToken.symbol);
 
-              // Calculate USD values (simplified)
-              this.log(`  Checking collateral: symbol='${collateralToken.symbol}' (is WLD: ${collateralToken.symbol === 'WLD'})`);
-              const collateralUsd = collateralToken.symbol === 'WLD'
-                ? parseFloat(collateralAmount) * wldPrice
-                : 0;
-              const supplyAssetsUsd = loanToken.symbol === 'USDC'
-                ? parseFloat(supplyAmount)
-                : 0;
-              const borrowAssetsUsd = loanToken.symbol === 'USDC'
-                ? parseFloat(borrowAmount)
-                : 0;
+              this.log(`  Token prices - ${collateralToken.symbol}: $${collateralPrice}, ${loanToken.symbol}: $${loanPrice}`);
+
+              // Calculate USD values
+              const collateralUsd = parseFloat(collateralAmount) * collateralPrice;
+              const supplyAssetsUsd = parseFloat(supplyAmount) * loanPrice;
+              const borrowAssetsUsd = parseFloat(borrowAmount) * loanPrice;
 
               this.log(`  USD values - Collateral: $${collateralUsd}, Supply: $${supplyAssetsUsd}, Borrow: $${borrowAssetsUsd}`);
 

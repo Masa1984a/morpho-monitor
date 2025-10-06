@@ -27,6 +27,7 @@ export default function Home() {
   const [chainDebug, setChainDebug] = useState<string>('');
   const [showSettings, setShowSettings] = useState(false);
   const [showSimulation, setShowSimulation] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState<MarketPosition | null>(null);
 
   // Settings hook
   const { settings, isLoaded: settingsLoaded, saveSettings, resetSettings, defaultSettings } = useSettings();
@@ -111,6 +112,16 @@ export default function Home() {
     setLastUpdate(null);
   };
 
+  const handleSimulatePosition = (position: MarketPosition) => {
+    setSelectedPosition(position);
+    setShowSimulation(true);
+  };
+
+  const handleCloseSimulation = () => {
+    setShowSimulation(false);
+    setSelectedPosition(null);
+  };
+
   // Calculate aggregate health factor with thresholds (before early returns)
   const aggregateHealth = walletAddress ? calculateAggregateHealthFactor(positions, settings) : null;
 
@@ -175,16 +186,6 @@ export default function Home() {
         </div>
         <div className="flex items-center space-x-3">
           <button
-            onClick={() => setShowSimulation(true)}
-            disabled={positions.length === 0}
-            className="p-2 text-gray-600 hover:text-morpho-blue hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Simulation"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-          </button>
-          <button
             onClick={() => setShowSettings(true)}
             className="p-2 text-gray-600 hover:text-morpho-blue hover:bg-gray-100 rounded-lg transition-colors"
             title="Settings"
@@ -215,16 +216,6 @@ export default function Home() {
         <LoadingState message="Fetching your Morpho positions..." />
       ) : (
         <>
-          {/* Aggregate Health Factor */}
-          {aggregateHealth && (
-            <div className="mb-6">
-              <HealthFactorCard
-                healthFactor={aggregateHealth}
-                title="Overall Health Factor"
-              />
-            </div>
-          )}
-
           {/* Positions */}
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
@@ -241,7 +232,7 @@ export default function Home() {
                 <span>Refresh</span>
               </button>
             </div>
-            <PositionList positions={positions} thresholds={settings} />
+            <PositionList positions={positions} thresholds={settings} onSimulatePosition={handleSimulatePosition} />
 
             {/* Chain Debug Info */}
             {settings.showDebugInfo && chainDebug && (
@@ -282,12 +273,17 @@ export default function Home() {
       {/* Simulation Modal */}
       <SimulationModal
         isOpen={showSimulation}
-        onClose={() => setShowSimulation(false)}
-        position={positions.length > 0 ? positions[0] : null}
-        wldPrice={
-          positions.length > 0 && parseFloat(positions[0].state.collateral) > 0
-            ? positions[0].state.collateralUsd / parseFloat(positions[0].state.collateral)
+        onClose={handleCloseSimulation}
+        position={selectedPosition}
+        collateralPrice={
+          selectedPosition && parseFloat(selectedPosition.state.collateral) > 0
+            ? selectedPosition.state.collateralUsd / parseFloat(selectedPosition.state.collateral)
             : 0
+        }
+        loanPrice={
+          selectedPosition && parseFloat(selectedPosition.state.borrowAssets) > 0
+            ? selectedPosition.state.borrowAssetsUsd / parseFloat(selectedPosition.state.borrowAssets)
+            : 1
         }
         thresholds={settings}
       />

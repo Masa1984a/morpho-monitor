@@ -1,17 +1,31 @@
 # CTS (Collateral Tracking System)
 
-A World App mini-app for monitoring WLD/USDC borrow health factor on Morpho Blue (World Chain).
+A World App mini-app for monitoring Morpho Blue borrow positions and health factors on World Chain.
 
 ## Features
 
 - 🔗 **World App Integration**: Seamless wallet connection through World App
-- 📊 **WLD/USDC Position Monitoring**: Track your WLD/USDC Morpho positions on World Chain
+- 📊 **Multi-Market Position Monitoring**: Track multiple Morpho positions across different token pairs
 - 🏥 **Health Factor Tracking**: Real-time health factor monitoring with customizable thresholds
 - ⚠️ **Configurable Alerts**: Set custom warning and danger thresholds
 - 🔔 **Notifications**: In-app notifications when positions reach threshold levels
 - 🧮 **Position Simulator**: Simulate collateral and borrow adjustments
 - 📱 **Mobile Optimized**: Designed for World App's WebView environment
 - ⚙️ **Settings**: Customize thresholds, notification preferences, and debug info visibility
+
+## Supported Market Pairs
+
+Currently supported (active):
+- **WLD → USDC**: Collateralize WLD to borrow USDC
+
+Ready to support (requires market IDs):
+- **WETH → USDC**: Collateralize WETH to borrow USDC
+- **WETH → WLD**: Collateralize WETH to borrow WLD
+- **WBTC → WLD**: Collateralize WBTC to borrow WLD
+- **WBTC → WETH**: Collateralize WBTC to borrow WETH
+- **WBTC → USDC**: Collateralize WBTC to borrow USDC
+
+To enable additional markets, update `lib/market-config.ts` with actual market IDs from [Morpho Blue](https://app.morpho.org) or [World Chain Explorer](https://worldscan.org).
 
 ## Health Factor
 

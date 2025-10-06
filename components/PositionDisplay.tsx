@@ -7,22 +7,36 @@ import { formatUsdValue, formatTokenAmount, calculateHealthFactor, getHealthFact
 interface PositionDisplayProps {
   position: MarketPosition;
   thresholds?: HealthFactorThresholds;
+  onSimulate?: () => void;
 }
 
-export function PositionDisplay({ position, thresholds }: PositionDisplayProps) {
+export function PositionDisplay({ position, thresholds, onSimulate }: PositionDisplayProps) {
   const { market, state } = position;
   const healthFactor = calculateHealthFactor(position, thresholds);
 
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
       <div className="flex justify-between items-start mb-4">
-        <div>
+        <div className="flex-1">
           <h4 className="text-lg font-semibold text-gray-900">
             {market.collateralAsset.symbol} / {market.loanAsset.symbol}
           </h4>
           <p className="text-xs text-gray-500 mt-1">Market ID: {market.uniqueKey.slice(0, 8)}...</p>
         </div>
-        <HealthBadge healthFactor={healthFactor} />
+        <div className="flex items-center space-x-2">
+          {onSimulate && (
+            <button
+              onClick={onSimulate}
+              className="p-2 text-gray-600 hover:text-morpho-blue hover:bg-gray-100 rounded-lg transition-colors"
+              title="Simulate position changes"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </button>
+          )}
+          <HealthBadge healthFactor={healthFactor} />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -108,15 +122,19 @@ function HealthBadge({ healthFactor }: HealthBadgeProps) {
 interface PositionListProps {
   positions: MarketPosition[];
   thresholds?: HealthFactorThresholds;
+  onSimulatePosition?: (position: MarketPosition) => void;
 }
 
-export function PositionList({ positions, thresholds }: PositionListProps) {
+export function PositionList({ positions, thresholds, onSimulatePosition }: PositionListProps) {
   if (positions.length === 0) {
     return (
       <div className="bg-gray-50 rounded-lg p-8 text-center">
-        <p className="text-gray-600">No WLD/USDC positions found on World Chain</p>
+        <p className="text-gray-600">No positions found on World Chain</p>
         <p className="text-sm text-gray-500 mt-2">
-          Open WLD/USDC positions on Morpho Blue to see them here
+          Open positions on Morpho Blue to see them here
+        </p>
+        <p className="text-xs text-gray-400 mt-3">
+          Supported pairs: WETH→USDC, WETH→WLD, WBTC→WLD, WBTC→WETH, WBTC→USDC, WLD→USDC
         </p>
       </div>
     );
@@ -125,7 +143,12 @@ export function PositionList({ positions, thresholds }: PositionListProps) {
   return (
     <div className="space-y-4">
       {positions.map((position, index) => (
-        <PositionDisplay key={position.market.uniqueKey || index} position={position} thresholds={thresholds} />
+        <PositionDisplay
+          key={position.market.uniqueKey || index}
+          position={position}
+          thresholds={thresholds}
+          onSimulate={onSimulatePosition ? () => onSimulatePosition(position) : undefined}
+        />
       ))}
     </div>
   );

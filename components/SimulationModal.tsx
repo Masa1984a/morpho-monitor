@@ -8,7 +8,8 @@ interface SimulationModalProps {
   isOpen: boolean;
   onClose: () => void;
   position: MarketPosition | null;
-  wldPrice: number;
+  collateralPrice: number;
+  loanPrice: number;
   thresholds: HealthFactorThresholds;
 }
 
@@ -16,7 +17,8 @@ export function SimulationModal({
   isOpen,
   onClose,
   position,
-  wldPrice,
+  collateralPrice,
+  loanPrice,
   thresholds,
 }: SimulationModalProps) {
   const [newCollateral, setNewCollateral] = useState(0);
@@ -35,17 +37,19 @@ export function SimulationModal({
   const currentCollateral = parseFloat(position.state.collateral);
   const currentBorrow = parseFloat(position.state.borrowAssets);
   const lltv = parseFloat(position.market.lltv);
+  const collateralSymbol = position.market.collateralAsset.symbol;
+  const loanSymbol = position.market.loanAsset.symbol;
 
   // Calculate current HF
-  const currentCollateralUsd = currentCollateral * wldPrice;
-  const currentBorrowUsd = currentBorrow;
+  const currentCollateralUsd = currentCollateral * collateralPrice;
+  const currentBorrowUsd = currentBorrow * loanPrice;
   const currentHF = currentBorrowUsd > 0
     ? (currentCollateralUsd * lltv) / currentBorrowUsd
     : Infinity;
 
   // Calculate simulated HF
-  const simCollateralUsd = newCollateral * wldPrice;
-  const simBorrowUsd = newBorrow;
+  const simCollateralUsd = newCollateral * collateralPrice;
+  const simBorrowUsd = newBorrow * loanPrice;
   const simHF = simBorrowUsd > 0
     ? (simCollateralUsd * lltv) / simBorrowUsd
     : Infinity;
@@ -88,19 +92,19 @@ export function SimulationModal({
         <div className="space-y-6">
           {/* Current Position */}
           <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Current Position</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Current Position - {collateralSymbol}/{loanSymbol}</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-gray-600">Collateral (WLD)</p>
+                <p className="text-xs text-gray-600">Collateral ({collateralSymbol})</p>
                 <p className="text-lg font-semibold text-gray-900">
-                  {currentCollateral.toFixed(2)} WLD
+                  {currentCollateral.toFixed(4)} {collateralSymbol}
                 </p>
                 <p className="text-xs text-gray-500">${currentCollateralUsd.toFixed(2)}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-600">Borrowed (USDC)</p>
+                <p className="text-xs text-gray-600">Borrowed ({loanSymbol})</p>
                 <p className="text-lg font-semibold text-gray-900">
-                  {currentBorrow.toFixed(2)} USDC
+                  {currentBorrow.toFixed(4)} {loanSymbol}
                 </p>
                 <p className="text-xs text-gray-500">${currentBorrowUsd.toFixed(2)}</p>
               </div>
@@ -122,27 +126,27 @@ export function SimulationModal({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-900">Adjust Position</h3>
 
-            {/* WLD Collateral Adjustment */}
+            {/* Collateral Adjustment */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-sm text-gray-700">Collateral (WLD)</label>
+                <label className="text-sm text-gray-700">Collateral ({collateralSymbol})</label>
                 <div className="flex items-center space-x-2">
                   <input
                     type="number"
-                    step="0.1"
+                    step="0.0001"
                     min="0"
-                    value={newCollateral.toFixed(2)}
+                    value={newCollateral.toFixed(4)}
                     onChange={(e) => setNewCollateral(Math.max(0, parseFloat(e.target.value) || 0))}
                     className="w-32 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-morpho-blue focus:border-transparent"
                   />
-                  <span className="text-xs text-gray-500">WLD</span>
+                  <span className="text-xs text-gray-500">{collateralSymbol}</span>
                 </div>
               </div>
               <input
                 type="range"
                 min="0"
                 max={currentCollateral * 2}
-                step="0.1"
+                step={currentCollateral * 0.01}
                 value={newCollateral}
                 onChange={(e) => setNewCollateral(parseFloat(e.target.value))}
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-morpho-blue"
@@ -150,34 +154,34 @@ export function SimulationModal({
               <div className="flex justify-between text-xs text-gray-500 mt-1">
                 <span>0</span>
                 <span className={collateralChange >= 0 ? 'text-success' : 'text-danger'}>
-                  {collateralChange >= 0 ? '+' : ''}{collateralChange.toFixed(2)} WLD
+                  {collateralChange >= 0 ? '+' : ''}{collateralChange.toFixed(4)} {collateralSymbol}
                 </span>
-                <span>{(currentCollateral * 2).toFixed(0)}</span>
+                <span>{(currentCollateral * 2).toFixed(2)}</span>
               </div>
             </div>
 
-            {/* USDC Borrow Adjustment */}
+            {/* Borrow Adjustment */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-sm text-gray-700">Borrowed (USDC)</label>
+                <label className="text-sm text-gray-700">Borrowed ({loanSymbol})</label>
                 <div className="flex items-center space-x-2">
                   <input
                     type="number"
-                    step="0.1"
+                    step="0.0001"
                     min="0"
-                    max={currentCollateralUsd}
-                    value={newBorrow.toFixed(2)}
-                    onChange={(e) => setNewBorrow(Math.max(0, Math.min(currentCollateralUsd, parseFloat(e.target.value) || 0)))}
+                    max={simCollateralUsd / loanPrice}
+                    value={newBorrow.toFixed(4)}
+                    onChange={(e) => setNewBorrow(Math.max(0, Math.min(simCollateralUsd / loanPrice, parseFloat(e.target.value) || 0)))}
                     className="w-32 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-morpho-blue focus:border-transparent"
                   />
-                  <span className="text-xs text-gray-500">USDC</span>
+                  <span className="text-xs text-gray-500">{loanSymbol}</span>
                 </div>
               </div>
               <input
                 type="range"
                 min="0"
-                max={currentCollateralUsd}
-                step="0.1"
+                max={simCollateralUsd / loanPrice}
+                step={(simCollateralUsd / loanPrice) * 0.01}
                 value={newBorrow}
                 onChange={(e) => setNewBorrow(parseFloat(e.target.value))}
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-morpho-blue"
@@ -185,9 +189,9 @@ export function SimulationModal({
               <div className="flex justify-between text-xs text-gray-500 mt-1">
                 <span>0 (Repay All)</span>
                 <span className={borrowChange <= 0 ? 'text-success' : 'text-danger'}>
-                  {borrowChange <= 0 ? '' : '+'}{borrowChange.toFixed(2)} USDC
+                  {borrowChange <= 0 ? '' : '+'}{borrowChange.toFixed(4)} {loanSymbol}
                 </span>
-                <span>{currentCollateralUsd.toFixed(0)}</span>
+                <span>{(simCollateralUsd / loanPrice).toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -251,11 +255,11 @@ export function SimulationModal({
             <div className="mt-4 pt-4 border-t border-gray-300/50 grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p className="text-gray-600">New Collateral</p>
-                <p className="font-semibold">{newCollateral.toFixed(2)} WLD (${simCollateralUsd.toFixed(2)})</p>
+                <p className="font-semibold">{newCollateral.toFixed(4)} {collateralSymbol} (${simCollateralUsd.toFixed(2)})</p>
               </div>
               <div>
                 <p className="text-gray-600">New Borrow</p>
-                <p className="font-semibold">{newBorrow.toFixed(2)} USDC (${simBorrowUsd.toFixed(2)})</p>
+                <p className="font-semibold">{newBorrow.toFixed(4)} {loanSymbol} (${simBorrowUsd.toFixed(2)})</p>
               </div>
               <div>
                 <p className="text-gray-600">LTV</p>
