@@ -73,7 +73,7 @@ export function SimulationModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 overflow-y-auto">
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 my-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-900">Position Simulator</h2>
@@ -165,9 +165,9 @@ export function SimulationModal({
                     type="number"
                     step="0.1"
                     min="0"
-                    max={currentBorrow}
+                    max={currentCollateralUsd}
                     value={newBorrow.toFixed(2)}
-                    onChange={(e) => setNewBorrow(Math.max(0, Math.min(currentBorrow, parseFloat(e.target.value) || 0)))}
+                    onChange={(e) => setNewBorrow(Math.max(0, Math.min(currentCollateralUsd, parseFloat(e.target.value) || 0)))}
                     className="w-32 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-morpho-blue focus:border-transparent"
                   />
                   <span className="text-xs text-gray-500">USDC</span>
@@ -176,7 +176,7 @@ export function SimulationModal({
               <input
                 type="range"
                 min="0"
-                max={currentBorrow}
+                max={currentCollateralUsd}
                 step="0.1"
                 value={newBorrow}
                 onChange={(e) => setNewBorrow(parseFloat(e.target.value))}
@@ -187,7 +187,7 @@ export function SimulationModal({
                 <span className={borrowChange <= 0 ? 'text-success' : 'text-danger'}>
                   {borrowChange <= 0 ? '' : '+'}{borrowChange.toFixed(2)} USDC
                 </span>
-                <span>{currentBorrow.toFixed(0)}</span>
+                <span>{currentCollateralUsd.toFixed(0)}</span>
               </div>
             </div>
           </div>
