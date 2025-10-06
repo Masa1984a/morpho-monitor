@@ -290,94 +290,104 @@ export class WorldChainRPCClient {
     }
   }
 
-  async getTokenPrice(symbol: string): Promise<number> {
-    // USDC is a stablecoin, always $1.00
-    if (symbol === 'USDC') {
-      return 1.0;
-    }
+  // Fetch World Coin API supported tokens (WLD, USDC) in batch
+  private async fetchWorldCoinPrices(): Promise<void> {
+    try {
+      this.log(`  Fetching WLD, USDC prices from World Coin API (batch)...`);
 
+      const response = await fetch(
+        `https://app-backend.worldcoin.dev/public/v1/miniapps/prices?cryptoCurrencies=WLD,USDC&fiatCurrencies=USD`
+      );
+
+      if (response.ok) {
+        const data: PriceResponse = await response.json();
+        this.log(`  World Coin API batch response: ${JSON.stringify(data).substring(0, 200)}...`);
+
+        // Cache WLD price
+        const wldPrice = data.result.prices.WLD?.USD;
+        if (wldPrice) {
+          const price = parseFloat(wldPrice.amount) / Math.pow(10, wldPrice.decimals);
+          this.priceCache.set('WLD-USD', { price, timestamp: Date.now() });
+          this.log(`  WLD price from World Coin API: $${price}`);
+        }
+
+        // Cache USDC price
+        const usdcPrice = data.result.prices.USDC?.USD;
+        if (usdcPrice) {
+          const price = parseFloat(usdcPrice.amount) / Math.pow(10, usdcPrice.decimals);
+          this.priceCache.set('USDC-USD', { price, timestamp: Date.now() });
+          this.log(`  USDC price from World Coin API: $${price}`);
+        }
+      } else {
+        this.log(`  World Coin API batch error: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      this.log(`  World Coin API batch failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  // Fetch CoinGecko prices for WBTC and WETH
+  private async fetchCoinGeckoPrices(): Promise<void> {
+    try {
+      this.log(`  Fetching WBTC, WETH prices from CoinGecko API (batch)...`);
+
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=wrapped-bitcoin,weth&vs_currencies=usd`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        this.log(`  CoinGecko API batch response received`);
+
+        // Cache WBTC price
+        const wbtcPrice = data['wrapped-bitcoin']?.usd;
+        if (wbtcPrice && typeof wbtcPrice === 'number') {
+          this.priceCache.set('WBTC-USD', { price: wbtcPrice, timestamp: Date.now() });
+          this.log(`  WBTC price from CoinGecko: $${wbtcPrice}`);
+        }
+
+        // Cache WETH price
+        const wethPrice = data.weth?.usd;
+        if (wethPrice && typeof wethPrice === 'number') {
+          this.priceCache.set('WETH-USD', { price: wethPrice, timestamp: Date.now() });
+          this.log(`  WETH price from CoinGecko: $${wethPrice}`);
+        }
+      } else {
+        this.log(`  CoinGecko API batch error: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      this.log(`  CoinGecko API batch failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  async getTokenPrice(symbol: string): Promise<number> {
     const cacheKey = `${symbol}-USD`;
     const cached = this.priceCache.get(cacheKey);
 
+    // Return cached price if still valid
     if (cached && Date.now() - cached.timestamp < this.PRICE_CACHE_DURATION) {
       this.log(`  Using cached ${symbol} price: $${cached.price}`);
       return cached.price;
     }
 
-    // Try World Coin API first
-    try {
-      this.log(`  Fetching ${symbol} price from World Coin API...`);
-
-      // Map token symbols to API currency codes
-      const currencyMap: { [key: string]: string } = {
-        'WLD': 'WLD',
-        'WETH': 'ETH',
-        'WBTC': 'BTC'
-      };
-
-      const apiCurrency = currencyMap[symbol] || symbol;
-
-      const response = await fetch(
-        `https://app-backend.worldcoin.dev/public/v1/miniapps/prices?cryptoCurrencies=${apiCurrency}&fiatCurrencies=USD`
-      );
-
-      if (response.ok) {
-        const data: PriceResponse = await response.json();
-        this.log(`  World Coin API response: ${JSON.stringify(data).substring(0, 200)}`);
-
-        const priceData = data.result.prices[apiCurrency]?.USD;
-        if (priceData) {
-          const price = parseFloat(priceData.amount) / Math.pow(10, priceData.decimals);
-          this.log(`  ${symbol} price from World Coin API: $${price}`);
-          this.priceCache.set(cacheKey, { price, timestamp: Date.now() });
-          return price;
-        }
-      } else {
-        this.log(`  World Coin API error: ${response.status} ${response.statusText}`);
-      }
-    } catch (error) {
-      this.log(`  World Coin API failed: ${error instanceof Error ? error.message : String(error)}`);
+    // If not cached or expired, fetch prices based on token
+    if (symbol === 'WLD' || symbol === 'USDC') {
+      this.log(`  ${symbol} price not in cache or expired, fetching from World Coin API...`);
+      await this.fetchWorldCoinPrices();
+    } else if (symbol === 'WBTC' || symbol === 'WETH') {
+      this.log(`  ${symbol} price not in cache or expired, fetching from CoinGecko API...`);
+      await this.fetchCoinGeckoPrices();
     }
 
-    // Fallback to CoinGecko API
-    try {
-      this.log(`  Trying CoinGecko API as fallback...`);
-
-      const coinGeckoIds: { [key: string]: string } = {
-        'WLD': 'worldcoin-wld',
-        'WETH': 'weth',
-        'WBTC': 'wrapped-bitcoin'
-      };
-
-      const coinId = coinGeckoIds[symbol];
-      if (!coinId) {
-        this.log(`  No CoinGecko ID mapping for ${symbol}`);
-        return cached?.price || 0;
-      }
-
-      const response = await fetch(
-        `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const price = data[coinId]?.usd;
-
-        if (price && typeof price === 'number') {
-          this.log(`  ${symbol} price from CoinGecko: $${price}`);
-          this.priceCache.set(cacheKey, { price, timestamp: Date.now() });
-          return price;
-        }
-      } else {
-        this.log(`  CoinGecko API error: ${response.status} ${response.statusText}`);
-      }
-    } catch (error) {
-      this.log(`  CoinGecko API failed: ${error instanceof Error ? error.message : String(error)}`);
+    // Try to get the price from cache after fetching
+    const newCached = this.priceCache.get(cacheKey);
+    if (newCached) {
+      return newCached.price;
     }
 
-    // If all APIs fail, return cached price or 0
-    this.log(`  ⚠️  All price APIs failed for ${symbol}, returning ${cached?.price || 0}`);
-    return cached?.price || 0;
+    // If still not available, return 0
+    this.log(`  ⚠️  Failed to get ${symbol} price, returning 0`);
+    return 0;
   }
 
   // No longer needed - using known market IDs instead of event log scanning
