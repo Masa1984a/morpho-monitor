@@ -13,6 +13,7 @@ import { PositionList } from '@/components/PositionDisplay';
 import { SettingsModal } from '@/components/SettingsModal';
 import { SimulationModal } from '@/components/SimulationModal';
 import { NotificationToast } from '@/components/NotificationToast';
+import { CryptoInfoModal } from '@/components/CryptoInfoModal';
 import { useSettings } from '@/hooks/useSettings';
 import { useHealthMonitor } from '@/hooks/useHealthMonitor';
 
@@ -29,6 +30,8 @@ export default function Home() {
   const [showSimulation, setShowSimulation] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<MarketPosition | null>(null);
   const [debugCopied, setDebugCopied] = useState(false);
+  const [showCryptoInfo, setShowCryptoInfo] = useState(false);
+  const [selectedCrypto, setSelectedCrypto] = useState<string>('');
 
   // Settings hook
   const { settings, isLoaded: settingsLoaded, saveSettings, resetSettings, defaultSettings } = useSettings();
@@ -133,6 +136,16 @@ export default function Home() {
     setSelectedPosition(null);
   };
 
+  const handleCryptoClick = (symbol: string) => {
+    setSelectedCrypto(symbol);
+    setShowCryptoInfo(true);
+  };
+
+  const handleCloseCryptoInfo = () => {
+    setShowCryptoInfo(false);
+    setSelectedCrypto('');
+  };
+
   // Calculate aggregate health factor with thresholds (before early returns)
   const aggregateHealth = walletAddress ? calculateAggregateHealthFactor(positions, settings) : null;
 
@@ -227,6 +240,21 @@ export default function Home() {
         <LoadingState message="Fetching your Morpho positions..." />
       ) : (
         <>
+          {/* Crypto Buttons */}
+          <div className="mb-6">
+            <div className="grid grid-cols-4 gap-3">
+              {['WLD', 'USDC', 'WBTC', 'WETH'].map((symbol) => (
+                <button
+                  key={symbol}
+                  onClick={() => handleCryptoClick(symbol)}
+                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all px-4 py-3 text-center border-2 border-transparent hover:border-morpho-blue"
+                >
+                  <span className="font-semibold text-gray-900">{symbol}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Positions */}
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
@@ -307,6 +335,13 @@ export default function Home() {
             : 1
         }
         thresholds={settings}
+      />
+
+      {/* Crypto Info Modal */}
+      <CryptoInfoModal
+        isOpen={showCryptoInfo}
+        onClose={handleCloseCryptoInfo}
+        symbol={selectedCrypto}
       />
     </div>
   );
