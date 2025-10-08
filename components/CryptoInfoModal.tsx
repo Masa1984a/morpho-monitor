@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { TradingViewChart } from './TradingViewChart';
 
 interface CryptoSummary {
   asset: {
@@ -121,6 +122,13 @@ export function CryptoInfoModal({ isOpen, onClose, symbol }: CryptoInfoModalProp
 
         {/* Content */}
         <div className="p-6">
+          {/* TradingView Chart */}
+          {symbol && (
+            <div className="mb-6">
+              <TradingViewChart symbol={symbol} />
+            </div>
+          )}
+
           {loading && (
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-morpho-blue"></div>
