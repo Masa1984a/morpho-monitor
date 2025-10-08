@@ -6,12 +6,12 @@ interface TradingViewChartProps {
   symbol: string;
 }
 
-// Map crypto symbols to TradingView symbols
-const symbolMapping: Record<string, string> = {
-  WLD: 'BINANCE:WLDUSD',
-  USDC: 'BINANCE:USDCUSD',
-  WBTC: 'BINANCE:BTCUSD', // WBTC tracks BTC price
-  WETH: 'BINANCE:ETHUSD', // WETH tracks ETH price
+// Map crypto symbols to TradingView symbols with fallbacks
+const symbolMapping: Record<string, string[]> = {
+  WLD: ['BINANCE:WLDUSD', 'COINBASE:WLDUSD', 'KRAKEN:WLDUSD'],
+  USDC: ['KRAKEN:USDCUSD', 'BITSTAMP:USDCUSD', 'USDCUSD'],
+  WBTC: ['BINANCE:BTCUSD', 'COINBASE:BTCUSD', 'KRAKEN:BTCUSD'], // WBTC tracks BTC price
+  WETH: ['BINANCE:ETHUSD', 'COINBASE:ETHUSD', 'KRAKEN:ETHUSD'], // WETH tracks ETH price
 };
 
 export function TradingViewChart({ symbol }: TradingViewChartProps) {
@@ -22,7 +22,9 @@ export function TradingViewChart({ symbol }: TradingViewChartProps) {
   useEffect(() => {
     if (!symbol || !containerRef.current) return;
 
-    const tradingViewSymbol = symbolMapping[symbol] || `BINANCE:${symbol}USD`;
+    // Get the first (primary) symbol from the mapping, or fallback to BINANCE
+    const symbolOptions = symbolMapping[symbol];
+    const tradingViewSymbol = symbolOptions ? symbolOptions[0] : `BINANCE:${symbol}USD`;
 
     // Function to initialize the widget
     const initWidget = () => {
@@ -124,7 +126,7 @@ export function TradingViewChart({ symbol }: TradingViewChartProps) {
         className="w-full h-[400px] rounded-lg overflow-hidden"
       />
       <div className="text-xs text-gray-500 text-center mt-2">
-        {symbolMapping[symbol] || `${symbol}/USD`} Chart
+        {symbol}/USD Chart {symbolMapping[symbol] && `(${symbolMapping[symbol][0].split(':')[0]})`}
       </div>
     </div>
   );
