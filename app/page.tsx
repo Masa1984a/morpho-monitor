@@ -32,6 +32,7 @@ export default function Home() {
   const [debugCopied, setDebugCopied] = useState(false);
   const [showCryptoInfo, setShowCryptoInfo] = useState(false);
   const [selectedCrypto, setSelectedCrypto] = useState<string>('');
+  const [cryptoPrices, setCryptoPrices] = useState<Record<string, number>>({});
 
   // Settings hook
   const { settings, isLoaded: settingsLoaded, saveSettings, resetSettings, defaultSettings } = useSettings();
@@ -72,7 +73,23 @@ export default function Home() {
   useEffect(() => {
     if (walletAddress) {
       fetchPositions();
+      fetchCryptoPrices();
     }
+  }, [walletAddress]);
+
+  // Fetch crypto prices periodically
+  useEffect(() => {
+    if (!walletAddress) return;
+
+    // Fetch immediately
+    fetchCryptoPrices();
+
+    // Then fetch every 60 seconds
+    const interval = setInterval(() => {
+      fetchCryptoPrices();
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, [walletAddress]);
 
   const fetchPositions = async () => {
@@ -94,6 +111,18 @@ export default function Home() {
       setChainDebug(morphoClient.getChainDebugInfo());
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCryptoPrices = async () => {
+    try {
+      const response = await fetch('/api/prices');
+      if (response.ok) {
+        const prices = await response.json();
+        setCryptoPrices(prices);
+      }
+    } catch (err) {
+      console.error('Error fetching crypto prices:', err);
     }
   };
 
@@ -247,9 +276,19 @@ export default function Home() {
                 <button
                   key={symbol}
                   onClick={() => handleCryptoClick(symbol)}
-                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all px-4 py-3 text-center border-2 border-transparent hover:border-morpho-blue"
+                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all px-3 py-3 text-center border-2 border-transparent hover:border-morpho-blue"
                 >
-                  <span className="font-semibold text-gray-900">{symbol}</span>
+                  <div className="font-semibold text-gray-900 mb-1">{symbol}</div>
+                  {cryptoPrices[symbol] ? (
+                    <div className="text-xs text-gray-600">
+                      ${cryptoPrices[symbol].toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: symbol === 'USDC' ? 4 : 2,
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-gray-400">...</div>
+                  )}
                 </button>
               ))}
             </div>
