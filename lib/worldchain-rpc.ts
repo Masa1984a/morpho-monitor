@@ -147,20 +147,12 @@ const ORACLE_ABI = [
   }
 ] as const;
 
-// World App Price API
+// Unified Price API Response
 interface PriceResponse {
-  result: {
-    prices: {
-      [crypto: string]: {
-        [fiat: string]: {
-          asset: string;
-          amount: string;
-          decimals: number;
-          symbol: string;
-        };
-      };
-    };
-  };
+  WLD?: number;
+  USDC?: number;
+  WBTC?: number;
+  WETH?: number;
 }
 
 interface TokenInfo {
@@ -290,75 +282,56 @@ export class WorldChainRPCClient {
     }
   }
 
-  // Fetch World Coin API supported tokens (WLD, USDC) in batch via proxy
-  private async fetchWorldCoinPrices(): Promise<void> {
+  // Fetch all crypto prices via unified API proxy
+  private async fetchAllPrices(): Promise<void> {
     try {
-      this.log(`  Fetching WLD, USDC prices from World Coin API (batch via proxy)...`);
+      this.log(`  Fetching all crypto prices (WLD, USDC, WBTC, WETH) via unified API...`);
 
       // Use our Next.js API Route as proxy to avoid CORS issues
-      const response = await fetch(
-        `/api/prices?cryptoCurrencies=WLD,USDC&fiatCurrencies=USD`
-      );
+      const response = await fetch('/api/prices');
 
       if (response.ok) {
         const data: PriceResponse = await response.json();
-        this.log(`  World Coin API batch response: ${JSON.stringify(data).substring(0, 200)}...`);
+        this.log(`  Unified API response: ${JSON.stringify(data).substring(0, 200)}...`);
 
-        // Cache WLD price
-        const wldPrice = data.result.prices.WLD?.USD;
-        if (wldPrice) {
-          const price = parseFloat(wldPrice.amount) / Math.pow(10, wldPrice.decimals);
-          this.priceCache.set('WLD-USD', { price, timestamp: Date.now() });
-          this.log(`  WLD price from World Coin API: $${price}`);
+        // Cache all prices from unified API
+        const timestamp = Date.now();
+
+        if (data.WLD && typeof data.WLD === 'number') {
+          this.priceCache.set('WLD-USD', { price: data.WLD, timestamp });
+          this.log(`  WLD price: $${data.WLD}`);
         }
 
-        // Cache USDC price
-        const usdcPrice = data.result.prices.USDC?.USD;
-        if (usdcPrice) {
-          const price = parseFloat(usdcPrice.amount) / Math.pow(10, usdcPrice.decimals);
-          this.priceCache.set('USDC-USD', { price, timestamp: Date.now() });
-          this.log(`  USDC price from World Coin API: $${price}`);
+        if (data.USDC && typeof data.USDC === 'number') {
+          this.priceCache.set('USDC-USD', { price: data.USDC, timestamp });
+          this.log(`  USDC price: $${data.USDC}`);
+        }
+
+        if (data.WBTC && typeof data.WBTC === 'number') {
+          this.priceCache.set('WBTC-USD', { price: data.WBTC, timestamp });
+          this.log(`  WBTC price: $${data.WBTC}`);
+        }
+
+        if (data.WETH && typeof data.WETH === 'number') {
+          this.priceCache.set('WETH-USD', { price: data.WETH, timestamp });
+          this.log(`  WETH price: $${data.WETH}`);
         }
       } else {
-        this.log(`  World Coin API proxy error: ${response.status} ${response.statusText}`);
+        this.log(`  Unified API proxy error: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      this.log(`  World Coin API proxy failed: ${error instanceof Error ? error.message : String(error)}`);
+      this.log(`  Unified API proxy failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
-  // Fetch CoinGecko prices for WBTC and WETH
+  // Keep old method name for backwards compatibility
+  private async fetchWorldCoinPrices(): Promise<void> {
+    await this.fetchAllPrices();
+  }
+
+  // Keep old method name for backwards compatibility
   private async fetchCoinGeckoPrices(): Promise<void> {
-    try {
-      this.log(`  Fetching WBTC, WETH prices from CoinGecko API (batch)...`);
-
-      const response = await fetch(
-        `https://api.coingecko.com/api/v3/simple/price?ids=wrapped-bitcoin,weth&vs_currencies=usd`
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        this.log(`  CoinGecko API batch response received`);
-
-        // Cache WBTC price
-        const wbtcPrice = data['wrapped-bitcoin']?.usd;
-        if (wbtcPrice && typeof wbtcPrice === 'number') {
-          this.priceCache.set('WBTC-USD', { price: wbtcPrice, timestamp: Date.now() });
-          this.log(`  WBTC price from CoinGecko: $${wbtcPrice}`);
-        }
-
-        // Cache WETH price
-        const wethPrice = data.weth?.usd;
-        if (wethPrice && typeof wethPrice === 'number') {
-          this.priceCache.set('WETH-USD', { price: wethPrice, timestamp: Date.now() });
-          this.log(`  WETH price from CoinGecko: $${wethPrice}`);
-        }
-      } else {
-        this.log(`  CoinGecko API batch error: ${response.status} ${response.statusText}`);
-      }
-    } catch (error) {
-      this.log(`  CoinGecko API batch failed: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    await this.fetchAllPrices();
   }
 
   async getTokenPrice(symbol: string): Promise<number> {
@@ -371,14 +344,9 @@ export class WorldChainRPCClient {
       return cached.price;
     }
 
-    // If not cached or expired, fetch prices based on token
-    if (symbol === 'WLD' || symbol === 'USDC') {
-      this.log(`  ${symbol} price not in cache or expired, fetching from World Coin API...`);
-      await this.fetchWorldCoinPrices();
-    } else if (symbol === 'WBTC' || symbol === 'WETH') {
-      this.log(`  ${symbol} price not in cache or expired, fetching from CoinGecko API...`);
-      await this.fetchCoinGeckoPrices();
-    }
+    // If not cached or expired, fetch all prices from unified API
+    this.log(`  ${symbol} price not in cache or expired, fetching from unified API...`);
+    await this.fetchAllPrices();
 
     // Try to get the price from cache after fetching
     const newCached = this.priceCache.get(cacheKey);
