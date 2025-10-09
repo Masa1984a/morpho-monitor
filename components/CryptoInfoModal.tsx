@@ -10,6 +10,7 @@ interface CryptoSummary {
     name: string;
     category: string;
   };
+  language: string;
   overview_md: string;
   market_1d_md: string;
   market_30d_md: string;
@@ -43,24 +44,41 @@ interface CryptoInfoModalProps {
   symbol: string;
 }
 
+type Language = 'en' | 'ja' | 'zh-CN' | 'zh-TW' | 'ko' | 'th' | 'pt' | 'es';
+
+const LANGUAGES: { code: Language; label: string; flag: string }[] = [
+  { code: 'en', label: 'English', flag: '🇺🇸' },
+  { code: 'ja', label: '日本語', flag: '🇯🇵' },
+  { code: 'zh-CN', label: '简体中文', flag: '🇨🇳' },
+  { code: 'zh-TW', label: '繁體中文', flag: '🇹🇼' },
+  { code: 'ko', label: '한국어', flag: '🇰🇷' },
+  { code: 'th', label: 'ไทย', flag: '🇹🇭' },
+  { code: 'pt', label: 'Português', flag: '🇵🇹' },
+  { code: 'es', label: 'Español', flag: '🇪🇸' },
+];
+
 export function CryptoInfoModal({ isOpen, onClose, symbol }: CryptoInfoModalProps) {
   const [data, setData] = useState<CryptoSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedLang, setSelectedLang] = useState<Language>('en');
 
   useEffect(() => {
     if (isOpen && symbol) {
-      fetchCryptoData();
+      fetchCryptoData(selectedLang);
+    } else if (!isOpen) {
+      // Reset language to English when modal closes
+      setSelectedLang('en');
     }
-  }, [isOpen, symbol]);
+  }, [isOpen, symbol, selectedLang]);
 
-  const fetchCryptoData = async () => {
+  const fetchCryptoData = async (lang: Language) => {
     setLoading(true);
     setError(null);
 
     try {
-      console.log(`Fetching crypto data for ${symbol}...`);
-      const response = await fetch(`/api/crypto/${symbol}`);
+      console.log(`Fetching crypto data for ${symbol} in ${lang}...`);
+      const response = await fetch(`/api/crypto-summary/${symbol}?lang=${lang}`);
 
       console.log('Response status:', response.status);
 
@@ -80,6 +98,10 @@ export function CryptoInfoModal({ isOpen, onClose, symbol }: CryptoInfoModalProp
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLanguageChange = (lang: Language) => {
+    setSelectedLang(lang);
   };
 
   if (!isOpen) return null;
@@ -140,6 +162,28 @@ export function CryptoInfoModal({ isOpen, onClose, symbol }: CryptoInfoModalProp
             </div>
           )}
 
+          {/* Language Selector */}
+          <div className="mb-6">
+            <h4 className="text-xs font-semibold text-gray-600 mb-2">Language</h4>
+            <div className="flex flex-wrap gap-2">
+              {LANGUAGES.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => handleLanguageChange(lang.code)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    selectedLang === lang.code
+                      ? 'bg-morpho-blue text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                  disabled={loading}
+                >
+                  <span className="mr-1">{lang.flag}</span>
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {loading && (
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-morpho-blue"></div>
@@ -151,7 +195,7 @@ export function CryptoInfoModal({ isOpen, onClose, symbol }: CryptoInfoModalProp
               <p className="text-danger font-semibold text-sm mb-2">Error Loading Crypto Data</p>
               <p className="text-danger text-sm">{error}</p>
               <button
-                onClick={fetchCryptoData}
+                onClick={() => fetchCryptoData(selectedLang)}
                 className="mt-3 px-4 py-2 bg-morpho-blue text-white rounded-lg hover:bg-morpho-purple transition-colors text-sm font-medium"
               >
                 Retry
