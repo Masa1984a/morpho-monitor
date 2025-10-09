@@ -278,7 +278,18 @@ export default function Home() {
                   onClick={() => handleCryptoClick(symbol)}
                   className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all px-3 py-3 text-center border-2 border-transparent hover:border-morpho-blue"
                 >
-                  <div className="font-semibold text-gray-900 mb-1">{symbol}</div>
+                  <div className="flex items-center justify-center mb-1">
+                    <img
+                      src={`/crypto-logos/${symbol}.png`}
+                      alt={`${symbol} logo`}
+                      className="w-5 h-5 mr-2"
+                      onError={(e) => {
+                        // Hide image if it fails to load
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                    <span className="font-semibold text-gray-900">{symbol}</span>
+                  </div>
                   {cryptoPrices[symbol] ? (
                     <div className="text-xs text-gray-600">
                       ${cryptoPrices[symbol].toLocaleString('en-US', {

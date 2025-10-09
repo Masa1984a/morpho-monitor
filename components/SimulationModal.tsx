@@ -76,6 +76,36 @@ export function SimulationModal({
     setNewBorrow(currentBorrow);
   };
 
+  // Calculate required collateral for target HF (keeping borrow constant)
+  const calculateCollateralForHF = (targetHF: number) => {
+    if (newBorrow === 0) return currentCollateral;
+    // targetHF = (collateral * collateralPrice * lltv) / (borrow * loanPrice)
+    // collateral = (targetHF * borrow * loanPrice) / (collateralPrice * lltv)
+    const requiredCollateral = (targetHF * newBorrow * loanPrice) / (collateralPrice * lltv);
+    return Math.max(0, requiredCollateral);
+  };
+
+  // Calculate required borrow for target HF (keeping collateral constant)
+  const calculateBorrowForHF = (targetHF: number) => {
+    if (targetHF === 0) return 0;
+    // targetHF = (collateral * collateralPrice * lltv) / (borrow * loanPrice)
+    // borrow = (collateral * collateralPrice * lltv) / (targetHF * loanPrice)
+    const requiredBorrow = (newCollateral * collateralPrice * lltv) / (targetHF * loanPrice);
+    const maxBorrow = simCollateralUsd / loanPrice;
+    return Math.max(0, Math.min(maxBorrow, requiredBorrow));
+  };
+
+  // Handler for HF target buttons
+  const handleSetCollateralForHF = (targetHF: number) => {
+    const newColl = calculateCollateralForHF(targetHF);
+    setNewCollateral(newColl);
+  };
+
+  const handleSetBorrowForHF = (targetHF: number) => {
+    const newBorr = calculateBorrowForHF(targetHF);
+    setNewBorrow(newBorr);
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 overflow-y-auto">
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 my-8">
@@ -142,6 +172,23 @@ export function SimulationModal({
                   <span className="text-xs text-gray-500">{collateralSymbol}</span>
                 </div>
               </div>
+              <div className="flex items-center space-x-2 mb-2">
+                <span className="text-xs text-gray-600">Target HF:</span>
+                <button
+                  onClick={() => handleSetCollateralForHF(2.0)}
+                  className="px-3 py-1 text-xs font-medium bg-success/10 text-success hover:bg-success/20 rounded border border-success/30 transition-colors"
+                  title="Adjust collateral to reach HF 2.0"
+                >
+                  HF 2.0
+                </button>
+                <button
+                  onClick={() => handleSetCollateralForHF(1.5)}
+                  className="px-3 py-1 text-xs font-medium bg-warning/10 text-warning hover:bg-warning/20 rounded border border-warning/30 transition-colors"
+                  title="Adjust collateral to reach HF 1.5"
+                >
+                  HF 1.5
+                </button>
+              </div>
               <input
                 type="range"
                 min="0"
@@ -176,6 +223,23 @@ export function SimulationModal({
                   />
                   <span className="text-xs text-gray-500">{loanSymbol}</span>
                 </div>
+              </div>
+              <div className="flex items-center space-x-2 mb-2">
+                <span className="text-xs text-gray-600">Target HF:</span>
+                <button
+                  onClick={() => handleSetBorrowForHF(2.0)}
+                  className="px-3 py-1 text-xs font-medium bg-success/10 text-success hover:bg-success/20 rounded border border-success/30 transition-colors"
+                  title="Adjust borrow to reach HF 2.0"
+                >
+                  HF 2.0
+                </button>
+                <button
+                  onClick={() => handleSetBorrowForHF(1.5)}
+                  className="px-3 py-1 text-xs font-medium bg-warning/10 text-warning hover:bg-warning/20 rounded border border-warning/30 transition-colors"
+                  title="Adjust borrow to reach HF 1.5"
+                >
+                  HF 1.5
+                </button>
               </div>
               <input
                 type="range"
