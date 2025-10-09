@@ -108,9 +108,20 @@ export function CryptoInfoModal({ isOpen, onClose, symbol }: CryptoInfoModalProp
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">{symbol}</h2>
-            {data && <p className="text-sm text-gray-500">{data.asset.name}</p>}
+          <div className="flex items-center">
+            <img
+              src={`/crypto-logos/${symbol}.png`}
+              alt={`${symbol} logo`}
+              className="w-10 h-10 mr-3"
+              onError={(e) => {
+                // Hide image if it fails to load
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">{symbol}</h2>
+              {data && <p className="text-sm text-gray-500">{data.asset.name}</p>}
+            </div>
           </div>
           <button
             onClick={onClose}
