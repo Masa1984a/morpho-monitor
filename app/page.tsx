@@ -8,24 +8,21 @@ import { calculateAggregateHealthFactor } from '@/lib/calculations';
 import { MarketPosition } from '@/types/morpho';
 import { WalletConnect } from '@/components/WalletConnect';
 import { LoadingState } from '@/components/LoadingState';
-import { HealthFactorCard } from '@/components/HealthFactorCard';
-import { PositionList } from '@/components/PositionDisplay';
 import { SettingsModal } from '@/components/SettingsModal';
 import { SimulationModal } from '@/components/SimulationModal';
 import { NotificationToast } from '@/components/NotificationToast';
 import { CryptoInfoModal } from '@/components/CryptoInfoModal';
+import { TabNavigation } from '@/components/TabNavigation';
+import { WalletBalanceView } from '@/components/WalletBalance/WalletBalanceView';
+import { LendPositionView } from '@/components/LendPosition/LendPositionView';
+import { BorrowPositionView } from '@/components/BorrowPosition/BorrowPositionView';
 import { useSettings } from '@/hooks/useSettings';
 import { useHealthMonitor } from '@/hooks/useHealthMonitor';
+import { useAppStore } from '@/store/useAppStore';
 
 export default function Home() {
   const [isWorldApp, setIsWorldApp] = useState<boolean | null>(null);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [positions, setPositions] = useState<MarketPosition[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
-  const [chainDebug, setChainDebug] = useState<string>('');
   const [showSettings, setShowSettings] = useState(false);
   const [showSimulation, setShowSimulation] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<MarketPosition | null>(null);
@@ -33,6 +30,22 @@ export default function Home() {
   const [showCryptoInfo, setShowCryptoInfo] = useState(false);
   const [selectedCrypto, setSelectedCrypto] = useState<string>('');
   const [cryptoPrices, setCryptoPrices] = useState<Record<string, number>>({});
+  const [chainDebug, setChainDebug] = useState<string>('');
+
+  // Zustand store
+  const {
+    walletAddress,
+    tokenBalances,
+    nativeBalance,
+    lendPositions,
+    borrowPositions,
+    isLoading,
+    error,
+    activeTab,
+    lastUpdate,
+    debugLogs,
+    actions
+  } = useAppStore();
 
   // Settings hook
   const { settings, isLoaded: settingsLoaded, saveSettings, resetSettings, defaultSettings } = useSettings();
@@ -41,13 +54,10 @@ export default function Home() {
   useEffect(() => {
     const checkWorldApp = () => {
       try {
-        // Install MiniKit (World App ID is usually not required)
         const installResult = MiniKit.install();
-
         const minikit = MiniKitService.getInstance();
         const result = minikit.isWorldApp();
 
-        // Collect debug information
         const debug = {
           installResult,
           isWorldApp: result,
@@ -69,85 +79,57 @@ export default function Home() {
     checkWorldApp();
   }, []);
 
-  // Fetch positions when wallet is connected
-  useEffect(() => {
-    if (walletAddress) {
-      fetchPositions();
-      fetchCryptoPrices();
-    }
-  }, [walletAddress]);
-
   // Fetch crypto prices periodically
   useEffect(() => {
     if (!walletAddress) return;
 
-    // Fetch immediately
-    fetchCryptoPrices();
+    const fetchCryptoPrices = async () => {
+      try {
+        const response = await fetch('/api/prices');
+        if (response.ok) {
+          const prices = await response.json();
+          setCryptoPrices(prices);
+        }
+      } catch (err) {
+        console.error('Error fetching crypto prices:', err);
+      }
+    };
 
-    // Then fetch every 60 seconds
-    const interval = setInterval(() => {
-      fetchCryptoPrices();
-    }, 60000);
+    fetchCryptoPrices();
+    const interval = setInterval(fetchCryptoPrices, 60000);
 
     return () => clearInterval(interval);
   }, [walletAddress]);
 
-  const fetchPositions = async () => {
-    if (!walletAddress) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const morphoClient = MorphoAPIClient.getInstance();
-      const userPositions = await morphoClient.getUserPositions(walletAddress);
-      setPositions(userPositions);
-      setChainDebug(morphoClient.getChainDebugInfo());
-      setLastUpdate(new Date());
-    } catch (err) {
-      console.error('Error fetching positions:', err);
-      setError('Failed to fetch Morpho positions. Please try again later.');
+  // Get debug info for chain
+  useEffect(() => {
+    if (walletAddress) {
       const morphoClient = MorphoAPIClient.getInstance();
       setChainDebug(morphoClient.getChainDebugInfo());
-    } finally {
-      setLoading(false);
     }
+  }, [walletAddress, borrowPositions]);
+
+  const handleWalletConnect = (address: string) => {
+    actions.setWalletAddress(address);
   };
 
-  const fetchCryptoPrices = async () => {
-    try {
-      const response = await fetch('/api/prices');
-      if (response.ok) {
-        const prices = await response.json();
-        setCryptoPrices(prices);
-      }
-    } catch (err) {
-      console.error('Error fetching crypto prices:', err);
-    }
+  const handleDisconnect = () => {
+    actions.clearState();
   };
 
   const handleRefresh = () => {
     if (walletAddress) {
       const morphoClient = MorphoAPIClient.getInstance();
       morphoClient.clearCache(walletAddress);
-      fetchPositions();
+      actions.refreshData();
     }
-  };
-
-  const handleWalletConnect = (address: string) => {
-    setWalletAddress(address);
-  };
-
-  const handleDisconnect = () => {
-    setWalletAddress(null);
-    setPositions([]);
-    setError(null);
-    setLastUpdate(null);
   };
 
   const handleCopyDebugInfo = async () => {
     try {
-      await navigator.clipboard.writeText(chainDebug);
+      // For Wallet tab, copy debugLogs; for Borrow tab, copy chainDebug
+      const textToCopy = activeTab === 'wallet' ? debugLogs.join('\n') : chainDebug;
+      await navigator.clipboard.writeText(textToCopy);
       setDebugCopied(true);
       setTimeout(() => setDebugCopied(false), 2000);
     } catch (err) {
@@ -175,10 +157,16 @@ export default function Home() {
     setSelectedCrypto('');
   };
 
-  // Calculate aggregate health factor with thresholds (before early returns)
-  const aggregateHealth = walletAddress ? calculateAggregateHealthFactor(positions, settings) : null;
+  // Convert BorrowPosition to MarketPosition for aggregate health calculation
+  const marketPositions: MarketPosition[] = borrowPositions.map(pos => ({
+    market: pos.market,
+    state: pos.state
+  }));
 
-  // Health monitoring (must be called before early returns)
+  // Calculate aggregate health factor
+  const aggregateHealth = walletAddress ? calculateAggregateHealthFactor(marketPositions, settings) : null;
+
+  // Health monitoring
   const { notifications, removeNotification } = useHealthMonitor(
     aggregateHealth,
     settings,
@@ -204,7 +192,6 @@ export default function Home() {
           <p className="text-sm text-gray-500 mt-4">
             Please open this application through World App.
           </p>
-          {/* Debug information */}
           {settings.showDebugInfo && (
             <details className="mt-6 text-left">
               <summary className="cursor-pointer text-xs text-gray-400 hover:text-gray-600">
@@ -229,6 +216,7 @@ export default function Home() {
     <div className="min-h-screen px-4 py-6">
       {/* Notifications */}
       <NotificationToast notifications={notifications} onRemove={removeNotification} />
+
       {/* Header */}
       <header className="bg-white rounded-lg shadow-sm px-4 py-3 mb-6 flex justify-between items-center">
         <div>
@@ -243,7 +231,7 @@ export default function Home() {
             className="p-2 text-gray-600 hover:text-morpho-blue hover:bg-gray-100 rounded-lg transition-colors"
             title="Settings"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
@@ -264,100 +252,130 @@ export default function Home() {
         </div>
       )}
 
-      {/* Loading State */}
-      {loading ? (
-        <LoadingState message="Fetching your Morpho positions..." />
-      ) : (
-        <>
-          {/* Crypto Buttons */}
-          <div className="mb-6">
-            <div className="grid grid-cols-4 gap-3">
-              {['WLD', 'USDC', 'WBTC', 'WETH'].map((symbol) => (
-                <button
-                  key={symbol}
-                  onClick={() => handleCryptoClick(symbol)}
-                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all px-3 py-3 text-center border-2 border-transparent hover:border-morpho-blue"
-                >
-                  <div className="flex items-center justify-center mb-1">
-                    <img
-                      src={`/crypto-logos/${symbol}.png`}
-                      alt={`${symbol} logo`}
-                      className="w-5 h-5 mr-2"
-                      onError={(e) => {
-                        // Hide image if it fails to load
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                    <span className="font-semibold text-gray-900">{symbol}</span>
-                  </div>
-                  {cryptoPrices[symbol] ? (
-                    <div className="text-xs text-gray-600">
-                      ${cryptoPrices[symbol].toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: symbol === 'USDC' ? 4 : 2,
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-xs text-gray-400">...</div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* Tab Navigation */}
+      <TabNavigation activeTab={activeTab} onTabChange={actions.setActiveTab} />
 
-          {/* Positions */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Your Positions
-              </h2>
+      {/* Crypto Buttons (shown only on borrow tab) */}
+      {activeTab === 'borrow' && (
+        <div className="mb-6">
+          <div className="grid grid-cols-4 gap-3">
+            {['WLD', 'USDC', 'WBTC', 'WETH'].map((symbol) => (
               <button
-                onClick={handleRefresh}
-                className="flex items-center space-x-2 text-sm text-morpho-blue hover:text-morpho-purple"
+                key={symbol}
+                onClick={() => handleCryptoClick(symbol)}
+                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all px-3 py-3 text-center border-2 border-transparent hover:border-morpho-blue"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span>Refresh</span>
+                <div className="flex items-center justify-center mb-1">
+                  <img
+                    src={`/crypto-logos/${symbol}.png`}
+                    alt={`${symbol} logo`}
+                    className="w-5 h-5 mr-2"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <span className="font-semibold text-gray-900">{symbol}</span>
+                </div>
+                {cryptoPrices[symbol] ? (
+                  <div className="text-xs text-gray-600">
+                    ${cryptoPrices[symbol].toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: symbol === 'USDC' ? 4 : 2,
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-xs text-gray-400">...</div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tab Content */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">
+            {activeTab === 'wallet' && 'Your Wallet'}
+            {activeTab === 'lend' && 'Your Lending Positions'}
+            {activeTab === 'borrow' && 'Your Borrow Positions'}
+          </h2>
+          <button
+            onClick={handleRefresh}
+            className="flex items-center space-x-2 text-sm text-morpho-blue hover:text-morpho-purple"
+            disabled={isLoading}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Refresh</span>
+          </button>
+        </div>
+
+        {activeTab === 'wallet' && (
+          <WalletBalanceView
+            tokenBalances={tokenBalances}
+            nativeBalance={nativeBalance}
+            isLoading={isLoading}
+            error={error}
+            debugLogs={debugLogs}
+            showDebugInfo={settings.showDebugInfo}
+            onCopyDebugInfo={handleCopyDebugInfo}
+            debugCopied={debugCopied}
+          />
+        )}
+
+        {activeTab === 'lend' && (
+          <LendPositionView
+            positions={lendPositions}
+            isLoading={isLoading}
+            error={error}
+          />
+        )}
+
+        {activeTab === 'borrow' && (
+          <BorrowPositionView
+            positions={borrowPositions}
+            isLoading={isLoading}
+            error={error}
+            thresholds={settings}
+            onSimulatePosition={handleSimulatePosition}
+          />
+        )}
+
+        {/* Chain Debug Info */}
+        {settings.showDebugInfo && chainDebug && activeTab === 'borrow' && (
+          <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600">
+            <div className="flex justify-between items-center mb-2">
+              <strong>Debug Info:</strong>
+              <button
+                onClick={handleCopyDebugInfo}
+                className="px-3 py-1 bg-morpho-blue text-white rounded hover:bg-morpho-purple transition-colors text-xs font-medium"
+              >
+                {debugCopied ? 'Copied!' : 'Copy'}
               </button>
             </div>
-            <PositionList positions={positions} thresholds={settings} onSimulatePosition={handleSimulatePosition} />
-
-            {/* Chain Debug Info */}
-            {settings.showDebugInfo && chainDebug && (
-              <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600">
-                <div className="flex justify-between items-center mb-2">
-                  <strong>Debug Info:</strong>
-                  <button
-                    onClick={handleCopyDebugInfo}
-                    className="px-3 py-1 bg-morpho-blue text-white rounded hover:bg-morpho-purple transition-colors text-xs font-medium"
-                  >
-                    {debugCopied ? 'Copied!' : 'Copy'}
-                  </button>
-                </div>
-                <div className="whitespace-pre-wrap">
-                  {chainDebug}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Last Update */}
-          {lastUpdate && (
-            <div className="text-center text-xs text-gray-500 mt-8">
-              Last updated: {lastUpdate.toLocaleTimeString()}
+            <div className="whitespace-pre-wrap">
+              {chainDebug}
             </div>
-          )}
-
-          {/* Disclaimer */}
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-600 text-center">
-              This is a third-party monitoring tool and is not affiliated with Morpho.
-              Always verify your positions on the official Morpho interface before making decisions.
-            </p>
           </div>
-        </>
+        )}
+      </div>
+
+      {/* Last Update */}
+      {lastUpdate && (
+        <div className="text-center text-xs text-gray-500 mt-8">
+          Last updated: {lastUpdate.toLocaleTimeString()}
+        </div>
       )}
+
+      {/* Disclaimer */}
+      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+        <p className="text-xs text-gray-600 text-center">
+          This is a third-party monitoring tool and is not affiliated with Morpho.
+          Always verify your positions on the official Morpho interface before making decisions.
+        </p>
+      </div>
 
       {/* Settings Modal */}
       <SettingsModal

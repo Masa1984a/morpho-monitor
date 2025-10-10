@@ -45,3 +45,25 @@ export interface HealthFactorData {
   collateralUsd: number;
   borrowAssetsUsd: number;
 }
+
+// Lend Position Types
+export interface LendPosition {
+  type: 'lend';
+  market: Market;
+  state: {
+    supplyAssets: string;
+    supplyAssetsUsd: number;
+    supplyShares: string;
+  };
+  apy?: number; // Optional for now - requires IRM contract calls
+  marketUtilization?: number; // Optional - calculated from market info
+}
+
+export interface BorrowPosition {
+  type: 'borrow';
+  market: Market;
+  state: MarketState;
+}
+
+// Union type for all position types
+export type MorphoPositionType = LendPosition | BorrowPosition;

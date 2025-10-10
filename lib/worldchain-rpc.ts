@@ -13,6 +13,12 @@ const WORLD_CHAIN = {
   },
   blockExplorers: {
     default: { name: 'Worldscan', url: 'https://worldscan.org' }
+  },
+  contracts: {
+    multicall3: {
+      address: '0xcA11bde05977b3631167028862bE2a173976CA11' as `0x${string}`,
+      blockCreated: 0
+    }
   }
 } as const;
 
@@ -126,6 +132,13 @@ const ERC20_ABI = [
     stateMutability: 'view',
     inputs: [],
     outputs: [{ type: 'uint8' }]
+  },
+  {
+    type: 'function',
+    name: 'balanceOf',
+    stateMutability: 'view',
+    inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ type: 'uint256' }]
   }
 ] as const;
 
@@ -168,6 +181,7 @@ export class WorldChainRPCClient {
   private tokenCache: Map<string, TokenInfo> = new Map();
   private readonly PRICE_CACHE_DURATION = 60000; // 1 minute
   public debugLogs: string[] = [];
+  private externalLogger?: (message: string) => void;
 
   private constructor() {
     this.client = createPublicClient({
@@ -176,9 +190,16 @@ export class WorldChainRPCClient {
     });
   }
 
+  public setExternalLogger(logger: (message: string) => void) {
+    this.externalLogger = logger;
+  }
+
   private log(message: string) {
     console.log(message);
     this.debugLogs.push(message);
+    if (this.externalLogger) {
+      this.externalLogger(message);
+    }
   }
 
   clearDebugLogs() {
@@ -361,6 +382,99 @@ export class WorldChainRPCClient {
 
   // No longer needed - using known market IDs instead of event log scanning
 
+  // Get native ETH balance
+  async getNativeBalance(address: `0x${string}`): Promise<bigint> {
+    try {
+      const balance = await this.client.getBalance({ address });
+      this.log(`  Native ETH balance: ${balance.toString()}`);
+      return balance;
+    } catch (error) {
+      this.log(`  ERROR getting native balance: ${error instanceof Error ? error.message : String(error)}`);
+      return 0n;
+    }
+  }
+
+  // Get ERC20 token balances using multicall with fallback to individual calls
+  async getTokenBalances(
+    address: `0x${string}`,
+    tokens: Array<{ address: `0x${string}`; symbol: string; decimals: number }>
+  ): Promise<Array<{ token: typeof tokens[0]; balance: bigint }>> {
+    try {
+      this.log(`[RPC] Fetching balances for ${tokens.length} tokens via multicall for address ${address}`);
+      this.log(`[RPC] Token addresses: ${tokens.map(t => t.symbol + '=' + t.address).join(', ')}`);
+
+      const results = await this.client.multicall({
+        contracts: tokens.map(token => ({
+          address: token.address,
+          abi: ERC20_ABI,
+          functionName: 'balanceOf',
+          args: [address]
+        }))
+      });
+
+      this.log(`[RPC] Multicall completed, processing ${results.length} results`);
+
+      return results.map((result, index) => {
+        const token = tokens[index];
+        this.log(`[RPC] ${token.symbol}: status=${result.status}, result=${result.status === 'success' ? result.result : 'N/A'}`);
+
+        if (result.status === 'success' && result.result !== undefined) {
+          const balance = BigInt(result.result as string | number | bigint);
+          this.log(`[RPC] ${token.symbol}: Successfully parsed balance=${balance.toString()}`);
+          return {
+            token,
+            balance
+          };
+        }
+
+        if (result.status === 'failure') {
+          this.log(`[RPC] ${token.symbol}: FAILED - ${result.error?.message || 'Unknown error'}`);
+        }
+
+        return {
+          token,
+          balance: 0n
+        };
+      });
+    } catch (error) {
+      this.log(`[RPC] ERROR in multicall: ${error instanceof Error ? error.message : String(error)}`);
+      this.log(`[RPC] Falling back to individual balanceOf calls...`);
+
+      // Fallback: Call balanceOf individually for each token
+      return await this.getTokenBalancesIndividually(address, tokens);
+    }
+  }
+
+  // Fallback method: Get token balances one by one
+  private async getTokenBalancesIndividually(
+    address: `0x${string}`,
+    tokens: Array<{ address: `0x${string}`; symbol: string; decimals: number }>
+  ): Promise<Array<{ token: typeof tokens[0]; balance: bigint }>> {
+    this.log(`[RPC] Fetching ${tokens.length} token balances individually...`);
+
+    const results = await Promise.all(
+      tokens.map(async (token) => {
+        try {
+          const result = await this.client.readContract({
+            address: token.address,
+            abi: ERC20_ABI,
+            functionName: 'balanceOf',
+            args: [address]
+          });
+
+          const balance = BigInt(result as string | number | bigint);
+          this.log(`[RPC] ${token.symbol}: Individual call successful, balance=${balance.toString()}`);
+          return { token, balance };
+        } catch (error) {
+          this.log(`[RPC] ${token.symbol}: Individual call failed - ${error instanceof Error ? error.message : String(error)}`);
+          return { token, balance: 0n };
+        }
+      })
+    );
+
+    return results;
+  }
+
   async getUserPositions(address: string): Promise<MarketPosition[]> {
     this.clearDebugLogs();
 
@@ -516,5 +630,34 @@ export class WorldChainRPCClient {
       this.log(`FATAL ERROR: ${error instanceof Error ? error.message : String(error)}`);
       throw error;
     }
+  }
+
+  // Helper to separate lend and borrow positions
+  async getLendPositions(address: string): Promise<any[]> {
+    const allPositions = await this.getUserPositions(address);
+
+    return allPositions
+      .filter(pos => parseFloat(pos.state.supplyAssets) > 0)
+      .map(pos => ({
+        type: 'lend' as const,
+        market: pos.market,
+        state: {
+          supplyAssets: pos.state.supplyAssets,
+          supplyAssetsUsd: pos.state.supplyAssetsUsd,
+          supplyShares: pos.state.supplyShares
+        }
+      }));
+  }
+
+  async getBorrowPositions(address: string): Promise<any[]> {
+    const allPositions = await this.getUserPositions(address);
+
+    return allPositions
+      .filter(pos => parseFloat(pos.state.borrowAssets) > 0)
+      .map(pos => ({
+        type: 'borrow' as const,
+        market: pos.market,
+        state: pos.state
+      }));
   }
 }
