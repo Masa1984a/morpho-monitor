@@ -44,6 +44,9 @@ export default function Home() {
     activeTab,
     lastUpdate,
     debugLogs,
+    walletDataLoaded,
+    lendDataLoaded,
+    borrowDataLoaded,
     actions
   } = useAppStore();
 
@@ -172,6 +175,19 @@ export default function Home() {
     settings,
     walletAddress
   );
+
+  // Load data when tab changes
+  useEffect(() => {
+    if (!walletAddress) return;
+
+    if (activeTab === 'wallet' && !walletDataLoaded) {
+      actions.fetchWalletData();
+    } else if (activeTab === 'lend' && !lendDataLoaded) {
+      actions.fetchLendData();
+    } else if (activeTab === 'borrow' && !borrowDataLoaded) {
+      actions.fetchBorrowData();
+    }
+  }, [activeTab, walletAddress, walletDataLoaded, lendDataLoaded, borrowDataLoaded, actions]);
 
   // Show loading while checking World App
   if (isWorldApp === null) {

@@ -22,6 +22,11 @@ export interface AppState {
   activeTab: TabType;
   lastUpdate: Date | null;
 
+  // Tab-specific loading states
+  walletDataLoaded: boolean;
+  lendDataLoaded: boolean;
+  borrowDataLoaded: boolean;
+
   // Debug
   debugLogs: string[];
 
@@ -29,6 +34,9 @@ export interface AppState {
   actions: {
     setWalletAddress: (address: string | null) => void;
     setActiveTab: (tab: TabType) => void;
+    fetchWalletData: () => Promise<void>;
+    fetchLendData: () => Promise<void>;
+    fetchBorrowData: () => Promise<void>;
     fetchDashboardData: () => Promise<void>;
     refreshData: () => Promise<void>;
     clearState: () => void;

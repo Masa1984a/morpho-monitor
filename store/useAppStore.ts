@@ -18,6 +18,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   error: null,
   activeTab: 'wallet',
   lastUpdate: null,
+  walletDataLoaded: false,
+  lendDataLoaded: false,
+  borrowDataLoaded: false,
   debugLogs: [],
 
   // Actions
@@ -26,7 +29,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ walletAddress: address });
       if (address) {
         get().actions.clearDebugLogs();
-        get().actions.fetchDashboardData();
+        // Only fetch wallet data on initial connection
+        get().actions.fetchWalletData();
       }
     },
 
@@ -42,6 +46,167 @@ export const useAppStore = create<AppState>((set, get) => ({
     },
 
     clearDebugLogs: () => set({ debugLogs: [] }),
+
+    fetchWalletData: async () => {
+      const { walletAddress, actions, walletDataLoaded } = get();
+      if (!walletAddress) return;
+
+      // Skip if already loaded
+      if (walletDataLoaded) {
+        actions.addDebugLog('Wallet data already loaded, skipping...');
+        return;
+      }
+
+      actions.addDebugLog(`Starting fetchWalletData for wallet: ${walletAddress}`);
+      set({ isLoading: true, error: null });
+
+      try {
+        const rpcClient = WorldChainRPCClient.getInstance();
+        rpcClient.setExternalLogger((msg) => actions.addDebugLog(msg));
+
+        // Fetch prices
+        actions.addDebugLog('Fetching prices...');
+        const priceResponse = await fetch('/api/prices');
+        const prices = priceResponse.ok ? await priceResponse.json() : {};
+        actions.addDebugLog(`Prices: ${JSON.stringify(prices)}`);
+
+        // Fetch wallet balances
+        actions.addDebugLog('Fetching wallet balances...');
+        const [tokenBalancesRaw, nativeBalanceRaw] = await Promise.all([
+          rpcClient.getTokenBalances(walletAddress as `0x${string}`, WORLD_CHAIN_TOKENS),
+          rpcClient.getNativeBalance(walletAddress as `0x${string}`)
+        ]);
+
+        actions.addDebugLog(`Token balances raw count: ${tokenBalancesRaw.length}`);
+        actions.addDebugLog(`Native balance raw: ${nativeBalanceRaw.toString()}`);
+
+        // Format token balances
+        const tokenBalances: TokenBalance[] = tokenBalancesRaw.map(({ token, balance }) => {
+          const formattedBalance = formatUnits(balance, token.decimals);
+          const priceUsd = prices[token.symbol] || 0;
+          const balanceUsd = parseFloat(formattedBalance) * priceUsd;
+
+          actions.addDebugLog(`${token.symbol}: raw=${balance.toString()}, formatted=${formattedBalance}, price=$${priceUsd}, usd=$${balanceUsd.toFixed(2)}`);
+
+          return {
+            ...token,
+            balance: formattedBalance,
+            balanceRaw: balance,
+            balanceUsd,
+            priceUsd
+          };
+        });
+
+        // Format native balance
+        const nativeBalance: NativeBalance = {
+          symbol: 'ETH',
+          balance: formatUnits(nativeBalanceRaw, 18),
+          balanceRaw: nativeBalanceRaw,
+          balanceUsd: parseFloat(formatUnits(nativeBalanceRaw, 18)) * (prices.WETH || 0),
+          priceUsd: prices.WETH || 0
+        };
+
+        actions.addDebugLog('Wallet data loaded successfully');
+
+        set({
+          tokenBalances,
+          nativeBalance,
+          walletDataLoaded: true,
+          isLoading: false,
+          lastUpdate: new Date()
+        });
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Failed to fetch wallet data';
+        actions.addDebugLog(`ERROR: ${errorMsg}`);
+        console.error('[Store] Error fetching wallet data:', error);
+        set({
+          error: errorMsg,
+          isLoading: false
+        });
+      }
+    },
+
+    fetchLendData: async () => {
+      const { walletAddress, actions, lendDataLoaded } = get();
+      if (!walletAddress) return;
+
+      // Skip if already loaded
+      if (lendDataLoaded) {
+        actions.addDebugLog('Lend data already loaded, skipping...');
+        return;
+      }
+
+      actions.addDebugLog(`Starting fetchLendData for wallet: ${walletAddress}`);
+      set({ isLoading: true, error: null });
+
+      try {
+        const rpcClient = WorldChainRPCClient.getInstance();
+        rpcClient.setExternalLogger((msg) => actions.addDebugLog(msg));
+
+        actions.addDebugLog('Fetching lend positions...');
+        const lendPositions = await rpcClient.getLendPositions(walletAddress) as LendPosition[];
+
+        actions.addDebugLog(`Lend positions count: ${lendPositions.length}`);
+
+        set({
+          lendPositions,
+          lendDataLoaded: true,
+          isLoading: false,
+          lastUpdate: new Date()
+        });
+
+        actions.addDebugLog('Lend data loaded successfully');
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Failed to fetch lend data';
+        actions.addDebugLog(`ERROR: ${errorMsg}`);
+        console.error('[Store] Error fetching lend data:', error);
+        set({
+          error: errorMsg,
+          isLoading: false
+        });
+      }
+    },
+
+    fetchBorrowData: async () => {
+      const { walletAddress, actions, borrowDataLoaded } = get();
+      if (!walletAddress) return;
+
+      // Skip if already loaded
+      if (borrowDataLoaded) {
+        actions.addDebugLog('Borrow data already loaded, skipping...');
+        return;
+      }
+
+      actions.addDebugLog(`Starting fetchBorrowData for wallet: ${walletAddress}`);
+      set({ isLoading: true, error: null });
+
+      try {
+        const rpcClient = WorldChainRPCClient.getInstance();
+        rpcClient.setExternalLogger((msg) => actions.addDebugLog(msg));
+
+        actions.addDebugLog('Fetching borrow positions...');
+        const borrowPositions = await rpcClient.getBorrowPositions(walletAddress) as BorrowPosition[];
+
+        actions.addDebugLog(`Borrow positions count: ${borrowPositions.length}`);
+
+        set({
+          borrowPositions,
+          borrowDataLoaded: true,
+          isLoading: false,
+          lastUpdate: new Date()
+        });
+
+        actions.addDebugLog('Borrow data loaded successfully');
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Failed to fetch borrow data';
+        actions.addDebugLog(`ERROR: ${errorMsg}`);
+        console.error('[Store] Error fetching borrow data:', error);
+        set({
+          error: errorMsg,
+          isLoading: false
+        });
+      }
+    },
 
     fetchDashboardData: async () => {
       const { walletAddress, actions } = get();
@@ -125,14 +290,24 @@ export const useAppStore = create<AppState>((set, get) => ({
     },
 
     refreshData: async () => {
-      const { walletAddress } = get();
+      const { walletAddress, activeTab } = get();
       if (!walletAddress) return;
 
       // Clear cache before refreshing
       const rpcClient = WorldChainRPCClient.getInstance();
       rpcClient.clearDebugLogs();
 
-      await get().actions.fetchDashboardData();
+      // Reset loaded flags for the active tab
+      if (activeTab === 'wallet') {
+        set({ walletDataLoaded: false });
+        await get().actions.fetchWalletData();
+      } else if (activeTab === 'lend') {
+        set({ lendDataLoaded: false });
+        await get().actions.fetchLendData();
+      } else if (activeTab === 'borrow') {
+        set({ borrowDataLoaded: false });
+        await get().actions.fetchBorrowData();
+      }
     },
 
     clearState: () => {
@@ -144,7 +319,10 @@ export const useAppStore = create<AppState>((set, get) => ({
         borrowPositions: [],
         isLoading: false,
         error: null,
-        lastUpdate: null
+        lastUpdate: null,
+        walletDataLoaded: false,
+        lendDataLoaded: false,
+        borrowDataLoaded: false
       });
     }
   }
