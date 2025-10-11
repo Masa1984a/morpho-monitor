@@ -92,31 +92,18 @@ export class WorldAppVaultClient {
       this.log(`  Raw result type: ${typeof result}`);
       this.log(`  Raw result is array: ${Array.isArray(result)}`);
 
-      // Debug: log all properties of result
-      const depositInfo = result as any;
-      if (typeof depositInfo === 'object' && depositInfo !== null) {
-        const keys = Object.keys(depositInfo);
-        this.log(`  Result keys: ${keys.join(', ')}`);
+      // viem returns a tuple as an array
+      const [amount, endTime, depositedAmount, lastInterestCalculation] = result as [bigint, bigint, bigint, bigint];
 
-        // Try to access by index first (array-like), then by property name
-        this.log(`  depositInfo[0]: ${depositInfo[0]?.toString() || 'undefined'}`);
-        this.log(`  depositInfo.amount: ${depositInfo.amount?.toString() || 'undefined'}`);
-      }
+      this.log(`  Raw result (tuple): [${result.toString()}]`);
+      this.log(`  amount: ${amount.toString()}`);
+      this.log(`  endTime: ${endTime.toString()}`);
+      this.log(`  depositedAmount: ${depositedAmount.toString()}`);
+      this.log(`  lastInterestCalculation: ${lastInterestCalculation.toString()}`);
 
-      // viem returns tuple - can be accessed by index or by property name
-      const amount = depositInfo[0] ?? depositInfo.amount;
-      const endTime = depositInfo[1] ?? depositInfo.endTime;
-      const depositedAmount = depositInfo[2] ?? depositInfo.depositedAmount;
-      const lastInterestCalculation = depositInfo[3] ?? depositInfo.lastInterestCalculation;
-
-      this.log(`  amount: ${amount?.toString() || 'undefined'}`);
-      this.log(`  endTime: ${endTime?.toString() || 'undefined'}`);
-      this.log(`  depositedAmount: ${depositedAmount?.toString() || 'undefined'}`);
-      this.log(`  lastInterestCalculation: ${lastInterestCalculation?.toString() || 'undefined'}`);
-
-      // Convert to BigInt if needed
-      const amountBigInt = typeof amount === 'bigint' ? amount : BigInt(amount || 0);
-      const depositedAmountBigInt = typeof depositedAmount === 'bigint' ? depositedAmount : BigInt(depositedAmount || 0);
+      // Assign to BigInts for clarity
+      const amountBigInt = amount;
+      const depositedAmountBigInt = depositedAmount;
 
       // Check if user has any deposit
       if (amountBigInt === 0n && depositedAmountBigInt === 0n) {
