@@ -37,10 +37,10 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Morpho Monitor
+            Crypto assets management
           </h2>
           <p className="text-gray-600 mb-8">
-            Connect your World App wallet to view your Morpho positions and health factor
+            Connect your World App wallet to view crypto assets and health factor
           </p>
 
           {error && (
@@ -75,8 +75,8 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
 
           <div className="mt-8 pt-6 border-t border-gray-200">
             <p className="text-xs text-gray-500">
-              This is a third-party tool, not officially affiliated with Morpho.
-              Always verify positions on the official Morpho interface.
+              This is a third-party tool, not officially affiliated with World nor Morpho.
+              Always verify positions on the official World & Morpho interface.
             </p>
           </div>
         </div>
