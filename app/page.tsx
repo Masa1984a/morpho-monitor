@@ -356,6 +356,7 @@ export default function Home() {
             error={error}
             thresholds={settings}
             onSimulatePosition={handleSimulatePosition}
+            walletAddress={walletAddress}
           />
         )}
 

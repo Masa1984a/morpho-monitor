@@ -6,6 +6,8 @@ import { MarketPosition } from '@/types/morpho';
 import { PositionList } from '../PositionDisplay';
 import { LoadingState } from '../LoadingState';
 import { HealthFactorThresholds } from '@/lib/calculations';
+import { TransactionHistory } from '../TransactionHistory';
+import { WorldChainRPCClient } from '@/lib/worldchain-rpc';
 
 interface BorrowPositionViewProps {
   positions: BorrowPosition[];
@@ -13,6 +15,7 @@ interface BorrowPositionViewProps {
   error: string | null;
   thresholds?: HealthFactorThresholds;
   onSimulatePosition?: (position: MarketPosition) => void;
+  walletAddress?: string;
 }
 
 export function BorrowPositionView({
@@ -20,8 +23,13 @@ export function BorrowPositionView({
   isLoading,
   error,
   thresholds,
-  onSimulatePosition
+  onSimulatePosition,
+  walletAddress
 }: BorrowPositionViewProps) {
+  const fetchHistory = async (address: string) => {
+    const rpcClient = WorldChainRPCClient.getInstance();
+    return await rpcClient.getTransactionHistory(address, 5);
+  };
   if (isLoading) {
     return <LoadingState message="Loading borrow positions..." />;
   }
@@ -74,6 +82,14 @@ export function BorrowPositionView({
         thresholds={thresholds}
         onSimulatePosition={onSimulatePosition}
       />
+
+      {/* 取引明細 */}
+      {walletAddress && (
+        <TransactionHistory
+          walletAddress={walletAddress}
+          onFetchHistory={fetchHistory}
+        />
+      )}
     </div>
   );
 }

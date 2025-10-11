@@ -114,6 +114,31 @@ const MORPHO_BLUE_ABI = [
       { name: 'onBehalf', type: 'address', indexed: true },
       { name: 'assets', type: 'uint256', indexed: false }
     ]
+  },
+  {
+    type: 'event',
+    name: 'Repay',
+    inputs: [
+      { name: 'id', type: 'bytes32', indexed: true },
+      { name: 'caller', type: 'address', indexed: true },
+      { name: 'onBehalf', type: 'address', indexed: true },
+      { name: 'assets', type: 'uint256', indexed: false },
+      { name: 'shares', type: 'uint256', indexed: false }
+    ]
+  },
+  {
+    type: 'event',
+    name: 'Liquidate',
+    inputs: [
+      { name: 'id', type: 'bytes32', indexed: true },
+      { name: 'liquidator', type: 'address', indexed: true },
+      { name: 'borrower', type: 'address', indexed: true },
+      { name: 'repaidAssets', type: 'uint256', indexed: false },
+      { name: 'repaidShares', type: 'uint256', indexed: false },
+      { name: 'seizedAssets', type: 'uint256', indexed: false },
+      { name: 'badDebtAssets', type: 'uint256', indexed: false },
+      { name: 'badDebtShares', type: 'uint256', indexed: false }
+    ]
   }
 ] as const;
 
@@ -659,5 +684,140 @@ export class WorldChainRPCClient {
         market: pos.market,
         state: pos.state
       }));
+  }
+
+  // Get transaction history for a wallet (最近のイベントのみ)
+  async getTransactionHistory(address: string, limit: number = 5): Promise<any[]> {
+    try {
+      const userAddress = address as `0x${string}`;
+      const currentBlock = await this.client.getBlockNumber();
+      const fromBlock = currentBlock - 50000n; // 直近50,000ブロック（約2週間分）
+
+      const events: any[] = [];
+
+      // Borrow イベント
+      try {
+        const borrowLogs = await this.client.getLogs({
+          address: MORPHO_BLUE_ADDRESS as `0x${string}`,
+          event: {
+            type: 'event',
+            name: 'Borrow',
+            inputs: [
+              { name: 'id', type: 'bytes32', indexed: true },
+              { name: 'caller', type: 'address', indexed: false },
+              { name: 'onBehalf', type: 'address', indexed: true },
+              { name: 'receiver', type: 'address', indexed: true },
+              { name: 'assets', type: 'uint256', indexed: false },
+              { name: 'shares', type: 'uint256', indexed: false }
+            ]
+          },
+          args: {
+            onBehalf: userAddress
+          },
+          fromBlock,
+          toBlock: currentBlock
+        });
+
+        for (const log of borrowLogs) {
+          const block = await this.client.getBlock({ blockNumber: log.blockNumber });
+          events.push({
+            event: 'Borrow',
+            timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+            block: Number(log.blockNumber),
+            txHash: log.transactionHash,
+            marketId: log.topics[1] || '',
+            args: log.args
+          });
+        }
+      } catch (e) {
+        console.error('Error fetching Borrow events:', e);
+      }
+
+      // Repay イベント
+      try {
+        const repayLogs = await this.client.getLogs({
+          address: MORPHO_BLUE_ADDRESS as `0x${string}`,
+          event: {
+            type: 'event',
+            name: 'Repay',
+            inputs: [
+              { name: 'id', type: 'bytes32', indexed: true },
+              { name: 'caller', type: 'address', indexed: true },
+              { name: 'onBehalf', type: 'address', indexed: true },
+              { name: 'assets', type: 'uint256', indexed: false },
+              { name: 'shares', type: 'uint256', indexed: false }
+            ]
+          },
+          args: {
+            onBehalf: userAddress
+          },
+          fromBlock,
+          toBlock: currentBlock
+        });
+
+        for (const log of repayLogs) {
+          const block = await this.client.getBlock({ blockNumber: log.blockNumber });
+          events.push({
+            event: 'Repay',
+            timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+            block: Number(log.blockNumber),
+            txHash: log.transactionHash,
+            marketId: log.topics[1] || '',
+            args: log.args
+          });
+        }
+      } catch (e) {
+        console.error('Error fetching Repay events:', e);
+      }
+
+      // Liquidate イベント
+      try {
+        const liquidateLogs = await this.client.getLogs({
+          address: MORPHO_BLUE_ADDRESS as `0x${string}`,
+          event: {
+            type: 'event',
+            name: 'Liquidate',
+            inputs: [
+              { name: 'id', type: 'bytes32', indexed: true },
+              { name: 'liquidator', type: 'address', indexed: true },
+              { name: 'borrower', type: 'address', indexed: true },
+              { name: 'repaidAssets', type: 'uint256', indexed: false },
+              { name: 'repaidShares', type: 'uint256', indexed: false },
+              { name: 'seizedAssets', type: 'uint256', indexed: false },
+              { name: 'badDebtAssets', type: 'uint256', indexed: false },
+              { name: 'badDebtShares', type: 'uint256', indexed: false }
+            ]
+          },
+          args: {
+            borrower: userAddress
+          },
+          fromBlock,
+          toBlock: currentBlock
+        });
+
+        for (const log of liquidateLogs) {
+          const block = await this.client.getBlock({ blockNumber: log.blockNumber });
+          events.push({
+            event: 'Liquidate',
+            timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+            block: Number(log.blockNumber),
+            txHash: log.transactionHash,
+            marketId: log.topics[1] || '',
+            args: log.args
+          });
+        }
+      } catch (e) {
+        console.error('Error fetching Liquidate events:', e);
+      }
+
+      // ブロック番号でソート（新しい順）
+      events.sort((a, b) => b.block - a.block);
+
+      // 上位N件のみ返す
+      return events.slice(0, limit);
+    } catch (error) {
+      console.error('Error fetching transaction history:', error);
+      return [];
+    }
   }
 }
