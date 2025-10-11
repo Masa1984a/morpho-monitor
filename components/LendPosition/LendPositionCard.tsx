@@ -11,17 +11,24 @@ interface LendPositionCardProps {
 export function LendPositionCard({ position }: LendPositionCardProps) {
   const { market, state } = position;
 
+  // Check if this is a MetaMorpho vault or Morpho Blue market
+  const isVault = (position as any).vaultType === 'metamorpho';
+  const marketTitle = isVault
+    ? `${market.loanAsset.symbol} Vault`
+    : `${market.collateralAsset.symbol} → ${market.loanAsset.symbol}`;
+  const marketType = isVault ? 'MetaMorpho Vault' : 'Morpho Blue Market';
+
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <h4 className="text-lg font-semibold text-gray-900">
-            {market.loanAsset.symbol} / {market.collateralAsset.symbol}
+            {marketTitle}
           </h4>
-          <p className="text-xs text-gray-500 mt-1">Market ID: {market.uniqueKey.slice(0, 8)}...</p>
+          <p className="text-xs text-gray-500 mt-1">{marketType}</p>
           <div className="mt-2">
             <span className="inline-block px-2 py-1 bg-success/10 text-success text-xs font-medium rounded">
-              Lending
+              Earning
             </span>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { createPublicClient, http, formatUnits } from 'viem';
 import { MarketPosition } from '@/types/morpho';
 import { getActiveMarketIds } from './market-config';
+import { METAMORPHO_VAULTS, type MetaMorphoVault } from './metamorpho-config';
 
 // World Chain configuration
 const WORLD_CHAIN = {
@@ -163,6 +164,45 @@ const ERC20_ABI = [
     name: 'balanceOf',
     stateMutability: 'view',
     inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ type: 'uint256' }]
+  }
+] as const;
+
+// MetaMorpho Vault ABI for Earn positions
+const METAMORPHO_VAULT_ABI = [
+  {
+    type: 'function',
+    name: 'balanceOf',
+    stateMutability: 'view',
+    inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ type: 'uint256' }]
+  },
+  {
+    type: 'function',
+    name: 'convertToAssets',
+    stateMutability: 'view',
+    inputs: [{ name: 'shares', type: 'uint256' }],
+    outputs: [{ type: 'uint256' }]
+  },
+  {
+    type: 'function',
+    name: 'asset',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ type: 'address' }]
+  },
+  {
+    type: 'function',
+    name: 'totalAssets',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ type: 'uint256' }]
+  },
+  {
+    type: 'function',
+    name: 'totalSupply',
+    stateMutability: 'view',
+    inputs: [],
     outputs: [{ type: 'uint256' }]
   }
 ] as const;
@@ -657,14 +697,101 @@ export class WorldChainRPCClient {
     }
   }
 
+  // Get MetaMorpho Vault positions (Earn)
+  async getMetaMorphoPositions(address: string): Promise<any[]> {
+    const userAddress = address as `0x${string}`;
+    const positions: any[] = [];
+
+    this.log(`\n=== Checking MetaMorpho Vaults ===`);
+
+    for (const vault of METAMORPHO_VAULTS) {
+      try {
+        this.log(`\nChecking vault: ${vault.name} (${vault.vaultAddress})`);
+
+        // Get user's vault shares
+        const shares = await this.client.readContract({
+          address: vault.vaultAddress,
+          abi: METAMORPHO_VAULT_ABI,
+          functionName: 'balanceOf',
+          args: [userAddress]
+        }) as bigint;
+
+        this.log(`  User shares: ${shares.toString()}`);
+
+        if (shares > 0n) {
+          // Convert shares to assets
+          const assets = await this.client.readContract({
+            address: vault.vaultAddress,
+            abi: METAMORPHO_VAULT_ABI,
+            functionName: 'convertToAssets',
+            args: [shares]
+          }) as bigint;
+
+          this.log(`  Assets: ${assets.toString()}`);
+
+          // Format amounts
+          const supplyAmount = formatUnits(assets, vault.decimals);
+          this.log(`  Formatted supply: ${supplyAmount} ${vault.assetSymbol}`);
+
+          // Get token price
+          const tokenPrice = await this.getTokenPrice(vault.assetSymbol);
+          this.log(`  Token price: $${tokenPrice}`);
+
+          // Calculate USD value
+          const supplyAssetsUsd = parseFloat(supplyAmount) * tokenPrice;
+          this.log(`  USD value: $${supplyAssetsUsd}`);
+
+          positions.push({
+            type: 'lend' as const,
+            vaultType: 'metamorpho' as const,
+            market: {
+              uniqueKey: vault.vaultAddress,
+              lltv: '0',
+              loanAsset: {
+                address: vault.assetAddress,
+                symbol: vault.assetSymbol,
+                decimals: vault.decimals
+              },
+              collateralAsset: {
+                address: vault.assetAddress,
+                symbol: vault.assetSymbol,
+                decimals: vault.decimals
+              }
+            },
+            state: {
+              supplyAssets: supplyAmount,
+              supplyAssetsUsd: supplyAssetsUsd,
+              supplyShares: shares.toString()
+            }
+          });
+
+          this.log(`  ✓ Position added`);
+        } else {
+          this.log(`  No shares in this vault`);
+        }
+      } catch (error) {
+        this.log(`  ERROR: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+
+    this.log(`\n=== Total MetaMorpho positions: ${positions.length} ===`);
+    return positions;
+  }
+
   // Helper to separate lend and borrow positions
   async getLendPositions(address: string): Promise<any[]> {
-    const allPositions = await this.getUserPositions(address);
+    // Get positions from both Morpho Blue markets and MetaMorpho vaults
+    const [morphoPositions, vaultPositions] = await Promise.all([
+      this.getUserPositions(address),
+      this.getMetaMorphoPositions(address)
+    ]);
 
-    return allPositions
+    // Filter Morpho Blue positions for lend only
+    const morphoLendPositions = morphoPositions
       .filter(pos => parseFloat(pos.state.supplyAssets) > 0)
       .map(pos => ({
         type: 'lend' as const,
+        vaultType: 'morpho-blue' as const,
         market: pos.market,
         state: {
           supplyAssets: pos.state.supplyAssets,
@@ -672,6 +799,9 @@ export class WorldChainRPCClient {
           supplyShares: pos.state.supplyShares
         }
       }));
+
+    // Combine both types of positions
+    return [...morphoLendPositions, ...vaultPositions];
   }
 
   async getBorrowPositions(address: string): Promise<any[]> {
