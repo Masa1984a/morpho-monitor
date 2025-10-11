@@ -107,9 +107,6 @@ export function BorrowPositionView({
             </div>
           </div>
         </div>
-        <div className="text-sm opacity-90 mt-4">
-          Across {positions.length} {positions.length === 1 ? 'position' : 'positions'}
-        </div>
       </div>
 
       <PositionList

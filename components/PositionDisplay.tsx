@@ -13,15 +13,63 @@ interface PositionDisplayProps {
 export function PositionDisplay({ position, thresholds, onSimulate }: PositionDisplayProps) {
   const { market, state } = position;
   const healthFactor = calculateHealthFactor(position, thresholds);
+  const [marketIdCopied, setMarketIdCopied] = React.useState(false);
+
+  const handleCopyMarketId = async () => {
+    try {
+      await navigator.clipboard.writeText(market.uniqueKey);
+      setMarketIdCopied(true);
+      setTimeout(() => setMarketIdCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy market ID:', err);
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
-          <h4 className="text-lg font-semibold text-gray-900">
-            {market.collateralAsset.symbol} / {market.loanAsset.symbol}
-          </h4>
-          <p className="text-xs text-gray-500 mt-1">Market ID: {market.uniqueKey.slice(0, 8)}...</p>
+          <div className="flex items-center space-x-2 mb-1">
+            <div className="flex items-center space-x-1">
+              <img
+                src={`/crypto-logos/${market.collateralAsset.symbol}.png`}
+                alt={`${market.collateralAsset.symbol} logo`}
+                className="w-6 h-6"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <span className="text-lg font-semibold text-gray-900">{market.collateralAsset.symbol}</span>
+            </div>
+            <span className="text-lg font-semibold text-gray-500">/</span>
+            <div className="flex items-center space-x-1">
+              <img
+                src={`/crypto-logos/${market.loanAsset.symbol}.png`}
+                alt={`${market.loanAsset.symbol} logo`}
+                className="w-6 h-6"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <span className="text-lg font-semibold text-gray-900">{market.loanAsset.symbol}</span>
+            </div>
+          </div>
+          <button
+            onClick={handleCopyMarketId}
+            className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded px-2 py-1 transition-colors"
+            title="Click to copy Market ID"
+          >
+            <span>Market ID: {market.uniqueKey.slice(0, 8)}...</span>
+            {marketIdCopied ? (
+              <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            )}
+          </button>
         </div>
         <div className="flex items-center space-x-2">
           {onSimulate && (

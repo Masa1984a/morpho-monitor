@@ -23,12 +23,12 @@ export function LendPositionCard({ position }: LendPositionCardProps) {
   let chainLabel: string | null = null;
 
   if (isWorldAppVault) {
-    marketTitle = 'World App Vault';
+    marketTitle = 'World App';
     marketType = 'WLD Savings on OP Mainnet';
     chainLabel = 'OP Mainnet';
   } else if (isMetaMorpho) {
-    marketTitle = `${market.loanAsset.symbol} Vault`;
-    marketType = 'MetaMorpho Vault';
+    marketTitle = market.loanAsset.symbol;
+    marketType = 'MetaMorpho';
     chainLabel = 'World Chain';
   } else {
     marketTitle = `${market.collateralAsset.symbol} → ${market.loanAsset.symbol}`;
@@ -43,9 +43,19 @@ export function LendPositionCard({ position }: LendPositionCardProps) {
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
-          <h4 className="text-lg font-semibold text-gray-900">
-            {marketTitle}
-          </h4>
+          <div className="flex items-center space-x-2">
+            <img
+              src={`/crypto-logos/${market.loanAsset.symbol}.png`}
+              alt={`${market.loanAsset.symbol} logo`}
+              className="w-6 h-6"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <h4 className="text-lg font-semibold text-gray-900">
+              {marketTitle}
+            </h4>
+          </div>
           <p className="text-xs text-gray-500 mt-1">{marketType}</p>
         </div>
       </div>
@@ -53,9 +63,6 @@ export function LendPositionCard({ position }: LendPositionCardProps) {
       <div className="space-y-3">
         {/* Current Balance */}
         <div>
-          <p className="text-xs text-gray-600 mb-1">
-            {isWorldAppVault ? 'Current Balance' : 'Supplied Assets'}
-          </p>
           <div className="flex items-baseline space-x-2">
             <span className="font-medium text-lg">
               {formatTokenAmount(state.supplyAssets, market.loanAsset.decimals)}

@@ -79,9 +79,6 @@ export function LendPositionView({
             maximumFractionDigits: 2
           })}
         </div>
-        <div className="text-sm opacity-90 mt-2">
-          Across {positions.length} {positions.length === 1 ? 'market' : 'markets'}
-        </div>
       </div>
 
       {/* Position Cards */}
