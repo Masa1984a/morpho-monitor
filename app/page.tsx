@@ -130,8 +130,13 @@ export default function Home() {
 
   const handleCopyDebugInfo = async () => {
     try {
-      // For Wallet tab, copy debugLogs; for Borrow tab, copy chainDebug
-      const textToCopy = activeTab === 'wallet' ? debugLogs.join('\n') : chainDebug;
+      // Select appropriate debug info based on active tab
+      let textToCopy = '';
+      if (activeTab === 'wallet' || activeTab === 'lend') {
+        textToCopy = debugLogs.join('\n');
+      } else if (activeTab === 'borrow') {
+        textToCopy = chainDebug;
+      }
       await navigator.clipboard.writeText(textToCopy);
       setDebugCopied(true);
       setTimeout(() => setDebugCopied(false), 2000);
@@ -346,6 +351,10 @@ export default function Home() {
             positions={lendPositions}
             isLoading={isLoading}
             error={error}
+            debugLogs={debugLogs}
+            showDebugInfo={settings.showDebugInfo}
+            onCopyDebugInfo={handleCopyDebugInfo}
+            debugCopied={debugCopied}
           />
         )}
 

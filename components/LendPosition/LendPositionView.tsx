@@ -9,9 +9,21 @@ interface LendPositionViewProps {
   positions: LendPosition[];
   isLoading: boolean;
   error: string | null;
+  debugLogs?: string[];
+  showDebugInfo?: boolean;
+  onCopyDebugInfo?: () => void;
+  debugCopied?: boolean;
 }
 
-export function LendPositionView({ positions, isLoading, error }: LendPositionViewProps) {
+export function LendPositionView({
+  positions,
+  isLoading,
+  error,
+  debugLogs = [],
+  showDebugInfo = false,
+  onCopyDebugInfo,
+  debugCopied = false
+}: LendPositionViewProps) {
   if (isLoading) {
     return <LoadingState message="Loading lending positions..." />;
   }
@@ -78,6 +90,26 @@ export function LendPositionView({ positions, isLoading, error }: LendPositionVi
           <LendPositionCard key={position.market.uniqueKey || index} position={position} />
         ))}
       </div>
+
+      {/* Debug Info */}
+      {showDebugInfo && debugLogs.length > 0 && (
+        <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-600">
+          <div className="flex justify-between items-center mb-2">
+            <strong>Debug Info:</strong>
+            {onCopyDebugInfo && (
+              <button
+                onClick={onCopyDebugInfo}
+                className="px-3 py-1 bg-morpho-blue text-white rounded hover:bg-morpho-purple transition-colors text-xs font-medium"
+              >
+                {debugCopied ? 'Copied!' : 'Copy'}
+              </button>
+            )}
+          </div>
+          <div className="whitespace-pre-wrap max-h-96 overflow-y-auto">
+            {debugLogs.join('\n')}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

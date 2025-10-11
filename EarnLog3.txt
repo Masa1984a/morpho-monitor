@@ -1,0 +1,779 @@
+[11:59:01] Starting fetchWalletData for wallet: 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:01] Fetching prices...
+[11:59:01] Starting fetchWalletData for wallet: 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:01] Fetching prices...
+[11:59:02] Prices: {"WLD":0.940478161841,"USDC":0.999949868162,"WBTC":113307,"WETH":3847.5,"uSOL":189.58,"uDOGE":0.199763,"uXRP":2.45,"uSUI":2.77,"uXLM":0.329588,"uLTC":101.86,"uSHIB":0.00001033,"uADA":0.668744,"uLINK":18.1}
+[11:59:02] Fetching wallet balances...
+[11:59:02] [RPC] Fetching balances for 16 tokens via multicall for address 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:02] [RPC] Token addresses: WLD=0x2cfc85d8e48f8eab294be644d9e25c3030863003, USDC=0x79A02482A880bCE3F13e09Da970dC34db4CD24d1, WBTC=0x03c7054bcb39f7b2e5b2c7acb37583e32d70cfa3, WETH=0x4200000000000000000000000000000000000006, uSOL=0x9B8Df6E244526ab5F6e6400d331DB28C8fdDdb55, uDOGE=0x12E96C2BFEA6E835CF8Dd38a5834fa61Cf723736, uXRP=0x2615a94df961278DcbC41Fb0a54fEc5f10a693aE, uSUI=0xb0505e5a99abd03d94a1169e638B78EDfEd26ea4, uXLM=0x378c326A472915d38b2D8D41e1345987835FaB64, uLTC=0x3EB097375fc2FC361e4a472f5E7067238c547c52, uSHIB=0x239b9C1F24F3423062B0d364796e07Ee905E9FcE, uADA=0xa3A34A0D9A08CCDDB6Ed422Ac0A28a06731335aA, uLINK=0xd403D1624DAEF243FbcBd4A80d8A6F36afFe32b2, ORO=0xcd1E32B86953D79a6AC58e813D2EA7a1790cAb63, ORB=0xf3f92a60e6004f3982f0fde0d43602fc0a30a0db, oXAUt=0x30974f73a4ac9e606ed80da928e454977ac486d2
+[11:59:02] Prices: {"WLD":0.940478161841,"USDC":0.999949868162,"WBTC":113307,"WETH":3847.5,"uSOL":189.58,"uDOGE":0.199763,"uXRP":2.45,"uSUI":2.77,"uXLM":0.329588,"uLTC":101.86,"uSHIB":0.00001033,"uADA":0.668744,"uLINK":18.1}
+[11:59:02] Fetching wallet balances...
+[11:59:02] [RPC] Fetching balances for 16 tokens via multicall for address 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:02] [RPC] Token addresses: WLD=0x2cfc85d8e48f8eab294be644d9e25c3030863003, USDC=0x79A02482A880bCE3F13e09Da970dC34db4CD24d1, WBTC=0x03c7054bcb39f7b2e5b2c7acb37583e32d70cfa3, WETH=0x4200000000000000000000000000000000000006, uSOL=0x9B8Df6E244526ab5F6e6400d331DB28C8fdDdb55, uDOGE=0x12E96C2BFEA6E835CF8Dd38a5834fa61Cf723736, uXRP=0x2615a94df961278DcbC41Fb0a54fEc5f10a693aE, uSUI=0xb0505e5a99abd03d94a1169e638B78EDfEd26ea4, uXLM=0x378c326A472915d38b2D8D41e1345987835FaB64, uLTC=0x3EB097375fc2FC361e4a472f5E7067238c547c52, uSHIB=0x239b9C1F24F3423062B0d364796e07Ee905E9FcE, uADA=0xa3A34A0D9A08CCDDB6Ed422Ac0A28a06731335aA, uLINK=0xd403D1624DAEF243FbcBd4A80d8A6F36afFe32b2, ORO=0xcd1E32B86953D79a6AC58e813D2EA7a1790cAb63, ORB=0xf3f92a60e6004f3982f0fde0d43602fc0a30a0db, oXAUt=0x30974f73a4ac9e606ed80da928e454977ac486d2
+[11:59:03] [RPC] Multicall completed, processing 16 results
+[11:59:03] [RPC] WLD: status=success, result=364242298303063337
+[11:59:03] [RPC] WLD: Successfully parsed balance=364242298303063337
+[11:59:03] [RPC] USDC: status=success, result=782834
+[11:59:03] [RPC] USDC: Successfully parsed balance=782834
+[11:59:03] [RPC] WBTC: status=success, result=1884
+[11:59:03] [RPC] WBTC: Successfully parsed balance=1884
+[11:59:03] [RPC] WETH: status=success, result=304863374414708
+[11:59:03] [RPC] WETH: Successfully parsed balance=304863374414708
+[11:59:03] [RPC] uSOL: status=success, result=0
+[11:59:03] [RPC] uSOL: Successfully parsed balance=0
+[11:59:03] [RPC] uDOGE: status=success, result=0
+[11:59:03] [RPC] uDOGE: Successfully parsed balance=0
+[11:59:03] [RPC] uXRP: status=success, result=0
+[11:59:03] [RPC] uXRP: Successfully parsed balance=0
+[11:59:03] [RPC] uSUI: status=success, result=0
+[11:59:03] [RPC] uSUI: Successfully parsed balance=0
+[11:59:03] [RPC] uXLM: status=success, result=0
+[11:59:03] [RPC] uXLM: Successfully parsed balance=0
+[11:59:03] [RPC] uLTC: status=success, result=0
+[11:59:03] [RPC] uLTC: Successfully parsed balance=0
+[11:59:03] [RPC] uSHIB: status=success, result=0
+[11:59:03] [RPC] uSHIB: Successfully parsed balance=0
+[11:59:03] [RPC] uADA: status=success, result=0
+[11:59:03] [RPC] uADA: Successfully parsed balance=0
+[11:59:03] [RPC] uLINK: status=success, result=0
+[11:59:03] [RPC] uLINK: Successfully parsed balance=0
+[11:59:03] [RPC] ORO: status=success, result=0
+[11:59:03] [RPC] ORO: Successfully parsed balance=0
+[11:59:03] [RPC] ORB: status=success, result=0
+[11:59:03] [RPC] ORB: Successfully parsed balance=0
+[11:59:03] [RPC] oXAUt: status=success, result=0
+[11:59:03] [RPC] oXAUt: Successfully parsed balance=0
+[11:59:03]   Native ETH balance: 0
+[11:59:03] Token balances raw count: 16
+[11:59:03] Native balance raw: 0
+[11:59:03] WLD: raw=364242298303063337, formatted=0.364242298303063337, price=$0.940478161841, usd=$0.34
+[11:59:03] USDC: raw=782834, formatted=0.782834, price=$0.999949868162, usd=$0.78
+[11:59:03] WBTC: raw=1884, formatted=0.00001884, price=$113307, usd=$2.13
+[11:59:03] WETH: raw=304863374414708, formatted=0.000304863374414708, price=$3847.5, usd=$1.17
+[11:59:03] uSOL: raw=0, formatted=0, price=$189.58, usd=$0.00
+[11:59:03] uDOGE: raw=0, formatted=0, price=$0.199763, usd=$0.00
+[11:59:03] uXRP: raw=0, formatted=0, price=$2.45, usd=$0.00
+[11:59:03] uSUI: raw=0, formatted=0, price=$2.77, usd=$0.00
+[11:59:03] uXLM: raw=0, formatted=0, price=$0.329588, usd=$0.00
+[11:59:03] uLTC: raw=0, formatted=0, price=$101.86, usd=$0.00
+[11:59:03] uSHIB: raw=0, formatted=0, price=$0.00001033, usd=$0.00
+[11:59:03] uADA: raw=0, formatted=0, price=$0.668744, usd=$0.00
+[11:59:03] uLINK: raw=0, formatted=0, price=$18.1, usd=$0.00
+[11:59:03] ORO: raw=0, formatted=0, price=$0, usd=$0.00
+[11:59:03] ORB: raw=0, formatted=0, price=$0, usd=$0.00
+[11:59:03] oXAUt: raw=0, formatted=0, price=$0, usd=$0.00
+[11:59:03] Wallet data loaded successfully
+[11:59:03]   Native ETH balance: 0
+[11:59:03] [RPC] Multicall completed, processing 16 results
+[11:59:03] [RPC] WLD: status=success, result=364242298303063337
+[11:59:03] [RPC] WLD: Successfully parsed balance=364242298303063337
+[11:59:03] [RPC] USDC: status=success, result=782834
+[11:59:03] [RPC] USDC: Successfully parsed balance=782834
+[11:59:03] [RPC] WBTC: status=success, result=1884
+[11:59:03] [RPC] WBTC: Successfully parsed balance=1884
+[11:59:03] [RPC] WETH: status=success, result=304863374414708
+[11:59:03] [RPC] WETH: Successfully parsed balance=304863374414708
+[11:59:03] [RPC] uSOL: status=success, result=0
+[11:59:03] [RPC] uSOL: Successfully parsed balance=0
+[11:59:03] [RPC] uDOGE: status=success, result=0
+[11:59:03] [RPC] uDOGE: Successfully parsed balance=0
+[11:59:03] [RPC] uXRP: status=success, result=0
+[11:59:03] [RPC] uXRP: Successfully parsed balance=0
+[11:59:03] [RPC] uSUI: status=success, result=0
+[11:59:03] [RPC] uSUI: Successfully parsed balance=0
+[11:59:03] [RPC] uXLM: status=success, result=0
+[11:59:03] [RPC] uXLM: Successfully parsed balance=0
+[11:59:03] [RPC] uLTC: status=success, result=0
+[11:59:03] [RPC] uLTC: Successfully parsed balance=0
+[11:59:03] [RPC] uSHIB: status=success, result=0
+[11:59:03] [RPC] uSHIB: Successfully parsed balance=0
+[11:59:03] [RPC] uADA: status=success, result=0
+[11:59:03] [RPC] uADA: Successfully parsed balance=0
+[11:59:03] [RPC] uLINK: status=success, result=0
+[11:59:03] [RPC] uLINK: Successfully parsed balance=0
+[11:59:03] [RPC] ORO: status=success, result=0
+[11:59:03] [RPC] ORO: Successfully parsed balance=0
+[11:59:03] [RPC] ORB: status=success, result=0
+[11:59:03] [RPC] ORB: Successfully parsed balance=0
+[11:59:03] [RPC] oXAUt: status=success, result=0
+[11:59:03] [RPC] oXAUt: Successfully parsed balance=0
+[11:59:03] Token balances raw count: 16
+[11:59:03] Native balance raw: 0
+[11:59:03] WLD: raw=364242298303063337, formatted=0.364242298303063337, price=$0.940478161841, usd=$0.34
+[11:59:03] USDC: raw=782834, formatted=0.782834, price=$0.999949868162, usd=$0.78
+[11:59:03] WBTC: raw=1884, formatted=0.00001884, price=$113307, usd=$2.13
+[11:59:03] WETH: raw=304863374414708, formatted=0.000304863374414708, price=$3847.5, usd=$1.17
+[11:59:03] uSOL: raw=0, formatted=0, price=$189.58, usd=$0.00
+[11:59:03] uDOGE: raw=0, formatted=0, price=$0.199763, usd=$0.00
+[11:59:03] uXRP: raw=0, formatted=0, price=$2.45, usd=$0.00
+[11:59:03] uSUI: raw=0, formatted=0, price=$2.77, usd=$0.00
+[11:59:03] uXLM: raw=0, formatted=0, price=$0.329588, usd=$0.00
+[11:59:03] uLTC: raw=0, formatted=0, price=$101.86, usd=$0.00
+[11:59:03] uSHIB: raw=0, formatted=0, price=$0.00001033, usd=$0.00
+[11:59:03] uADA: raw=0, formatted=0, price=$0.668744, usd=$0.00
+[11:59:03] uLINK: raw=0, formatted=0, price=$18.1, usd=$0.00
+[11:59:03] ORO: raw=0, formatted=0, price=$0, usd=$0.00
+[11:59:03] ORB: raw=0, formatted=0, price=$0, usd=$0.00
+[11:59:03] oXAUt: raw=0, formatted=0, price=$0, usd=$0.00
+[11:59:03] Wallet data loaded successfully
+[11:59:04] Starting fetchLendData for wallet: 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:04] Fetching lend positions...
+[11:59:04]   WLD price not in cache or expired, fetching from unified API...
+[11:59:04]   Fetching all crypto prices (WLD, USDC, WBTC, WETH) via unified API...
+[11:59:04]   Unified API response: {"WLD":0.940478161841,"USDC":0.999949868162,"WBTC":113307,"WETH":3847.5,"uSOL":189.58,"uDOGE":0.199763,"uXRP":2.45,"uSUI":2.77,"uXLM":0.329588,"uLTC":101.86,"uSHIB":0.00001033,"uADA":0.668744,"uLINK":...
+[11:59:04]   WLD price: $0.940478161841
+[11:59:04]   USDC price: $0.999949868162
+[11:59:04]   WBTC price: $113307
+[11:59:04]   WETH price: $3847.5
+[11:59:04] Checking 6 known market(s)
+[11:59:04] User address: 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:04] Morpho Blue: 0xe741bc7c34758b4cae05062794e8ae24978af432
+[11:59:04] 
+Checking market: 0xba0ae12a5cdbf9a458566be68055f30c859771612950b5e43428a51becc6f6e9
+[11:59:04] 
+=== Checking MetaMorpho Vaults ===
+[11:59:04] 
+Checking vault: MetaMorpho USDC Vault (0xb1E80387EbE53Ff75a89736097D34dC8D9E9045B)
+[11:59:04] 
+=== Checking World App Vault (OP Mainnet) ===
+[11:59:04] 
+=== Fetching World App Vault Balance ===
+[11:59:04] User address: 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:04] Vault contract: 0x21c4928109acB0659A88AE5329b5374A3024694C
+[11:59:04] Calling getDeposit...
+[11:59:04]   User shares: 1069360590816822950362
+[11:59:04]   Supply shares: 0
+[11:59:04]   Borrow shares: 0
+[11:59:04]   Collateral: 532523523567079579004
+[11:59:04]   ✓ Active position found!
+[11:59:04]   Assets: 1081887495
+[11:59:04]   Formatted supply: 1081.887495 USDC
+[11:59:04]   Using cached USDC price: $0.999949868162
+[11:59:04]   Token price: $0.999949868162
+[11:59:04]   USD value: $1081.8332579913665
+[11:59:04]   ✓ Position added
+[11:59:04] 
+Checking vault: MetaMorpho WLD Vault (0x348831b46876d3dF2Db98BdEc5E3B4083329Ab9f)
+[11:59:04]   Loan token: 0x79A02482A880bCE3F13e09Da970dC34db4CD24d1
+[11:59:04]   Collateral token: 0x2cFc85d8E48F8EAB294be644d9E25C3030863003
+[11:59:04]   LLTV: 0.77
+[11:59:04]   User shares: 1002798442262068615933
+[11:59:04]   Market info received
+[11:59:05]   Assets: 1002807449388489761325
+[11:59:05]   Formatted supply: 1002.807449388489761325 WLD
+[11:59:05]   Using cached WLD price: $0.940478161841
+[11:59:05]   Token price: $0.940478161841
+[11:59:05]   USD value: $943.1185066813484
+[11:59:05]   ✓ Position added
+[11:59:05] 
+Checking vault: MetaMorpho WETH Vault (0x0Db7E405278c2674F462aC9D9eb8b8346D1c1571)
+[11:59:05]   Tokens: USDC/WLD
+[11:59:05]   Token decimals: 6/18
+[11:59:05]   Raw values - Supply: 0, Borrow: 0, Collateral: 532523523567079579004
+[11:59:05]   Formatted - Supply: 0, Borrow: 0, Collateral: 532.523523567079579004
+[11:59:05]   Reading price from oracle: 0x8006A014e828a458545e6613C4b35Cd64b5143D5
+[11:59:05]   Raw result type: object
+[11:59:05]   Raw result is array: true
+[11:59:05]   Result keys: 0, 1, 2, 3
+[11:59:05]   depositInfo[0]: 0
+[11:59:05]   depositInfo.amount: undefined
+[11:59:05]   amount: 0
+[11:59:05]   endTime: 0
+[11:59:05]   depositedAmount: 0
+[11:59:05]   lastInterestCalculation: 0
+[11:59:05] No Vault deposit found (amount and depositedAmount are both 0)
+[11:59:05] No World App Vault balance
+[11:59:05]   User shares: 199997325994261
+[11:59:05]   Oracle price raw: 941676690000000000000000
+[11:59:05]   Scale: 10^24 (36 + 6 - 18)
+[11:59:05]   Oracle price calculated: $0.9416766900000001
+[11:59:05]   Using oracle price ratio: 0.9416766900000001
+[11:59:05]   Using cached WLD price: $0.940478161841
+[11:59:05]   Using cached USDC price: $0.999949868162
+[11:59:05]   Token prices - WLD: $0.940478161841, USDC: $0.999949868162
+[11:59:05]   USD values - Collateral: $500.8267445814594, Supply: $0, Borrow: $0
+[11:59:05]   ✓ Position processed successfully!
+[11:59:05] 
+Checking market: 0x5fadb14df6523eb13a939f8024dbc54b10bdb4e521741e9995e2951337134b53
+[11:59:05]   Assets: 200000129740062
+[11:59:05]   Formatted supply: 0.000200000129740062 WETH
+[11:59:05]   Using cached WETH price: $3847.5
+[11:59:05]   Token price: $3847.5
+[11:59:05]   USD value: $0.7695004991748885
+[11:59:05]   ✓ Position added
+[11:59:05] 
+Checking vault: MetaMorpho WBTC Vault (0xBC8C37467c5Df9D50B42294B8628c25888BECF61)
+[11:59:05]   Supply shares: 0
+[11:59:05]   Borrow shares: 3065044593020
+[11:59:05]   Collateral: 7000000000000000
+[11:59:05]   ✓ Active position found!
+[11:59:05]   User shares: 199963134415434
+[11:59:05]   Loan token: 0x79A02482A880bCE3F13e09Da970dC34db4CD24d1
+[11:59:05]   Collateral token: 0x4200000000000000000000000000000000000006
+[11:59:05]   LLTV: 0.86
+[11:59:07]   ERROR: HTTP request failed.
+
+URL: https://worldchain-mainnet.g.alchemy.com/public
+Request body: {"method":"eth_call","params":[{"data":"0x07a2d13a0000000000000000000000000000000000000000000000000000b5dd8b98524a","to":"0xBC8C37467c5Df9D50B42294B8628c25888BECF61"},"latest"]}
+ 
+Raw Call Arguments:
+  to:    0xBC8C37467c5Df9D50B42294B8628c25888BECF61
+  data:  0x07a2d13a0000000000000000000000000000000000000000000000000000b5dd8b98524a
+ 
+Contract Call:
+  address:   0xBC8C37467c5Df9D50B42294B8628c25888BECF61
+  function:  convertToAssets(uint256 shares)
+  args:                     (199963134415434)
+
+Docs: https://viem.sh/docs/contract/readContract
+Details: Failed to fetch
+Version: viem@2.37.12
+[11:59:07] 
+=== Total MetaMorpho positions: 3 ===
+[11:59:07]   ERROR processing position: HTTP request failed.
+
+URL: https://worldchain-mainnet.g.alchemy.com/public
+Request body: {"method":"eth_call","params":[{"data":"0x5c60e39a5fadb14df6523eb13a939f8024dbc54b10bdb4e521741e9995e2951337134b53","to":"0xe741bc7c34758b4cae05062794e8ae24978af432"},"latest"]}
+ 
+Raw Call Arguments:
+  to:    0xe741bc7c34758b4cae05062794e8ae24978af432
+  data:  0x5c60e39a5fadb14df6523eb13a939f8024dbc54b10bdb4e521741e9995e2951337134b53
+ 
+Contract Call:
+  address:   0xe741bc7c34758b4cae05062794e8ae24978af432
+  function:  market(bytes32 id)
+  args:            (0x5fadb14df6523eb13a939f8024dbc54b10bdb4e521741e9995e2951337134b53)
+
+Docs: https://viem.sh/docs/contract/readContract
+Details: Failed to fetch
+Version: viem@2.37.12
+[11:59:07] 
+Checking market: 0x296a8139fbd0e764a517d26956bb868a6c07b30c8627df5ad9a720963622bf37
+[11:59:08]   ERROR: HTTP request failed.
+
+URL: https://worldchain-mainnet.g.alchemy.com/public
+Request body: {"method":"eth_call","params":[{"data":"0x93c52062296a8139fbd0e764a517d26956bb868a6c07b30c8627df5ad9a720963622bf37000000000000000000000000f16e5d002a10e27ec3d90efb8d2a5c893ab5a002","to":"0xe741bc7c34758b4cae05062794e8ae24978af432"},"latest"]}
+ 
+Raw Call Arguments:
+  to:    0xe741bc7c34758b4cae05062794e8ae24978af432
+  data:  0x93c52062296a8139fbd0e764a517d26956bb868a6c07b30c8627df5ad9a720963622bf37000000000000000000000000f16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+ 
+Contract Call:
+  address:   0xe741bc7c34758b4cae05062794e8ae24978af432
+  function:  position(bytes32 id, address user)
+  args:              (0x296a8139fbd0e764a517d26956bb868a6c07b30c8627df5ad9a720963622bf37, 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002)
+
+Docs: https://viem.sh/docs/contract/readContract
+Details: Failed to fetch
+Version: viem@2.37.12
+[11:59:08] 
+Checking market: 0x14f297e80b8d7410ad506f80f2d747ff9eb0d9d44ab8c298a444219fcaf3c2f2
+[11:59:09]   ERROR: HTTP request failed.
+
+URL: https://worldchain-mainnet.g.alchemy.com/public
+Request body: {"method":"eth_call","params":[{"data":"0x93c5206214f297e80b8d7410ad506f80f2d747ff9eb0d9d44ab8c298a444219fcaf3c2f2000000000000000000000000f16e5d002a10e27ec3d90efb8d2a5c893ab5a002","to":"0xe741bc7c34758b4cae05062794e8ae24978af432"},"latest"]}
+ 
+Raw Call Arguments:
+  to:    0xe741bc7c34758b4cae05062794e8ae24978af432
+  data:  0x93c5206214f297e80b8d7410ad506f80f2d747ff9eb0d9d44ab8c298a444219fcaf3c2f2000000000000000000000000f16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+ 
+Contract Call:
+  address:   0xe741bc7c34758b4cae05062794e8ae24978af432
+  function:  position(bytes32 id, address user)
+  args:              (0x14f297e80b8d7410ad506f80f2d747ff9eb0d9d44ab8c298a444219fcaf3c2f2, 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002)
+
+Docs: https://viem.sh/docs/contract/readContract
+Details: Failed to fetch
+Version: viem@2.37.12
+[11:59:09] 
+Checking market: 0x19c682c3a37025075074cefea866fbe54656abc0fb6a7355b62a53f45b959abf
+[11:59:11]   Supply shares: 0
+[11:59:11]   Borrow shares: 199928552794430595236
+[11:59:11]   Collateral: 10000
+[11:59:11]   ✓ Active position found!
+[11:59:11]   Loan token: 0x4200000000000000000000000000000000000006
+[11:59:11]   Collateral token: 0x03C7054BCB39f7b2e5B2c7AcB37583e32D70Cfa3
+[11:59:11]   LLTV: 0.915
+[11:59:12]   Market info received
+[11:59:13]   Tokens: WETH/WBTC
+[11:59:13]   Token decimals: 18/8
+[11:59:13]   Raw values - Supply: 0, Borrow: 200000969741851, Collateral: 10000
+[11:59:13]   Formatted - Supply: 0, Borrow: 0.000200000969741851, Collateral: 0.0001
+[11:59:13]   Reading price from oracle: 0x02a3b10f867eeda1a7d165F5B18B4133AeAF66B8
+[11:59:14]   Oracle price raw: 294574590737623262565588718090129369437803555123
+[11:59:14]   Scale: 10^46 (36 + 18 - 8)
+[11:59:14]   Oracle price calculated: $29.457459073762326
+[11:59:14]   Using oracle price ratio: 29.457459073762326
+[11:59:14]   Using cached WBTC price: $113307
+[11:59:14]   Using cached WETH price: $3847.5
+[11:59:14]   Token prices - WBTC: $113307, WETH: $3847.5
+[11:59:14]   USD values - Collateral: $11.3307, Supply: $0, Borrow: $0.7695037310817717
+[11:59:14]   ✓ Position processed successfully!
+[11:59:14] 
+Checking market: 0x787c5ff694f04e20cc6b3932cd662425161109bb0d63b189c48d99e714a3bd69
+[11:59:14]   Supply shares: 0
+[11:59:14]   Borrow shares: 475704296444
+[11:59:14]   Collateral: 10000
+[11:59:14]   ✓ Active position found!
+[11:59:14]   Loan token: 0x79A02482A880bCE3F13e09Da970dC34db4CD24d1
+[11:59:14]   Collateral token: 0x03C7054BCB39f7b2e5B2c7AcB37583e32D70Cfa3
+[11:59:14]   LLTV: 0.86
+[11:59:15]   Market info received
+[11:59:15]   Tokens: USDC/WBTC
+[11:59:15]   Token decimals: 6/8
+[11:59:15]   Raw values - Supply: 0, Borrow: 500890, Collateral: 10000
+[11:59:15]   Formatted - Supply: 0, Borrow: 0.50089, Collateral: 0.0001
+[11:59:15]   Reading price from oracle: 0xf1be070598a59CF8A7FDf2c076E9a605f3b9535B
+[11:59:15]   Oracle price raw: 1132353564033145950000000000000000000000
+[11:59:15]   Scale: 10^34 (36 + 6 - 8)
+[11:59:15]   Oracle price calculated: $113235.35640331461
+[11:59:15]   Using oracle price ratio: 113235.35640331461
+[11:59:15]   Using cached WBTC price: $113307
+[11:59:15]   Using cached USDC price: $0.999949868162
+[11:59:15]   Token prices - WBTC: $113307, USDC: $0.999949868162
+[11:59:15]   USD values - Collateral: $11.3307, Supply: $0, Borrow: $0.5008648894636641
+[11:59:15]   ✓ Position processed successfully!
+[11:59:15] 
+=== TOTAL: 3 position(s) found ===
+[11:59:15] Lend positions count: 3
+[11:59:15] Lend data loaded successfully
+[11:59:28] Starting fetchLendData for wallet: 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:28] Fetching lend positions...
+[11:59:28]   Using cached WLD price: $0.940478161841
+[11:59:28] Starting fetchLendData for wallet: 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:28] Fetching lend positions...
+[11:59:28]   Using cached WLD price: $0.940478161841
+[11:59:28] Checking 6 known market(s)
+[11:59:28] User address: 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:28] Morpho Blue: 0xe741bc7c34758b4cae05062794e8ae24978af432
+[11:59:28] 
+Checking market: 0xba0ae12a5cdbf9a458566be68055f30c859771612950b5e43428a51becc6f6e9
+[11:59:28] 
+=== Checking MetaMorpho Vaults ===
+[11:59:28] 
+Checking vault: MetaMorpho USDC Vault (0xb1E80387EbE53Ff75a89736097D34dC8D9E9045B)
+[11:59:28] 
+=== Checking World App Vault (OP Mainnet) ===
+[11:59:28] 
+=== Fetching World App Vault Balance ===
+[11:59:28] User address: 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:28] Vault contract: 0x21c4928109acB0659A88AE5329b5374A3024694C
+[11:59:28] Calling getDeposit...
+[11:59:28] Checking 6 known market(s)
+[11:59:28] User address: 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:28] Morpho Blue: 0xe741bc7c34758b4cae05062794e8ae24978af432
+[11:59:28] 
+Checking market: 0xba0ae12a5cdbf9a458566be68055f30c859771612950b5e43428a51becc6f6e9
+[11:59:28] 
+=== Checking MetaMorpho Vaults ===
+[11:59:28] 
+Checking vault: MetaMorpho USDC Vault (0xb1E80387EbE53Ff75a89736097D34dC8D9E9045B)
+[11:59:28] 
+=== Checking World App Vault (OP Mainnet) ===
+[11:59:28] 
+=== Fetching World App Vault Balance ===
+[11:59:28] User address: 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+[11:59:28] Vault contract: 0x21c4928109acB0659A88AE5329b5374A3024694C
+[11:59:28] Calling getDeposit...
+[11:59:28]   Supply shares: 0
+[11:59:28]   Borrow shares: 0
+[11:59:28]   Collateral: 532523523567079579004
+[11:59:28]   ✓ Active position found!
+[11:59:28]   User shares: 1069360590816822950362
+[11:59:28]   Supply shares: 0
+[11:59:28]   Borrow shares: 0
+[11:59:28]   Collateral: 532523523567079579004
+[11:59:28]   ✓ Active position found!
+[11:59:28]   User shares: 1069360590816822950362
+[11:59:28]   Assets: 1081887624
+[11:59:28]   Formatted supply: 1081.887624 USDC
+[11:59:28]   Using cached USDC price: $0.999949868162
+[11:59:28]   Token price: $0.999949868162
+[11:59:28]   USD value: $1081.8333869848993
+[11:59:28]   ✓ Position added
+[11:59:28] 
+Checking vault: MetaMorpho WLD Vault (0x348831b46876d3dF2Db98BdEc5E3B4083329Ab9f)
+[11:59:28]   Loan token: 0x79A02482A880bCE3F13e09Da970dC34db4CD24d1
+[11:59:28]   Collateral token: 0x2cFc85d8E48F8EAB294be644d9E25C3030863003
+[11:59:28]   LLTV: 0.77
+[11:59:28]   Assets: 1081887624
+[11:59:28]   Formatted supply: 1081.887624 USDC
+[11:59:28]   Using cached USDC price: $0.999949868162
+[11:59:28]   Token price: $0.999949868162
+[11:59:28]   USD value: $1081.8333869848993
+[11:59:28]   ✓ Position added
+[11:59:28] 
+Checking vault: MetaMorpho WLD Vault (0x348831b46876d3dF2Db98BdEc5E3B4083329Ab9f)
+[11:59:28]   Loan token: 0x79A02482A880bCE3F13e09Da970dC34db4CD24d1
+[11:59:28]   Collateral token: 0x2cFc85d8E48F8EAB294be644d9E25C3030863003
+[11:59:28]   LLTV: 0.77
+[11:59:28]   User shares: 1002798442262068615933
+[11:59:28]   Market info received
+[11:59:28]   Tokens: USDC/WLD
+[11:59:28]   Token decimals: 6/18
+[11:59:28]   Raw values - Supply: 0, Borrow: 0, Collateral: 532523523567079579004
+[11:59:28]   Formatted - Supply: 0, Borrow: 0, Collateral: 532.523523567079579004
+[11:59:28]   Reading price from oracle: 0x8006A014e828a458545e6613C4b35Cd64b5143D5
+[11:59:28]   User shares: 1002798442262068615933
+[11:59:28]   Market info received
+[11:59:28]   Tokens: USDC/WLD
+[11:59:28]   Token decimals: 6/18
+[11:59:28]   Raw values - Supply: 0, Borrow: 0, Collateral: 532523523567079579004
+[11:59:28]   Formatted - Supply: 0, Borrow: 0, Collateral: 532.523523567079579004
+[11:59:28]   Reading price from oracle: 0x8006A014e828a458545e6613C4b35Cd64b5143D5
+[11:59:28]   Raw result type: object
+[11:59:28]   Raw result is array: true
+[11:59:28]   Result keys: 0, 1, 2, 3
+[11:59:28]   depositInfo[0]: 0
+[11:59:28]   depositInfo.amount: undefined
+[11:59:28]   amount: 0
+[11:59:28]   endTime: 0
+[11:59:28]   depositedAmount: 0
+[11:59:28]   lastInterestCalculation: 0
+[11:59:28] No Vault deposit found (amount and depositedAmount are both 0)
+[11:59:28] No World App Vault balance
+[11:59:28]   Raw result type: object
+[11:59:28]   Raw result is array: true
+[11:59:28]   Result keys: 0, 1, 2, 3
+[11:59:28]   depositInfo[0]: 0
+[11:59:28]   depositInfo.amount: undefined
+[11:59:28]   amount: 0
+[11:59:28]   endTime: 0
+[11:59:28]   depositedAmount: 0
+[11:59:28]   lastInterestCalculation: 0
+[11:59:28] No Vault deposit found (amount and depositedAmount are both 0)
+[11:59:28] No World App Vault balance
+[11:59:29]   Assets: 1002807449873829239176
+[11:59:29]   Formatted supply: 1002.807449873829239176 WLD
+[11:59:29]   Using cached WLD price: $0.940478161841
+[11:59:29]   Token price: $0.940478161841
+[11:59:29]   USD value: $943.1185071377996
+[11:59:29]   ✓ Position added
+[11:59:29] 
+Checking vault: MetaMorpho WETH Vault (0x0Db7E405278c2674F462aC9D9eb8b8346D1c1571)
+[11:59:29]   Oracle price raw: 943032067803858200000000
+[11:59:29]   Scale: 10^24 (36 + 6 - 18)
+[11:59:29]   Oracle price calculated: $0.9430320678038583
+[11:59:29]   Using oracle price ratio: 0.9430320678038583
+[11:59:29]   Using cached WLD price: $0.940478161841
+[11:59:29]   Using cached USDC price: $0.999949868162
+[11:59:29]   Token prices - WLD: $0.940478161841, USDC: $0.999949868162
+[11:59:29]   USD values - Collateral: $500.8267445814594, Supply: $0, Borrow: $0
+[11:59:29]   ✓ Position processed successfully!
+[11:59:29] 
+Checking market: 0x5fadb14df6523eb13a939f8024dbc54b10bdb4e521741e9995e2951337134b53
+[11:59:29]   Oracle price raw: 943032067803858200000000
+[11:59:29]   Scale: 10^24 (36 + 6 - 18)
+[11:59:29]   Oracle price calculated: $0.9430320678038583
+[11:59:29]   Using oracle price ratio: 0.9430320678038583
+[11:59:29]   Using cached WLD price: $0.940478161841
+[11:59:29]   Using cached USDC price: $0.999949868162
+[11:59:29]   Token prices - WLD: $0.940478161841, USDC: $0.999949868162
+[11:59:29]   USD values - Collateral: $500.8267445814594, Supply: $0, Borrow: $0
+[11:59:29]   ✓ Position processed successfully!
+[11:59:29] 
+Checking market: 0x5fadb14df6523eb13a939f8024dbc54b10bdb4e521741e9995e2951337134b53
+[11:59:29]   Assets: 1002807449873829239176
+[11:59:29]   Formatted supply: 1002.807449873829239176 WLD
+[11:59:29]   Using cached WLD price: $0.940478161841
+[11:59:29]   Token price: $0.940478161841
+[11:59:29]   USD value: $943.1185071377996
+[11:59:29]   ✓ Position added
+[11:59:29] 
+Checking vault: MetaMorpho WETH Vault (0x0Db7E405278c2674F462aC9D9eb8b8346D1c1571)
+[11:59:29]   User shares: 199997325994261
+[11:59:29]   Supply shares: 0
+[11:59:29]   Borrow shares: 3065044593020
+[11:59:29]   Collateral: 7000000000000000
+[11:59:29]   ✓ Active position found!
+[11:59:29]   Supply shares: 0
+[11:59:29]   Borrow shares: 3065044593020
+[11:59:29]   Collateral: 7000000000000000
+[11:59:29]   ✓ Active position found!
+[11:59:29]   User shares: 199997325994261
+[11:59:29]   Assets: 200000129745347
+[11:59:29]   Formatted supply: 0.000200000129745347 WETH
+[11:59:29]   Using cached WETH price: $3847.5
+[11:59:29]   Token price: $3847.5
+[11:59:29]   USD value: $0.7695004991952226
+[11:59:29]   ✓ Position added
+[11:59:29] 
+Checking vault: MetaMorpho WBTC Vault (0xBC8C37467c5Df9D50B42294B8628c25888BECF61)
+[11:59:29]   Loan token: 0x79A02482A880bCE3F13e09Da970dC34db4CD24d1
+[11:59:29]   Collateral token: 0x4200000000000000000000000000000000000006
+[11:59:29]   LLTV: 0.86
+[11:59:29]   Loan token: 0x79A02482A880bCE3F13e09Da970dC34db4CD24d1
+[11:59:29]   Collateral token: 0x4200000000000000000000000000000000000006
+[11:59:29]   LLTV: 0.86
+[11:59:29]   Assets: 200000129745347
+[11:59:29]   Formatted supply: 0.000200000129745347 WETH
+[11:59:29]   Using cached WETH price: $3847.5
+[11:59:29]   Token price: $3847.5
+[11:59:29]   USD value: $0.7695004991952226
+[11:59:29]   ✓ Position added
+[11:59:29] 
+Checking vault: MetaMorpho WBTC Vault (0xBC8C37467c5Df9D50B42294B8628c25888BECF61)
+[11:59:30]   ERROR processing position: HTTP request failed.
+
+URL: https://worldchain-mainnet.g.alchemy.com/public
+Request body: {"method":"eth_call","params":[{"data":"0x5c60e39a5fadb14df6523eb13a939f8024dbc54b10bdb4e521741e9995e2951337134b53","to":"0xe741bc7c34758b4cae05062794e8ae24978af432"},"latest"]}
+ 
+Raw Call Arguments:
+  to:    0xe741bc7c34758b4cae05062794e8ae24978af432
+  data:  0x5c60e39a5fadb14df6523eb13a939f8024dbc54b10bdb4e521741e9995e2951337134b53
+ 
+Contract Call:
+  address:   0xe741bc7c34758b4cae05062794e8ae24978af432
+  function:  market(bytes32 id)
+  args:            (0x5fadb14df6523eb13a939f8024dbc54b10bdb4e521741e9995e2951337134b53)
+
+Docs: https://viem.sh/docs/contract/readContract
+Details: Failed to fetch
+Version: viem@2.37.12
+[11:59:30] 
+Checking market: 0x296a8139fbd0e764a517d26956bb868a6c07b30c8627df5ad9a720963622bf37
+[11:59:30]   ERROR processing position: HTTP request failed.
+
+URL: https://worldchain-mainnet.g.alchemy.com/public
+Request body: {"method":"eth_call","params":[{"data":"0x5c60e39a5fadb14df6523eb13a939f8024dbc54b10bdb4e521741e9995e2951337134b53","to":"0xe741bc7c34758b4cae05062794e8ae24978af432"},"latest"]}
+ 
+Raw Call Arguments:
+  to:    0xe741bc7c34758b4cae05062794e8ae24978af432
+  data:  0x5c60e39a5fadb14df6523eb13a939f8024dbc54b10bdb4e521741e9995e2951337134b53
+ 
+Contract Call:
+  address:   0xe741bc7c34758b4cae05062794e8ae24978af432
+  function:  market(bytes32 id)
+  args:            (0x5fadb14df6523eb13a939f8024dbc54b10bdb4e521741e9995e2951337134b53)
+
+Docs: https://viem.sh/docs/contract/readContract
+Details: Failed to fetch
+Version: viem@2.37.12
+[11:59:30] 
+Checking market: 0x296a8139fbd0e764a517d26956bb868a6c07b30c8627df5ad9a720963622bf37
+[11:59:30]   ERROR: HTTP request failed.
+
+URL: https://worldchain-mainnet.g.alchemy.com/public
+Request body: {"method":"eth_call","params":[{"data":"0x70a08231000000000000000000000000f16e5d002a10e27ec3d90efb8d2a5c893ab5a002","to":"0xBC8C37467c5Df9D50B42294B8628c25888BECF61"},"latest"]}
+ 
+Raw Call Arguments:
+  to:    0xBC8C37467c5Df9D50B42294B8628c25888BECF61
+  data:  0x70a08231000000000000000000000000f16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+ 
+Contract Call:
+  address:   0xBC8C37467c5Df9D50B42294B8628c25888BECF61
+  function:  balanceOf(address account)
+  args:               (0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002)
+
+Docs: https://viem.sh/docs/contract/readContract
+Details: Failed to fetch
+Version: viem@2.37.12
+[11:59:30] 
+=== Total MetaMorpho positions: 3 ===
+[11:59:30]   User shares: 199963134415434
+[11:59:31]   Supply shares: 0
+[11:59:31]   Borrow shares: 1999848826188526610339499
+[11:59:31]   Collateral: 7421652481411783
+[11:59:31]   ✓ Active position found!
+[11:59:31]   Supply shares: 0
+[11:59:31]   Borrow shares: 1999848826188526610339499
+[11:59:31]   Collateral: 7421652481411783
+[11:59:31]   ✓ Active position found!
+[11:59:32]   Loan token: 0x2cFc85d8E48F8EAB294be644d9E25C3030863003
+[11:59:32]   Collateral token: 0x4200000000000000000000000000000000000006
+[11:59:32]   LLTV: 0.86
+[11:59:32]   ERROR: HTTP request failed.
+
+URL: https://worldchain-mainnet.g.alchemy.com/public
+Request body: {"method":"eth_call","params":[{"data":"0x07a2d13a0000000000000000000000000000000000000000000000000000b5dd8b98524a","to":"0xBC8C37467c5Df9D50B42294B8628c25888BECF61"},"latest"]}
+ 
+Raw Call Arguments:
+  to:    0xBC8C37467c5Df9D50B42294B8628c25888BECF61
+  data:  0x07a2d13a0000000000000000000000000000000000000000000000000000b5dd8b98524a
+ 
+Contract Call:
+  address:   0xBC8C37467c5Df9D50B42294B8628c25888BECF61
+  function:  convertToAssets(uint256 shares)
+  args:                     (199963134415434)
+
+Docs: https://viem.sh/docs/contract/readContract
+Details: Failed to fetch
+Version: viem@2.37.12
+[11:59:32] 
+=== Total MetaMorpho positions: 3 ===
+[11:59:32]   Loan token: 0x2cFc85d8E48F8EAB294be644d9E25C3030863003
+[11:59:32]   Collateral token: 0x4200000000000000000000000000000000000006
+[11:59:32]   LLTV: 0.86
+[11:59:32]   Market info received
+[11:59:32]   Tokens: WLD/WETH
+[11:59:32]   Token decimals: 18/18
+[11:59:32]   Raw values - Supply: 0, Borrow: 2000132786692935226, Collateral: 7421652481411783
+[11:59:32]   Formatted - Supply: 0, Borrow: 2.000132786692935226, Collateral: 0.007421652481411783
+[11:59:32]   Reading price from oracle: 0xB7fEBE1d85c82CC868B585Edf9Fa8aF480426bb8
+[11:59:33]   Oracle price raw: 4079131237590242788410858031347376019256
+[11:59:33]   Scale: 10^36 (36 + 18 - 18)
+[11:59:33]   Oracle price calculated: $4079.1312375902426
+[11:59:33]   Using oracle price ratio: 4079.1312375902426
+[11:59:33]   Using cached WETH price: $3847.5
+[11:59:33]   Using cached WLD price: $0.940478161841
+[11:59:33]   Token prices - WETH: $3847.5, WLD: $0.940478161841
+[11:59:33]   USD values - Collateral: $28.554807922231834, Supply: $0, Borrow: $1.8810812066668885
+[11:59:33]   ✓ Position processed successfully!
+[11:59:33] 
+Checking market: 0x14f297e80b8d7410ad506f80f2d747ff9eb0d9d44ab8c298a444219fcaf3c2f2
+[11:59:33]   ERROR processing position: HTTP request failed.
+
+URL: https://worldchain-mainnet.g.alchemy.com/public
+Request body: {"method":"eth_call","params":[{"data":"0x5c60e39a296a8139fbd0e764a517d26956bb868a6c07b30c8627df5ad9a720963622bf37","to":"0xe741bc7c34758b4cae05062794e8ae24978af432"},"latest"]}
+ 
+Raw Call Arguments:
+  to:    0xe741bc7c34758b4cae05062794e8ae24978af432
+  data:  0x5c60e39a296a8139fbd0e764a517d26956bb868a6c07b30c8627df5ad9a720963622bf37
+ 
+Contract Call:
+  address:   0xe741bc7c34758b4cae05062794e8ae24978af432
+  function:  market(bytes32 id)
+  args:            (0x296a8139fbd0e764a517d26956bb868a6c07b30c8627df5ad9a720963622bf37)
+
+Docs: https://viem.sh/docs/contract/readContract
+Details: Failed to fetch
+Version: viem@2.37.12
+[11:59:33] 
+Checking market: 0x14f297e80b8d7410ad506f80f2d747ff9eb0d9d44ab8c298a444219fcaf3c2f2
+[11:59:33]   Supply shares: 0
+[11:59:33]   Borrow shares: 799917188058443252186617
+[11:59:33]   Collateral: 10000
+[11:59:33]   ✓ Active position found!
+[11:59:34]   Loan token: 0x2cFc85d8E48F8EAB294be644d9E25C3030863003
+[11:59:34]   Collateral token: 0x03C7054BCB39f7b2e5B2c7AcB37583e32D70Cfa3
+[11:59:34]   LLTV: 0.86
+[11:59:34]   Market info received
+[11:59:34]   Tokens: WLD/WBTC
+[11:59:34]   Token decimals: 18/8
+[11:59:34]   Raw values - Supply: 0, Borrow: 800057156987301839, Collateral: 10000
+[11:59:34]   Formatted - Supply: 0, Borrow: 0.800057156987301839, Collateral: 0.0001
+[11:59:34]   Reading price from oracle: 0xE34627DC6304fC5c63898C3B69CC1c8bF4c1A192
+[11:59:34]   ERROR: HTTP request failed.
+
+URL: https://worldchain-mainnet.g.alchemy.com/public
+Request body: {"method":"eth_call","params":[{"data":"0x93c5206214f297e80b8d7410ad506f80f2d747ff9eb0d9d44ab8c298a444219fcaf3c2f2000000000000000000000000f16e5d002a10e27ec3d90efb8d2a5c893ab5a002","to":"0xe741bc7c34758b4cae05062794e8ae24978af432"},"latest"]}
+ 
+Raw Call Arguments:
+  to:    0xe741bc7c34758b4cae05062794e8ae24978af432
+  data:  0x93c5206214f297e80b8d7410ad506f80f2d747ff9eb0d9d44ab8c298a444219fcaf3c2f2000000000000000000000000f16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+ 
+Contract Call:
+  address:   0xe741bc7c34758b4cae05062794e8ae24978af432
+  function:  position(bytes32 id, address user)
+  args:              (0x14f297e80b8d7410ad506f80f2d747ff9eb0d9d44ab8c298a444219fcaf3c2f2, 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002)
+
+Docs: https://viem.sh/docs/contract/readContract
+Details: Failed to fetch
+Version: viem@2.37.12
+[11:59:34] 
+Checking market: 0x19c682c3a37025075074cefea866fbe54656abc0fb6a7355b62a53f45b959abf
+[11:59:34]   Supply shares: 0
+[11:59:34]   Borrow shares: 199928552794430595236
+[11:59:34]   Collateral: 10000
+[11:59:34]   ✓ Active position found!
+[11:59:35]   Oracle price raw: 1201000249506738619983706455519092861704396258412127
+[11:59:35]   Scale: 10^46 (36 + 18 - 8)
+[11:59:35]   Oracle price calculated: $120100.02495067386
+[11:59:35]   Using oracle price ratio: 120100.02495067386
+[11:59:35]   Using cached WBTC price: $113307
+[11:59:35]   Using cached WLD price: $0.940478161841
+[11:59:35]   Token prices - WBTC: $113307, WLD: $0.940478161841
+[11:59:35]   USD values - Collateral: $11.3307, Supply: $0, Borrow: $0.752436284371154
+[11:59:35]   ✓ Position processed successfully!
+[11:59:35] 
+Checking market: 0x19c682c3a37025075074cefea866fbe54656abc0fb6a7355b62a53f45b959abf
+[11:59:35]   Supply shares: 0
+[11:59:35]   Borrow shares: 199928552794430595236
+[11:59:35]   Collateral: 10000
+[11:59:35]   ✓ Active position found!
+[11:59:36]   Loan token: 0x4200000000000000000000000000000000000006
+[11:59:36]   Collateral token: 0x03C7054BCB39f7b2e5B2c7AcB37583e32D70Cfa3
+[11:59:36]   LLTV: 0.915
+[11:59:36]   ERROR processing position: HTTP request failed.
+
+URL: https://worldchain-mainnet.g.alchemy.com/public
+Request body: {"method":"eth_call","params":[{"data":"0x2c3c915719c682c3a37025075074cefea866fbe54656abc0fb6a7355b62a53f45b959abf","to":"0xe741bc7c34758b4cae05062794e8ae24978af432"},"latest"]}
+ 
+Raw Call Arguments:
+  to:    0xe741bc7c34758b4cae05062794e8ae24978af432
+  data:  0x2c3c915719c682c3a37025075074cefea866fbe54656abc0fb6a7355b62a53f45b959abf
+ 
+Contract Call:
+  address:   0xe741bc7c34758b4cae05062794e8ae24978af432
+  function:  idToMarketParams(bytes32 id)
+  args:                      (0x19c682c3a37025075074cefea866fbe54656abc0fb6a7355b62a53f45b959abf)
+
+Docs: https://viem.sh/docs/contract/readContract
+Details: Failed to fetch
+Version: viem@2.37.12
+[11:59:36] 
+Checking market: 0x787c5ff694f04e20cc6b3932cd662425161109bb0d63b189c48d99e714a3bd69
+[11:59:36]   Market info received
+[11:59:36]   Tokens: WETH/WBTC
+[11:59:36]   Token decimals: 18/8
+[11:59:36]   Raw values - Supply: 0, Borrow: 200000969926107, Collateral: 10000
+[11:59:36]   Formatted - Supply: 0, Borrow: 0.000200000969926107, Collateral: 0.0001
+[11:59:36]   Reading price from oracle: 0x02a3b10f867eeda1a7d165F5B18B4133AeAF66B8
+[11:59:36]   Oracle price raw: 294425498851131004335116716356495269194517848662
+[11:59:36]   Scale: 10^46 (36 + 18 - 8)
+[11:59:36]   Oracle price calculated: $29.4425498851131
+[11:59:36]   Using oracle price ratio: 29.4425498851131
+[11:59:36]   Using cached WBTC price: $113307
+[11:59:36]   Using cached WETH price: $3847.5
+[11:59:36]   Token prices - WBTC: $113307, WETH: $3847.5
+[11:59:36]   USD values - Collateral: $11.3307, Supply: $0, Borrow: $0.7695037317906966
+[11:59:36]   ✓ Position processed successfully!
+[11:59:36] 
+Checking market: 0x787c5ff694f04e20cc6b3932cd662425161109bb0d63b189c48d99e714a3bd69
+[11:59:37]   Supply shares: 0
+[11:59:37]   Borrow shares: 475704296444
+[11:59:37]   Collateral: 10000
+[11:59:37]   ✓ Active position found!
+[11:59:37]   ERROR: HTTP request failed.
+
+URL: https://worldchain-mainnet.g.alchemy.com/public
+Request body: {"method":"eth_call","params":[{"data":"0x93c52062787c5ff694f04e20cc6b3932cd662425161109bb0d63b189c48d99e714a3bd69000000000000000000000000f16e5d002a10e27ec3d90efb8d2a5c893ab5a002","to":"0xe741bc7c34758b4cae05062794e8ae24978af432"},"latest"]}
+ 
+Raw Call Arguments:
+  to:    0xe741bc7c34758b4cae05062794e8ae24978af432
+  data:  0x93c52062787c5ff694f04e20cc6b3932cd662425161109bb0d63b189c48d99e714a3bd69000000000000000000000000f16e5d002a10e27ec3d90efb8d2a5c893ab5a002
+ 
+Contract Call:
+  address:   0xe741bc7c34758b4cae05062794e8ae24978af432
+  function:  position(bytes32 id, address user)
+  args:              (0x787c5ff694f04e20cc6b3932cd662425161109bb0d63b189c48d99e714a3bd69, 0xf16e5d002a10e27ec3d90efb8d2a5c893ab5a002)
+
+Docs: https://viem.sh/docs/contract/readContract
+Details: Failed to fetch
+Version: viem@2.37.12
+[11:59:37] 
+=== TOTAL: 2 position(s) found ===
+[11:59:37] Lend positions count: 3
+[11:59:37] Lend data loaded successfully
+[11:59:37]   Loan token: 0x79A02482A880bCE3F13e09Da970dC34db4CD24d1
+[11:59:37]   Collateral token: 0x03C7054BCB39f7b2e5B2c7AcB37583e32D70Cfa3
+[11:59:37]   LLTV: 0.86
+[11:59:38]   Market info received
+[11:59:38]   Tokens: USDC/WBTC
+[11:59:38]   Token decimals: 6/8
+[11:59:38]   Raw values - Supply: 0, Borrow: 500890, Collateral: 10000
+[11:59:38]   Formatted - Supply: 0, Borrow: 0.50089, Collateral: 0.0001
+[11:59:38]   Reading price from oracle: 0xf1be070598a59CF8A7FDf2c076E9a605f3b9535B
+[11:59:38]   Oracle price raw: 1132581748725289350000000000000000000000
+[11:59:38]   Scale: 10^34 (36 + 6 - 8)
+[11:59:38]   Oracle price calculated: $113258.17487252894
+[11:59:38]   Using oracle price ratio: 113258.17487252894
+[11:59:38]   Using cached WBTC price: $113307
+[11:59:38]   Using cached USDC price: $0.999949868162
+[11:59:38]   Token prices - WBTC: $113307, USDC: $0.999949868162
+[11:59:38]   USD values - Collateral: $11.3307, Supply: $0, Borrow: $0.5008648894636641
+[11:59:38]   ✓ Position processed successfully!
+[11:59:38] 
+=== TOTAL: 4 position(s) found ===
+[11:59:38] Lend positions count: 3
+[11:59:38] Lend data loaded successfully

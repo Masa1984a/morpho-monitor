@@ -2,6 +2,7 @@ import { createPublicClient, http, formatUnits } from 'viem';
 import { MarketPosition } from '@/types/morpho';
 import { getActiveMarketIds } from './market-config';
 import { METAMORPHO_VAULTS, type MetaMorphoVault } from './metamorpho-config';
+import { WorldAppVaultClient } from './worldapp-vault';
 
 // World Chain configuration
 const WORLD_CHAIN = {
@@ -780,10 +781,14 @@ export class WorldChainRPCClient {
 
   // Helper to separate lend and borrow positions
   async getLendPositions(address: string): Promise<any[]> {
-    // Get positions from both Morpho Blue markets and MetaMorpho vaults
-    const [morphoPositions, vaultPositions] = await Promise.all([
+    // Get WLD price first for World App Vault calculation
+    const wldPrice = await this.getTokenPrice('WLD');
+
+    // Get positions from Morpho Blue markets, MetaMorpho vaults, and World App Vault
+    const [morphoPositions, vaultPositions, worldAppVault] = await Promise.all([
       this.getUserPositions(address),
-      this.getMetaMorphoPositions(address)
+      this.getMetaMorphoPositions(address),
+      this.getWorldAppVaultPosition(address, wldPrice)
     ]);
 
     // Filter Morpho Blue positions for lend only
@@ -800,8 +805,68 @@ export class WorldChainRPCClient {
         }
       }));
 
-    // Combine both types of positions
-    return [...morphoLendPositions, ...vaultPositions];
+    // Combine all types of positions
+    const allPositions = [...morphoLendPositions, ...vaultPositions];
+
+    // Add World App Vault if it exists
+    if (worldAppVault) {
+      allPositions.push(worldAppVault);
+    }
+
+    return allPositions;
+  }
+
+  // Get World App Vault position
+  async getWorldAppVaultPosition(address: string, wldPriceUsd: number): Promise<any | null> {
+    this.log(`\n=== Checking World App Vault (OP Mainnet) ===`);
+
+    try {
+      const vaultClient = WorldAppVaultClient.getInstance();
+      vaultClient.setExternalLogger((msg) => this.log(msg));
+
+      const vaultBalance = await vaultClient.getVaultBalance(address, wldPriceUsd);
+
+      if (!vaultBalance || parseFloat(vaultBalance.amountNow) === 0) {
+        this.log('No World App Vault balance');
+        return null;
+      }
+
+      this.log(`✓ World App Vault position found: ${vaultBalance.amountNow} WLD`);
+
+      return {
+        type: 'lend' as const,
+        vaultType: 'worldapp-vault' as const,
+        market: {
+          uniqueKey: '0x21c4928109acB0659A88AE5329b5374A3024694C', // Vault contract address
+          lltv: '0',
+          loanAsset: {
+            address: '0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1', // WLD on OP Mainnet
+            symbol: 'WLD',
+            decimals: vaultBalance.decimals
+          },
+          collateralAsset: {
+            address: '0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1',
+            symbol: 'WLD',
+            decimals: vaultBalance.decimals
+          }
+        },
+        state: {
+          supplyAssets: vaultBalance.amountNow,
+          supplyAssetsUsd: vaultBalance.amountNowUsd,
+          supplyShares: vaultBalance.principal, // Store principal here
+          // Additional World App Vault specific fields
+          principal: vaultBalance.principal,
+          principalUsd: vaultBalance.principalUsd,
+          accruedInterest: vaultBalance.accruedInterest,
+          accruedInterestUsd: vaultBalance.accruedInterestUsd,
+          endTime: vaultBalance.endTime,
+          lastCalc: vaultBalance.lastCalc
+        }
+      };
+    } catch (error) {
+      this.log(`ERROR fetching World App Vault: ${error instanceof Error ? error.message : String(error)}`);
+      return null;
+    }
   }
 
   async getBorrowPositions(address: string): Promise<any[]> {
