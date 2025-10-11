@@ -46,29 +46,20 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
       />
 
       <div className="relative z-10 w-full max-w-xl">
-        <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-white/10 px-10 py-14 shadow-[0_40px_120px_rgba(15,23,42,0.55)] backdrop-blur-2xl">
-          <div
-            className="pointer-events-none absolute -right-24 top-6 h-56 w-56 rounded-full bg-gradient-to-br from-cyan-400/40 via-fuchsia-500/30 to-transparent blur-3xl"
-            aria-hidden="true"
-          />
-          <div
-            className="pointer-events-none absolute -left-28 -bottom-28 h-72 w-72 rounded-full bg-gradient-to-tr from-blue-500/25 via-teal-400/30 to-transparent blur-3xl"
-            aria-hidden="true"
-          />
-
+        <div className="relative overflow-hidden rounded-3xl border border-gray-200 bg-white/70 backdrop-blur-md px-10 py-14 shadow-2xl">
           <div className="relative text-center">
-            <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white/70">
+            <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-gray-600">
               WalletConnect
             </div>
-            <h2 className="mb-4 text-3xl font-semibold leading-tight text-white sm:text-4xl">
+            <h2 className="mb-4 text-3xl font-semibold leading-tight text-gray-900 sm:text-4xl">
               Crypto Asset Monitor
             </h2>
-            <p className="mx-auto mb-10 max-w-md text-sm text-white/70">
+            <p className="mx-auto mb-10 max-w-md text-sm text-gray-600">
               Connect your World App wallet to view your asset, earning and borrowing.
             </p>
 
             {error && (
-              <div className="mb-6 rounded-2xl border border-red-500/40 bg-red-500/10 px-5 py-4 text-sm text-red-200 backdrop-blur">
+              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
                 {error}
               </div>
             )}
@@ -76,16 +67,16 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
             <button
               onClick={handleConnect}
               disabled={isConnecting}
-              className={`group relative flex w-full items-center justify-center overflow-hidden rounded-full px-6 py-3 text-sm font-semibold tracking-wide transition-transform duration-300 ${
+              className={`group relative flex w-full items-center justify-center overflow-hidden rounded-full px-6 py-3 text-sm font-semibold tracking-wide transition-all duration-300 ${
                 isConnecting
-                  ? 'cursor-not-allowed bg-white/10 text-white/60'
-                  : 'bg-gradient-to-r from-cyan-300 via-sky-500 to-indigo-500 text-slate-900 shadow-[0_20px_60px_rgba(56,189,248,0.45)] hover:scale-[1.02] hover:shadow-[0_32px_90px_rgba(99,102,241,0.55)] active:scale-95'
+                  ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                  : 'bg-gradient-to-r from-morpho-blue to-morpho-purple text-white shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95'
               }`}
             >
               {isConnecting ? (
                 <span className="flex items-center justify-center gap-3">
                   <svg
-                    className="h-5 w-5 animate-spin text-white/70"
+                    className="h-5 w-5 animate-spin text-gray-400"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -108,10 +99,10 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.8)]" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.6)]" />
                   Connect Wallet
                   <svg
-                    className="h-4 w-4 text-slate-900/80 transition-transform group-hover:translate-x-1"
+                    className="h-4 w-4 text-white transition-transform group-hover:translate-x-1"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -128,8 +119,8 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
               )}
             </button>
 
-            <div className="mt-10 space-y-5 text-xs text-white/55">
-              <p className="text-white/40">
+            <div className="mt-10 space-y-5 text-xs text-gray-600">
+              <p className="text-gray-600">
                 This is an independent community dashboard. Always verify your positions on the canonical World &amp; Morpho interface.
               </p>
             </div>
