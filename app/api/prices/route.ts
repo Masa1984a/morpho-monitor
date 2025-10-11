@@ -18,6 +18,16 @@ interface WorldCoinPriceResponse {
 interface CoinGeckoPriceResponse {
   bitcoin?: { usd: number };
   ethereum?: { usd: number };
+  solana?: { usd: number };
+  dogecoin?: { usd: number };
+  ripple?: { usd: number };
+  sui?: { usd: number };
+  stellar?: { usd: number };
+  litecoin?: { usd: number };
+  'shiba-inu'?: { usd: number };
+  cardano?: { usd: number };
+  chainlink?: { usd: number };
+  // Note: ORO, ORB, and oXAUt might not be available on CoinGecko
 }
 
 interface UnifiedPriceResponse {
@@ -25,6 +35,20 @@ interface UnifiedPriceResponse {
   USDC?: number;
   WBTC?: number;
   WETH?: number;
+  // Universal Protocol Assets
+  uSOL?: number;
+  uDOGE?: number;
+  uXRP?: number;
+  uSUI?: number;
+  uXLM?: number;
+  uLTC?: number;
+  uSHIB?: number;
+  uADA?: number;
+  uLINK?: number;
+  // Other Tokens
+  ORO?: number;
+  ORB?: number;
+  oXAUt?: number;
 }
 
 // Fetch with timeout and retry logic
@@ -101,10 +125,24 @@ export async function GET(request: Request) {
       console.error('World Coin API error:', error);
     }
 
-    // Fetch WBTC (Bitcoin) and WETH (Ethereum) from CoinGecko
+    // Fetch crypto prices from CoinGecko
     try {
+      const coinIds = [
+        'bitcoin',
+        'ethereum',
+        'solana',
+        'dogecoin',
+        'ripple',
+        'sui',
+        'stellar',
+        'litecoin',
+        'shiba-inu',
+        'cardano',
+        'chainlink'
+      ].join(',');
+
       const coinGeckoResponse = await fetchWithTimeout(
-        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd',
+        `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds}&vs_currencies=usd`,
         {
           headers: {
             'Accept': 'application/json',
@@ -118,13 +156,23 @@ export async function GET(request: Request) {
       if (coinGeckoResponse.ok) {
         const data: CoinGeckoPriceResponse = await coinGeckoResponse.json();
 
-        if (data.bitcoin?.usd) {
-          prices.WBTC = data.bitcoin.usd;
-        }
+        // Main tokens
+        if (data.bitcoin?.usd) prices.WBTC = data.bitcoin.usd;
+        if (data.ethereum?.usd) prices.WETH = data.ethereum.usd;
 
-        if (data.ethereum?.usd) {
-          prices.WETH = data.ethereum.usd;
-        }
+        // Universal Protocol Assets (mapped to their underlying assets)
+        if (data.solana?.usd) prices.uSOL = data.solana.usd;
+        if (data.dogecoin?.usd) prices.uDOGE = data.dogecoin.usd;
+        if (data.ripple?.usd) prices.uXRP = data.ripple.usd;
+        if (data.sui?.usd) prices.uSUI = data.sui.usd;
+        if (data.stellar?.usd) prices.uXLM = data.stellar.usd;
+        if (data.litecoin?.usd) prices.uLTC = data.litecoin.usd;
+        if (data['shiba-inu']?.usd) prices.uSHIB = data['shiba-inu'].usd;
+        if (data.cardano?.usd) prices.uADA = data.cardano.usd;
+        if (data.chainlink?.usd) prices.uLINK = data.chainlink.usd;
+
+        // Note: ORO, ORB, and oXAUt prices are not available from CoinGecko
+        // These would need to be fetched from a DEX or other source
       }
     } catch (error) {
       console.error('CoinGecko API error:', error);
