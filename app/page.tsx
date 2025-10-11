@@ -258,7 +258,7 @@ export default function Home() {
           title="Click to copy wallet address"
         >
           <span className="text-gray-700 font-mono">
-            {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+            Wallet ID: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
           </span>
           {addressCopied ? (
             <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

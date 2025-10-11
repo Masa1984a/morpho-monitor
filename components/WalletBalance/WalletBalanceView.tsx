@@ -83,6 +83,7 @@ export function WalletBalanceView({
               balanceUsd={token.balanceUsd}
               priceUsd={token.priceUsd}
               logoPath={`/crypto-logos/${token.symbol}.png`}
+              contractAddress={token.address}
             />
           ))
         ) : (
