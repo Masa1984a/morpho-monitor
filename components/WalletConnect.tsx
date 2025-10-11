@@ -61,7 +61,7 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
               WalletConnect
             </div>
             <h2 className="mb-4 text-3xl font-semibold leading-tight text-white sm:text-4xl">
-              Crypto Asset Monitorl
+              Crypto Asset Monitor
             </h2>
             <p className="mx-auto mb-10 max-w-md text-sm text-white/70">
               Connect your World App wallet to view your asset, earning and borrowing.
