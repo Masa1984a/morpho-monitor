@@ -28,13 +28,16 @@ export function LendPositionCard({ position }: LendPositionCardProps) {
     chainLabel = 'OP Mainnet';
   } else if (isMetaMorpho) {
     marketTitle = market.loanAsset.symbol;
-    marketType = 'MetaMorpho';
+    marketType = 'Morpho';
     chainLabel = 'World Chain';
   } else {
     marketTitle = `${market.collateralAsset.symbol} → ${market.loanAsset.symbol}`;
     marketType = 'Morpho Blue Market';
     chainLabel = 'World Chain';
   }
+
+  // Determine which logo to use
+  const logoSymbol = isWorldAppVault ? 'WLD' : 'Morpho';
 
   // Get World App Vault specific data if available
   const worldAppVaultData = isWorldAppVault ? (state as any) : null;
@@ -56,7 +59,17 @@ export function LendPositionCard({ position }: LendPositionCardProps) {
               {marketTitle}
             </h4>
           </div>
-          <p className="text-xs text-gray-500 mt-1">{marketType}</p>
+          <div className="flex items-center space-x-2 mt-1">
+            <img
+              src={`/crypto-logos/${logoSymbol}.png`}
+              alt={`${marketType} logo`}
+              className="w-4 h-4"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <p className="text-xs text-gray-500">{marketType}</p>
+          </div>
         </div>
       </div>
 

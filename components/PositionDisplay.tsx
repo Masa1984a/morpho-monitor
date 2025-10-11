@@ -59,6 +59,14 @@ export function PositionDisplay({ position, thresholds, onSimulate }: PositionDi
             className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded px-2 py-1 transition-colors"
             title="Click to copy Market ID"
           >
+            <img
+              src="/crypto-logos/Morpho.png"
+              alt="Morpho logo"
+              className="w-3 h-3"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
             <span>Market ID: {market.uniqueKey.slice(0, 8)}...</span>
             {marketIdCopied ? (
               <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -59,6 +59,7 @@ export function WalletBalanceView({
             maximumFractionDigits: 2
           })}
         </div>
+        <p className="text-xs opacity-70 mt-2">Note: Vaulted WLD balance cannot be displayed due to technical limitations</p>
       </div>
 
       {/* Token Balances */}
