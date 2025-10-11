@@ -82,7 +82,7 @@ export function BorrowPositionView({
   return (
     <div className="space-y-4">
       {/* Total Summary */}
-      <div className="bg-gradient-to-r from-morpho-blue to-morpho-purple rounded-lg p-6 text-white">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 text-white">
         <div className="grid grid-cols-1 gap-4">
           <div>
             <div className="text-sm opacity-90 mb-1">Total Collateral</div>

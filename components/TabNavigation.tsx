@@ -39,6 +39,23 @@ const tabs: Array<{ id: TabType; label: string; icon: JSX.Element }> = [
 ];
 
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
+  const getTabColor = (tabId: TabType, isActive: boolean) => {
+    if (!isActive) {
+      return 'text-gray-600 hover:bg-gray-50 hover:text-gray-900';
+    }
+
+    switch (tabId) {
+      case 'wallet':
+        return 'bg-morpho-blue text-white';
+      case 'lend':
+        return 'bg-success text-white';
+      case 'borrow':
+        return 'bg-orange-500 text-white';
+      default:
+        return 'bg-morpho-blue text-white';
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm mb-6 overflow-hidden">
       <div className="flex">
@@ -46,11 +63,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 font-medium text-sm transition-colors ${
-              activeTab === tab.id
-                ? 'bg-morpho-blue text-white'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-            }`}
+            className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 font-medium text-sm transition-colors ${getTabColor(tab.id, activeTab === tab.id)}`}
           >
             {tab.icon}
             <span className="hidden sm:inline">{tab.label}</span>

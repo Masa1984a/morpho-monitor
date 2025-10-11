@@ -107,7 +107,7 @@ export function TransactionHistory({ walletAddress, onFetchHistory }: Transactio
     <div className="mt-6">
       <button
         onClick={handleToggle}
-        className="w-full flex items-center justify-between px-4 py-3 bg-morpho-blue text-white rounded-lg hover:bg-morpho-purple transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-between px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={isLoading}
       >
         <span className="font-medium flex items-center">
@@ -130,7 +130,7 @@ export function TransactionHistory({ walletAddress, onFetchHistory }: Transactio
         <div className="mt-4 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {isLoading ? (
             <div className="p-8 text-center text-gray-500">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-morpho-blue"></div>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
               <p className="mt-2">Loading...</p>
             </div>
           ) : history.length === 0 ? (
