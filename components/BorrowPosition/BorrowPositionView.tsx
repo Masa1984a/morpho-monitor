@@ -75,8 +75,43 @@ export function BorrowPositionView({
     );
   }
 
+  // Calculate totals
+  const totalCollateralUsd = positions.reduce((sum, pos) => sum + (pos.state.collateralUsd || 0), 0);
+  const totalBorrowedUsd = positions.reduce((sum, pos) => sum + (pos.state.borrowAssetsUsd || 0), 0);
+
   return (
     <div className="space-y-4">
+      {/* Total Summary */}
+      <div className="bg-gradient-to-r from-morpho-blue to-morpho-purple rounded-lg p-6 text-white">
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <div className="text-sm opacity-90 mb-1">Total Collateral</div>
+            <div className="text-2xl font-bold">
+              {totalCollateralUsd.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })}
+            </div>
+          </div>
+          <div>
+            <div className="text-sm opacity-90 mb-1">Total Borrowed</div>
+            <div className="text-2xl font-bold">
+              {totalBorrowedUsd.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })}
+            </div>
+          </div>
+        </div>
+        <div className="text-sm opacity-90 mt-4">
+          Across {positions.length} {positions.length === 1 ? 'position' : 'positions'}
+        </div>
+      </div>
+
       <PositionList
         positions={marketPositions}
         thresholds={thresholds}

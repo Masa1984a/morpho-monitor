@@ -140,11 +140,10 @@ export function formatUsdValue(value: number): string {
   if (value === 0) return '$0.00';
   if (value < 0.01) return '<$0.01';
   if (value < 1) return `$${value.toFixed(4)}`;
-  if (value < 1000) return `$${value.toFixed(2)}`;
-  if (value < 1000000) {
-    return `$${(value / 1000).toFixed(1)}K`;
-  }
-  return `$${(value / 1000000).toFixed(2)}M`;
+  return `$${value.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
 }
 
 /**
@@ -155,11 +154,10 @@ export function formatTokenAmount(amount: string, decimals: number): string {
   if (value === 0) return '0';
   if (value < 0.0001) return '<0.0001';
   if (value < 1) return value.toFixed(4);
-  if (value < 1000) return value.toFixed(2);
-  if (value < 1000000) {
-    return `${(value / 1000).toFixed(1)}K`;
-  }
-  return `${(value / 1000000).toFixed(2)}M`;
+  return value.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 }
 
 /**

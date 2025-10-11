@@ -47,16 +47,6 @@ export function LendPositionCard({ position }: LendPositionCardProps) {
             {marketTitle}
           </h4>
           <p className="text-xs text-gray-500 mt-1">{marketType}</p>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="inline-block px-2 py-1 bg-success/10 text-success text-xs font-medium rounded">
-              Earning
-            </span>
-            {chainLabel && (
-              <span className="inline-block px-2 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded">
-                {chainLabel}
-              </span>
-            )}
-          </div>
         </div>
       </div>
 
