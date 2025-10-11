@@ -27,6 +27,7 @@ export function TransactionHistory({ walletAddress, onFetchHistory }: Transactio
     if (!isOpen && history.length === 0) {
       // 初回クリック時に履歴を取得
       setIsLoading(true);
+      setIsOpen(true); // 先に開いてローディングを表示
       try {
         const events = await onFetchHistory(walletAddress);
         setHistory(events);
@@ -35,8 +36,9 @@ export function TransactionHistory({ walletAddress, onFetchHistory }: Transactio
       } finally {
         setIsLoading(false);
       }
+    } else {
+      setIsOpen(!isOpen);
     }
-    setIsOpen(!isOpen);
   };
 
   const formatTimestamp = (isoString: string) => {
@@ -105,9 +107,15 @@ export function TransactionHistory({ walletAddress, onFetchHistory }: Transactio
     <div className="mt-6">
       <button
         onClick={handleToggle}
-        className="w-full flex items-center justify-between px-4 py-3 bg-morpho-blue text-white rounded-lg hover:bg-morpho-purple transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-morpho-blue text-white rounded-lg hover:bg-morpho-purple transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={isLoading}
       >
-        <span className="font-medium">取引明細</span>
+        <span className="font-medium flex items-center">
+          Transaction History
+          {isLoading && (
+            <div className="ml-2 inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+          )}
+        </span>
         <svg
           className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
@@ -123,11 +131,11 @@ export function TransactionHistory({ walletAddress, onFetchHistory }: Transactio
           {isLoading ? (
             <div className="p-8 text-center text-gray-500">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-morpho-blue"></div>
-              <p className="mt-2">読み込み中...</p>
+              <p className="mt-2">Loading...</p>
             </div>
           ) : history.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
-              <p>取引履歴が見つかりませんでした</p>
+              <p>No transaction history found</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -173,8 +181,8 @@ export function TransactionHistory({ walletAddress, onFetchHistory }: Transactio
 
           {!isLoading && history.length > 0 && (
             <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 text-xs text-gray-600">
-              <p>凡例: + = 増加（Borrow） | - = 減少（Repay/Liquidate）</p>
-              <p className="mt-1">直近5件の取引を表示しています</p>
+              <p>Legend: + = Increase (Borrow) | - = Decrease (Repay/Liquidate)</p>
+              <p className="mt-1">Showing last 5 transactions</p>
             </div>
           )}
         </div>
