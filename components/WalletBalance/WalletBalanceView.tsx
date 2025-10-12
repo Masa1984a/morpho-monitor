@@ -34,6 +34,18 @@ export function WalletBalanceView({
   debugCopied = false,
   walletAddress
 }: WalletBalanceViewProps) {
+  const [copiedAddress, setCopiedAddress] = React.useState<string | null>(null);
+
+  const copyAddress = async (address: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopiedAddress(label);
+      setTimeout(() => setCopiedAddress(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy address:', err);
+    }
+  };
+
   const fetchHistory = async (address: string) => {
     const rpcClient = WorldChainRPCClient.getInstance();
     return await rpcClient.getWalletTransactionHistory(address);
@@ -54,6 +66,17 @@ export function WalletBalanceView({
   const tokensWithBalance = tokenBalances.filter(
     token => parseFloat(token.balance) > 0 && token.symbol !== 'WLD'
   );
+
+  // Calculate WLD price per token
+  const wldPriceUsd = (() => {
+    if (wldVaultBalance && parseFloat(wldVaultBalance.amountNow) > 0) {
+      return wldVaultBalance.amountNowUsd / parseFloat(wldVaultBalance.amountNow);
+    }
+    if (wldSpendingBalance && parseFloat(wldSpendingBalance.balance) > 0) {
+      return wldSpendingBalance.balanceUsd / parseFloat(wldSpendingBalance.balance);
+    }
+    return 0;
+  })();
 
   // Calculate total portfolio value including WLD Vault and Spending
   const totalValue =
@@ -80,16 +103,28 @@ export function WalletBalanceView({
       {/* WLD Balances (Vault + Spending) */}
       {(wldVaultBalance || wldSpendingBalance) && (
         <div className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex items-center mb-3">
-            <img
-              src="/crypto-logos/WLD.png"
-              alt="WLD logo"
-              className="w-8 h-8 mr-3"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-            <h3 className="text-lg font-semibold text-gray-900">WLD Balance</h3>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center">
+              <img
+                src="/crypto-logos/WLD.png"
+                alt="WLD logo"
+                className="w-8 h-8 mr-3"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">WLD</h3>
+                {wldPriceUsd > 0 && (
+                  <p className="text-sm text-gray-500">
+                    ${wldPriceUsd.toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 4
+                    })}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Locked (Vault) */}
@@ -119,6 +154,46 @@ export function WalletBalanceView({
                   </span>
                 </div>
               </div>
+              <div className="mt-2 pt-2 border-t border-purple-200 space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-purple-600">OP Mainnet Vault:</span>
+                  <button
+                    onClick={() => copyAddress('0x21c4928109acB0659A88AE5329b5374A3024694C', 'vault-op')}
+                    className="flex items-center space-x-1 text-purple-700 hover:text-purple-900"
+                    title="Click to copy"
+                  >
+                    <span className="font-mono">0x21c4...694C</span>
+                    {copiedAddress === 'vault-op' ? (
+                      <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-purple-600">World Chain Vault:</span>
+                  <button
+                    onClick={() => copyAddress('0x14a028cC500108307947dca4a1Aa35029FB66CE0', 'vault-world')}
+                    className="flex items-center space-x-1 text-purple-700 hover:text-purple-900"
+                    title="Click to copy"
+                  >
+                    <span className="font-mono">0x14a0...6CE0</span>
+                    {copiedAddress === 'vault-world' ? (
+                      <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -136,6 +211,46 @@ export function WalletBalanceView({
               </div>
               <div className="text-sm text-blue-700">
                 ${wldSpendingBalance.balanceUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="mt-2 pt-2 border-t border-blue-200 space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-blue-600">OP Mainnet WLD:</span>
+                  <button
+                    onClick={() => copyAddress('0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1', 'wld-op')}
+                    className="flex items-center space-x-1 text-blue-700 hover:text-blue-900"
+                    title="Click to copy"
+                  >
+                    <span className="font-mono">0xdc6f...26f1</span>
+                    {copiedAddress === 'wld-op' ? (
+                      <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-blue-600">World Chain WLD:</span>
+                  <button
+                    onClick={() => copyAddress('0x2cFc85d8E48F8EAB294be644d9E25C3030863003', 'wld-world')}
+                    className="flex items-center space-x-1 text-blue-700 hover:text-blue-900"
+                    title="Click to copy"
+                  >
+                    <span className="font-mono">0x2cFc...3003</span>
+                    {copiedAddress === 'wld-world' ? (
+                      <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}
