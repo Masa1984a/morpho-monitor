@@ -168,15 +168,15 @@ export function WalletBalanceView({
                   </span>
                 </div>
               </div>
-              <div className="mt-2 pt-2 border-t border-purple-200 space-y-1">
+              <div className="mt-2 pt-2 border-t border-purple-200">
                 <div className="flex items-center text-xs">
-                  <span className="text-gray-600">Contract ID(OP):&nbsp;</span>
+                  <span className="text-gray-600">Contract ID(OP, W):&nbsp;</span>
                   <button
                     onClick={() => copyAddress('0x21c4928109acB0659A88AE5329b5374A3024694C', 'vault-op')}
                     className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
                     title="Click to copy"
                   >
-                    <span className="font-mono">0x21c4...694C</span>
+                    <span className="font-mono">0x21c...94C</span>
                     {copiedAddress === 'vault-op' ? (
                       <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -187,15 +187,13 @@ export function WalletBalanceView({
                       </svg>
                     )}
                   </button>
-                </div>
-                <div className="flex items-center text-xs">
-                  <span className="text-gray-600">Contract ID(World):&nbsp;</span>
+                  <span className="text-gray-600">,&nbsp;</span>
                   <button
                     onClick={() => copyAddress('0x14a028cC500108307947dca4a1Aa35029FB66CE0', 'vault-world')}
                     className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
                     title="Click to copy"
                   >
-                    <span className="font-mono">0x14a0...6CE0</span>
+                    <span className="font-mono">0x14a...CE0</span>
                     {copiedAddress === 'vault-world' ? (
                       <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -223,15 +221,15 @@ export function WalletBalanceView({
                   })} WLD
                 </span>
               </div>
-              <div className="mt-2 pt-2 border-t border-blue-200 space-y-1">
+              <div className="mt-2 pt-2 border-t border-blue-200">
                 <div className="flex items-center text-xs">
-                  <span className="text-gray-600">Contract ID(OP):&nbsp;</span>
+                  <span className="text-gray-600">Contract ID(OP, W):&nbsp;</span>
                   <button
                     onClick={() => copyAddress('0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1', 'wld-op')}
                     className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
                     title="Click to copy"
                   >
-                    <span className="font-mono">0xdc6f...26f1</span>
+                    <span className="font-mono">0xdc6...6f1</span>
                     {copiedAddress === 'wld-op' ? (
                       <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -242,15 +240,13 @@ export function WalletBalanceView({
                       </svg>
                     )}
                   </button>
-                </div>
-                <div className="flex items-center text-xs">
-                  <span className="text-gray-600">Contract ID(World):&nbsp;</span>
+                  <span className="text-gray-600">,&nbsp;</span>
                   <button
                     onClick={() => copyAddress('0x2cFc85d8E48F8EAB294be644d9E25C3030863003', 'wld-world')}
                     className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
                     title="Click to copy"
                   >
-                    <span className="font-mono">0x2cFc...3003</span>
+                    <span className="font-mono">0x2cF...003</span>
                     {copiedAddress === 'wld-world' ? (
                       <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
