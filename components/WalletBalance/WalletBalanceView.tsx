@@ -169,8 +169,8 @@ export function WalletBalanceView({
                 </div>
               </div>
               <div className="mt-2 pt-2 border-t border-purple-200 space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Contract ID(OP):</span>
+                <div className="flex items-center text-xs">
+                  <span className="text-gray-600">Contract ID(OP):&nbsp;</span>
                   <button
                     onClick={() => copyAddress('0x21c4928109acB0659A88AE5329b5374A3024694C', 'vault-op')}
                     className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
@@ -188,8 +188,8 @@ export function WalletBalanceView({
                     )}
                   </button>
                 </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Contract ID(World):</span>
+                <div className="flex items-center text-xs">
+                  <span className="text-gray-600">Contract ID(World):&nbsp;</span>
                   <button
                     onClick={() => copyAddress('0x14a028cC500108307947dca4a1Aa35029FB66CE0', 'vault-world')}
                     className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
@@ -224,8 +224,8 @@ export function WalletBalanceView({
                 </span>
               </div>
               <div className="mt-2 pt-2 border-t border-blue-200 space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Contract ID(OP):</span>
+                <div className="flex items-center text-xs">
+                  <span className="text-gray-600">Contract ID(OP):&nbsp;</span>
                   <button
                     onClick={() => copyAddress('0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1', 'wld-op')}
                     className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
@@ -243,8 +243,8 @@ export function WalletBalanceView({
                     )}
                   </button>
                 </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Contract ID(World):</span>
+                <div className="flex items-center text-xs">
+                  <span className="text-gray-600">Contract ID(World):&nbsp;</span>
                   <button
                     onClick={() => copyAddress('0x2cFc85d8E48F8EAB294be644d9E25C3030863003', 'wld-world')}
                     className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
