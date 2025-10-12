@@ -125,6 +125,23 @@ export function WalletBalanceView({
                 )}
               </div>
             </div>
+            <div className="text-right">
+              <div className="text-base font-bold text-gray-900">
+                {(
+                  parseFloat(wldVaultBalance?.amountNow || '0') +
+                  parseFloat(wldSpendingBalance?.balance || '0')
+                ).toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 6
+                })}
+              </div>
+              <div className="text-sm text-gray-600">
+                ${(
+                  (wldVaultBalance?.amountNowUsd || 0) +
+                  (wldSpendingBalance?.balanceUsd || 0)
+                ).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            </div>
           </div>
 
           {/* Locked (Vault) */}
@@ -156,10 +173,10 @@ export function WalletBalanceView({
               </div>
               <div className="mt-2 pt-2 border-t border-purple-200 space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-purple-600">OP Mainnet Vault:</span>
+                  <span className="text-gray-600">OP Mainnet Vault:</span>
                   <button
                     onClick={() => copyAddress('0x21c4928109acB0659A88AE5329b5374A3024694C', 'vault-op')}
-                    className="flex items-center space-x-1 text-purple-700 hover:text-purple-900"
+                    className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
                     title="Click to copy"
                   >
                     <span className="font-mono">0x21c4...694C</span>
@@ -175,10 +192,10 @@ export function WalletBalanceView({
                   </button>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-purple-600">World Chain Vault:</span>
+                  <span className="text-gray-600">World Chain Vault:</span>
                   <button
                     onClick={() => copyAddress('0x14a028cC500108307947dca4a1Aa35029FB66CE0', 'vault-world')}
-                    className="flex items-center space-x-1 text-purple-700 hover:text-purple-900"
+                    className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
                     title="Click to copy"
                   >
                     <span className="font-mono">0x14a0...6CE0</span>
@@ -214,10 +231,10 @@ export function WalletBalanceView({
               </div>
               <div className="mt-2 pt-2 border-t border-blue-200 space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-blue-600">OP Mainnet WLD:</span>
+                  <span className="text-gray-600">OP Mainnet WLD:</span>
                   <button
                     onClick={() => copyAddress('0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1', 'wld-op')}
-                    className="flex items-center space-x-1 text-blue-700 hover:text-blue-900"
+                    className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
                     title="Click to copy"
                   >
                     <span className="font-mono">0xdc6f...26f1</span>
@@ -233,10 +250,10 @@ export function WalletBalanceView({
                   </button>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-blue-600">World Chain WLD:</span>
+                  <span className="text-gray-600">World Chain WLD:</span>
                   <button
                     onClick={() => copyAddress('0x2cFc85d8E48F8EAB294be644d9E25C3030863003', 'wld-world')}
-                    className="flex items-center space-x-1 text-blue-700 hover:text-blue-900"
+                    className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
                     title="Click to copy"
                   >
                     <span className="font-mono">0x2cFc...3003</span>
@@ -250,32 +267,6 @@ export function WalletBalanceView({
                       </svg>
                     )}
                   </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Total WLD */}
-          {(wldVaultBalance || wldSpendingBalance) && (
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">Total WLD</span>
-                <div className="text-right">
-                  <div className="text-base font-bold text-gray-900">
-                    {(
-                      parseFloat(wldVaultBalance?.amountNow || '0') +
-                      parseFloat(wldSpendingBalance?.balance || '0')
-                    ).toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 6
-                    })} WLD
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    ${(
-                      (wldVaultBalance?.amountNowUsd || 0) +
-                      (wldSpendingBalance?.balanceUsd || 0)
-                    ).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
                 </div>
               </div>
             </div>
