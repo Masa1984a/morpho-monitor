@@ -1,6 +1,6 @@
 // Application State Types for Zustand Store
 
-import { TokenBalance, NativeBalance } from './wallet';
+import { TokenBalance, NativeBalance, WLDVaultBalance, WLDSpendingBalance } from './wallet';
 import { LendPosition, BorrowPosition } from './morpho';
 
 export type TabType = 'wallet' | 'lend' | 'borrow';
@@ -13,6 +13,8 @@ export interface AppState {
   // Data
   tokenBalances: TokenBalance[];
   nativeBalance: NativeBalance | null;
+  wldVaultBalance: WLDVaultBalance | null;      // Locked WLD in Vault (OP + World Chain)
+  wldSpendingBalance: WLDSpendingBalance | null; // Liquid WLD (OP + World Chain)
   lendPositions: LendPosition[];
   borrowPositions: BorrowPosition[];
 

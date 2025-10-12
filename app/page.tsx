@@ -38,6 +38,8 @@ export default function Home() {
     walletAddress,
     tokenBalances,
     nativeBalance,
+    wldVaultBalance,
+    wldSpendingBalance,
     lendPositions,
     borrowPositions,
     isLoading,
@@ -359,6 +361,8 @@ export default function Home() {
           <WalletBalanceView
             tokenBalances={tokenBalances}
             nativeBalance={nativeBalance}
+            wldVaultBalance={wldVaultBalance}
+            wldSpendingBalance={wldSpendingBalance}
             isLoading={isLoading}
             error={error}
             debugLogs={debugLogs}

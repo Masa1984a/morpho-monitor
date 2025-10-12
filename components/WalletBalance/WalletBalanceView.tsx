@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { TokenBalance, NativeBalance } from '@/types/wallet';
+import { TokenBalance, NativeBalance, WLDVaultBalance, WLDSpendingBalance } from '@/types/wallet';
 import { BalanceRow } from './BalanceRow';
 import { LoadingState } from '../LoadingState';
 import { WalletTransactionHistory } from '../WalletTransactionHistory';
@@ -10,6 +10,8 @@ import { WorldChainRPCClient } from '@/lib/worldchain-rpc';
 interface WalletBalanceViewProps {
   tokenBalances: TokenBalance[];
   nativeBalance: NativeBalance | null;
+  wldVaultBalance: WLDVaultBalance | null;
+  wldSpendingBalance: WLDSpendingBalance | null;
   isLoading: boolean;
   error: string | null;
   debugLogs?: string[];
@@ -22,6 +24,8 @@ interface WalletBalanceViewProps {
 export function WalletBalanceView({
   tokenBalances,
   nativeBalance,
+  wldVaultBalance,
+  wldSpendingBalance,
   isLoading,
   error,
   debugLogs = [],
@@ -46,13 +50,17 @@ export function WalletBalanceView({
     );
   }
 
-  // Filter tokens with balance > 0
-  const tokensWithBalance = tokenBalances.filter(token => parseFloat(token.balance) > 0);
+  // Filter tokens with balance > 0, excluding WLD (shown in dedicated section)
+  const tokensWithBalance = tokenBalances.filter(
+    token => parseFloat(token.balance) > 0 && token.symbol !== 'WLD'
+  );
 
-  // Calculate total portfolio value
+  // Calculate total portfolio value including WLD Vault and Spending
   const totalValue =
     (nativeBalance?.balanceUsd || 0) +
-    tokenBalances.reduce((sum, token) => sum + token.balanceUsd, 0);
+    tokenBalances.reduce((sum, token) => sum + token.balanceUsd, 0) +
+    (wldVaultBalance?.amountNowUsd || 0) +
+    (wldSpendingBalance?.balanceUsd || 0);
 
   return (
     <div className="space-y-4">
@@ -67,8 +75,98 @@ export function WalletBalanceView({
             maximumFractionDigits: 2
           })}
         </div>
-        <p className="text-xs opacity-70 mt-2">Note: Vaulted WLD balance cannot be displayed due to technical limitations</p>
       </div>
+
+      {/* WLD Balances (Vault + Spending) */}
+      {(wldVaultBalance || wldSpendingBalance) && (
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className="flex items-center mb-3">
+            <img
+              src="/crypto-logos/WLD.png"
+              alt="WLD logo"
+              className="w-8 h-8 mr-3"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <h3 className="text-lg font-semibold text-gray-900">WLD Balance</h3>
+          </div>
+
+          {/* Locked (Vault) */}
+          {wldVaultBalance && parseFloat(wldVaultBalance.amountNow) > 0 && (
+            <div className="bg-purple-50 rounded-lg p-4 mb-3">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-purple-900">Locked (Vault)</span>
+                <span className="text-lg font-bold text-purple-900">
+                  {parseFloat(wldVaultBalance.amountNow).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 6
+                  })} WLD
+                </span>
+              </div>
+              <div className="text-sm text-purple-700">
+                ${wldVaultBalance.amountNowUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="mt-2 pt-2 border-t border-purple-200 text-xs text-purple-600">
+                <div className="flex justify-between">
+                  <span>Principal:</span>
+                  <span>{parseFloat(wldVaultBalance.principal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })} WLD</span>
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span>Accrued Interest:</span>
+                  <span className="text-green-600 font-medium">
+                    +{parseFloat(wldVaultBalance.accruedInterest).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })} WLD
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Liquid (Spending) */}
+          {wldSpendingBalance && parseFloat(wldSpendingBalance.balance) > 0 && (
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-blue-900">Liquid (Spending)</span>
+                <span className="text-lg font-bold text-blue-900">
+                  {parseFloat(wldSpendingBalance.balance).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 6
+                  })} WLD
+                </span>
+              </div>
+              <div className="text-sm text-blue-700">
+                ${wldSpendingBalance.balanceUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            </div>
+          )}
+
+          {/* Total WLD */}
+          {(wldVaultBalance || wldSpendingBalance) && (
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Total WLD</span>
+                <div className="text-right">
+                  <div className="text-base font-bold text-gray-900">
+                    {(
+                      parseFloat(wldVaultBalance?.amountNow || '0') +
+                      parseFloat(wldSpendingBalance?.balance || '0')
+                    ).toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 6
+                    })} WLD
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    ${(
+                      (wldVaultBalance?.amountNowUsd || 0) +
+                      (wldSpendingBalance?.balanceUsd || 0)
+                    ).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Token Balances */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden divide-y divide-gray-100">

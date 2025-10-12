@@ -4,12 +4,8 @@
 import { Token } from '@/types/wallet';
 
 export const WORLD_CHAIN_TOKENS: Token[] = [
-  {
-    address: '0x2cfc85d8e48f8eab294be644d9e25c3030863003',
-    symbol: 'WLD',
-    decimals: 18,
-    name: 'Worldcoin'
-  },
+  // WLD is excluded here as it's fetched separately via WorldAppVaultClient
+  // which retrieves both Vault (locked) and Spending (liquid) balances from OP + World Chain
   {
     address: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1',
     symbol: 'USDC',

@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { formatUnits } from 'viem';
 import { AppState } from '@/types/state';
-import { TokenBalance, NativeBalance } from '@/types/wallet';
+import { TokenBalance, NativeBalance, WLDVaultBalance, WLDSpendingBalance } from '@/types/wallet';
 import { LendPosition, BorrowPosition } from '@/types/morpho';
 import { WorldChainRPCClient } from '@/lib/worldchain-rpc';
+import { WorldAppVaultClient } from '@/lib/worldapp-vault';
 import { WORLD_CHAIN_TOKENS } from '@/lib/token-config';
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -12,6 +13,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   isConnecting: false,
   tokenBalances: [],
   nativeBalance: null,
+  wldVaultBalance: null,
+  wldSpendingBalance: null,
   lendPositions: [],
   borrowPositions: [],
   isLoading: false,
@@ -64,17 +67,24 @@ export const useAppStore = create<AppState>((set, get) => ({
         const rpcClient = WorldChainRPCClient.getInstance();
         rpcClient.setExternalLogger((msg) => actions.addDebugLog(msg));
 
+        const vaultClient = WorldAppVaultClient.getInstance();
+        vaultClient.setExternalLogger((msg) => actions.addDebugLog(msg));
+
         // Fetch prices
         actions.addDebugLog('Fetching prices...');
         const priceResponse = await fetch('/api/prices');
         const prices = priceResponse.ok ? await priceResponse.json() : {};
         actions.addDebugLog(`Prices: ${JSON.stringify(prices)}`);
 
-        // Fetch wallet balances
+        const wldPriceUsd = prices.WLD || 0;
+
+        // Fetch wallet balances (including WLD Vault and Spending from OP + World Chain)
         actions.addDebugLog('Fetching wallet balances...');
-        const [tokenBalancesRaw, nativeBalanceRaw] = await Promise.all([
+        const [tokenBalancesRaw, nativeBalanceRaw, vaultBalanceCombined, spendingBalanceCombined] = await Promise.all([
           rpcClient.getTokenBalances(walletAddress as `0x${string}`, WORLD_CHAIN_TOKENS),
-          rpcClient.getNativeBalance(walletAddress as `0x${string}`)
+          rpcClient.getNativeBalance(walletAddress as `0x${string}`),
+          vaultClient.getCombinedVaultBalance(walletAddress, wldPriceUsd),
+          vaultClient.getCombinedSpendingBalance(walletAddress, wldPriceUsd)
         ]);
 
         actions.addDebugLog(`Token balances raw count: ${tokenBalancesRaw.length}`);
@@ -106,11 +116,39 @@ export const useAppStore = create<AppState>((set, get) => ({
           priceUsd: prices.WETH || 0
         };
 
+        // Format WLD Vault balance (locked)
+        const wldVaultBalance: WLDVaultBalance | null =
+          parseFloat(vaultBalanceCombined.total.amountNow) > 0
+            ? {
+                amountNow: vaultBalanceCombined.total.amountNow,
+                principal: vaultBalanceCombined.total.principal,
+                accruedInterest: vaultBalanceCombined.total.accruedInterest,
+                amountNowUsd: vaultBalanceCombined.total.amountNowUsd,
+                principalUsd: vaultBalanceCombined.total.principalUsd,
+                accruedInterestUsd: vaultBalanceCombined.total.accruedInterestUsd,
+                symbol: 'WLD'
+              }
+            : null;
+
+        // Format WLD Spending balance (liquid)
+        const wldSpendingBalance: WLDSpendingBalance | null =
+          parseFloat(spendingBalanceCombined.total.balance) > 0
+            ? {
+                balance: spendingBalanceCombined.total.balance,
+                balanceUsd: spendingBalanceCombined.total.balanceUsd,
+                symbol: 'WLD'
+              }
+            : null;
+
+        actions.addDebugLog(`WLD Vault balance: ${wldVaultBalance?.amountNow || '0'} WLD`);
+        actions.addDebugLog(`WLD Spending balance: ${wldSpendingBalance?.balance || '0'} WLD`);
         actions.addDebugLog('Wallet data loaded successfully');
 
         set({
           tokenBalances,
           nativeBalance,
+          wldVaultBalance,
+          wldSpendingBalance,
           walletDataLoaded: true,
           isLoading: false,
           lastUpdate: new Date()
@@ -315,6 +353,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         walletAddress: null,
         tokenBalances: [],
         nativeBalance: null,
+        wldVaultBalance: null,
+        wldSpendingBalance: null,
         lendPositions: [],
         borrowPositions: [],
         isLoading: false,

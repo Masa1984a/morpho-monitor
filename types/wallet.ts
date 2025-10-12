@@ -21,3 +21,21 @@ export interface NativeBalance {
   balanceUsd: number;
   priceUsd: number;
 }
+
+// WLD Vault Balance (Locked WLD earning interest)
+export interface WLDVaultBalance {
+  amountNow: string;           // Current balance including interest
+  principal: string;           // Original deposited amount
+  accruedInterest: string;     // Accrued interest
+  amountNowUsd: number;
+  principalUsd: number;
+  accruedInterestUsd: number;
+  symbol: 'WLD';
+}
+
+// WLD Spending Balance (Liquid WLD available for transactions)
+export interface WLDSpendingBalance {
+  balance: string;
+  balanceUsd: number;
+  symbol: 'WLD';
+}
