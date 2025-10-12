@@ -4,6 +4,8 @@ import React from 'react';
 import { LendPosition } from '@/types/morpho';
 import { LendPositionCard } from './LendPositionCard';
 import { LoadingState } from '../LoadingState';
+import { EarnTransactionHistory } from '../EarnTransactionHistory';
+import { WorldChainRPCClient } from '@/lib/worldchain-rpc';
 
 interface LendPositionViewProps {
   positions: LendPosition[];
@@ -13,6 +15,7 @@ interface LendPositionViewProps {
   showDebugInfo?: boolean;
   onCopyDebugInfo?: () => void;
   debugCopied?: boolean;
+  walletAddress?: string;
 }
 
 export function LendPositionView({
@@ -22,8 +25,13 @@ export function LendPositionView({
   debugLogs = [],
   showDebugInfo = false,
   onCopyDebugInfo,
-  debugCopied = false
+  debugCopied = false,
+  walletAddress
 }: LendPositionViewProps) {
+  const fetchHistory = async (address: string) => {
+    const rpcClient = WorldChainRPCClient.getInstance();
+    return await rpcClient.getEarnTransactionHistory(address);
+  };
   if (isLoading) {
     return <LoadingState message="Loading lending positions..." />;
   }
@@ -88,6 +96,14 @@ export function LendPositionView({
           <LendPositionCard key={position.market.uniqueKey || index} position={position} />
         ))}
       </div>
+
+      {/* Transaction History */}
+      {walletAddress && (
+        <EarnTransactionHistory
+          walletAddress={walletAddress}
+          onFetchHistory={fetchHistory}
+        />
+      )}
 
       {/* Debug Info */}
       {showDebugInfo && debugLogs.length > 0 && (

@@ -4,6 +4,8 @@ import React from 'react';
 import { TokenBalance, NativeBalance } from '@/types/wallet';
 import { BalanceRow } from './BalanceRow';
 import { LoadingState } from '../LoadingState';
+import { WalletTransactionHistory } from '../WalletTransactionHistory';
+import { WorldChainRPCClient } from '@/lib/worldchain-rpc';
 
 interface WalletBalanceViewProps {
   tokenBalances: TokenBalance[];
@@ -14,6 +16,7 @@ interface WalletBalanceViewProps {
   showDebugInfo?: boolean;
   onCopyDebugInfo?: () => void;
   debugCopied?: boolean;
+  walletAddress?: string;
 }
 
 export function WalletBalanceView({
@@ -24,8 +27,13 @@ export function WalletBalanceView({
   debugLogs = [],
   showDebugInfo = false,
   onCopyDebugInfo,
-  debugCopied = false
+  debugCopied = false,
+  walletAddress
 }: WalletBalanceViewProps) {
+  const fetchHistory = async (address: string) => {
+    const rpcClient = WorldChainRPCClient.getInstance();
+    return await rpcClient.getWalletTransactionHistory(address);
+  };
   if (isLoading) {
     return <LoadingState message="Loading wallet balances..." />;
   }
@@ -95,6 +103,14 @@ export function WalletBalanceView({
           </div>
         )}
       </div>
+
+      {/* Transaction History */}
+      {walletAddress && (
+        <WalletTransactionHistory
+          walletAddress={walletAddress}
+          onFetchHistory={fetchHistory}
+        />
+      )}
 
       {/* Debug Info */}
       {showDebugInfo && debugLogs.length > 0 && (

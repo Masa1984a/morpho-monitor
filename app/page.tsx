@@ -365,6 +365,7 @@ export default function Home() {
             showDebugInfo={settings.showDebugInfo}
             onCopyDebugInfo={handleCopyDebugInfo}
             debugCopied={debugCopied}
+            walletAddress={walletAddress}
           />
         )}
 
@@ -377,6 +378,7 @@ export default function Home() {
             showDebugInfo={settings.showDebugInfo}
             onCopyDebugInfo={handleCopyDebugInfo}
             debugCopied={debugCopied}
+            walletAddress={walletAddress}
           />
         )}
 

@@ -1,8 +1,9 @@
-import { createPublicClient, http, formatUnits } from 'viem';
+import { createPublicClient, http, formatUnits, keccak256, toHex } from 'viem';
 import { MarketPosition } from '@/types/morpho';
 import { getActiveMarketIds } from './market-config';
 import { METAMORPHO_VAULTS, type MetaMorphoVault } from './metamorpho-config';
 import { WorldAppVaultClient } from './worldapp-vault';
+import { WORLD_CHAIN_TOKENS, getTokenByAddress } from './token-config';
 
 // World Chain configuration
 const WORLD_CHAIN = {
@@ -886,7 +887,8 @@ export class WorldChainRPCClient {
     try {
       const userAddress = address as `0x${string}`;
       const currentBlock = await this.client.getBlockNumber();
-      const fromBlock = currentBlock - 50000n; // 直近50,000ブロック（約2週間分）
+      const BLOCKS_PER_DAY = 43200n; // World Chain: 約2秒/ブロック = 43,200ブロック/日
+      const fromBlock = currentBlock - (BLOCKS_PER_DAY * 4n); // 直近4日分
 
       const events: any[] = [];
 
@@ -1012,6 +1014,284 @@ export class WorldChainRPCClient {
       return events.slice(0, limit);
     } catch (error) {
       console.error('Error fetching transaction history:', error);
+      return [];
+    }
+  }
+
+  // Get wallet transaction history (ERC20 Transfer events)
+  async getWalletTransactionHistory(address: string): Promise<any[]> {
+    try {
+      const userAddress = address as `0x${string}`;
+      const currentBlock = await this.client.getBlockNumber();
+      const BLOCKS_PER_DAY = 43200n; // World Chain: 約2秒/ブロック = 43,200ブロック/日
+      const fromBlock = currentBlock - (BLOCKS_PER_DAY * 4n); // 直近4日分
+
+      const events: any[] = [];
+
+      // Transfer(address indexed from, address indexed to, uint256 value)
+      const TRANSFER_TOPIC = keccak256(toHex('Transfer(address,address,uint256)'));
+
+      // 全トークンのTransferイベントを取得
+      for (const token of WORLD_CHAIN_TOKENS) {
+        try {
+          // IN: ウォレットがreceiverの場合
+          const inLogs = await this.client.getLogs({
+            address: token.address as `0x${string}`,
+            event: {
+              type: 'event',
+              name: 'Transfer',
+              inputs: [
+                { name: 'from', type: 'address', indexed: true },
+                { name: 'to', type: 'address', indexed: true },
+                { name: 'value', type: 'uint256', indexed: false }
+              ]
+            },
+            args: {
+              to: userAddress
+            },
+            fromBlock,
+            toBlock: currentBlock
+          });
+
+          for (const log of inLogs) {
+            const block = await this.client.getBlock({ blockNumber: log.blockNumber });
+            events.push({
+              direction: 'IN',
+              timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+              block: Number(log.blockNumber),
+              txHash: log.transactionHash,
+              token: token.symbol,
+              tokenAddress: token.address,
+              decimals: token.decimals,
+              from: log.args.from,
+              to: log.args.to,
+              value: log.args.value?.toString() || '0'
+            });
+          }
+
+          // OUT: ウォレットがsenderの場合
+          const outLogs = await this.client.getLogs({
+            address: token.address as `0x${string}`,
+            event: {
+              type: 'event',
+              name: 'Transfer',
+              inputs: [
+                { name: 'from', type: 'address', indexed: true },
+                { name: 'to', type: 'address', indexed: true },
+                { name: 'value', type: 'uint256', indexed: false }
+              ]
+            },
+            args: {
+              from: userAddress
+            },
+            fromBlock,
+            toBlock: currentBlock
+          });
+
+          for (const log of outLogs) {
+            const block = await this.client.getBlock({ blockNumber: log.blockNumber });
+            events.push({
+              direction: 'OUT',
+              timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+              block: Number(log.blockNumber),
+              txHash: log.transactionHash,
+              token: token.symbol,
+              tokenAddress: token.address,
+              decimals: token.decimals,
+              from: log.args.from,
+              to: log.args.to,
+              value: log.args.value?.toString() || '0'
+            });
+          }
+        } catch (e) {
+          console.error(`Error fetching Transfer events for ${token.symbol}:`, e);
+        }
+      }
+
+      // ブロック番号でソート（新しい順）
+      events.sort((a, b) => b.block - a.block);
+
+      return events;
+    } catch (error) {
+      console.error('Error fetching wallet transaction history:', error);
+      return [];
+    }
+  }
+
+  // Get earn transaction history (Supply/Withdraw and Deposit/Withdraw events)
+  async getEarnTransactionHistory(address: string): Promise<any[]> {
+    try {
+      const userAddress = address as `0x${string}`;
+      const currentBlock = await this.client.getBlockNumber();
+      const BLOCKS_PER_DAY = 43200n; // World Chain: 約2秒/ブロック = 43,200ブロック/日
+      const fromBlock = currentBlock - (BLOCKS_PER_DAY * 4n); // 直近4日分
+
+      const events: any[] = [];
+
+      // 1. Morpho Blue Supply/Withdraw
+      try {
+        // Supply イベント: Supply(bytes32 indexed id, address caller, address indexed onBehalf, uint256 assets, uint256 shares)
+        const supplyLogs = await this.client.getLogs({
+          address: MORPHO_BLUE_ADDRESS as `0x${string}`,
+          event: {
+            type: 'event',
+            name: 'Supply',
+            inputs: [
+              { name: 'id', type: 'bytes32', indexed: true },
+              { name: 'caller', type: 'address', indexed: false },
+              { name: 'onBehalf', type: 'address', indexed: true },
+              { name: 'assets', type: 'uint256', indexed: false },
+              { name: 'shares', type: 'uint256', indexed: false }
+            ]
+          },
+          args: {
+            onBehalf: userAddress
+          },
+          fromBlock,
+          toBlock: currentBlock
+        });
+
+        for (const log of supplyLogs) {
+          const block = await this.client.getBlock({ blockNumber: log.blockNumber });
+          events.push({
+            type: 'Morpho Blue',
+            action: 'Supply',
+            direction: 'DEPOSIT',
+            timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+            block: Number(log.blockNumber),
+            txHash: log.transactionHash,
+            marketId: log.topics[1] || '',
+            args: log.args
+          });
+        }
+
+        // Withdraw イベント: Withdraw(bytes32 indexed id, address caller, address indexed onBehalf, address indexed receiver, uint256 assets, uint256 shares)
+        const withdrawLogs = await this.client.getLogs({
+          address: MORPHO_BLUE_ADDRESS as `0x${string}`,
+          event: {
+            type: 'event',
+            name: 'Withdraw',
+            inputs: [
+              { name: 'id', type: 'bytes32', indexed: true },
+              { name: 'caller', type: 'address', indexed: false },
+              { name: 'onBehalf', type: 'address', indexed: true },
+              { name: 'receiver', type: 'address', indexed: true },
+              { name: 'assets', type: 'uint256', indexed: false },
+              { name: 'shares', type: 'uint256', indexed: false }
+            ]
+          },
+          args: {
+            onBehalf: userAddress
+          },
+          fromBlock,
+          toBlock: currentBlock
+        });
+
+        for (const log of withdrawLogs) {
+          const block = await this.client.getBlock({ blockNumber: log.blockNumber });
+          events.push({
+            type: 'Morpho Blue',
+            action: 'Withdraw',
+            direction: 'WITHDRAW',
+            timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+            block: Number(log.blockNumber),
+            txHash: log.transactionHash,
+            marketId: log.topics[1] || '',
+            args: log.args
+          });
+        }
+      } catch (e) {
+        console.error('Error fetching Morpho Blue Supply/Withdraw events:', e);
+      }
+
+      // 2. MetaMorpho Vault Deposit/Withdraw
+      for (const vault of METAMORPHO_VAULTS) {
+        try {
+          // Deposit イベント: Deposit(address indexed sender, address indexed owner, uint256 assets, uint256 shares)
+          const depositLogs = await this.client.getLogs({
+            address: vault.vaultAddress,
+            event: {
+              type: 'event',
+              name: 'Deposit',
+              inputs: [
+                { name: 'sender', type: 'address', indexed: true },
+                { name: 'owner', type: 'address', indexed: true },
+                { name: 'assets', type: 'uint256', indexed: false },
+                { name: 'shares', type: 'uint256', indexed: false }
+              ]
+            },
+            args: {
+              owner: userAddress
+            },
+            fromBlock,
+            toBlock: currentBlock
+          });
+
+          for (const log of depositLogs) {
+            const block = await this.client.getBlock({ blockNumber: log.blockNumber });
+            events.push({
+              type: 'MetaMorpho',
+              action: 'Deposit',
+              direction: 'DEPOSIT',
+              timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+              block: Number(log.blockNumber),
+              txHash: log.transactionHash,
+              vaultName: vault.name,
+              vaultAddress: vault.vaultAddress,
+              token: vault.assetSymbol,
+              decimals: vault.decimals,
+              args: log.args
+            });
+          }
+
+          // Withdraw イベント: Withdraw(address indexed sender, address indexed receiver, address indexed owner, uint256 assets, uint256 shares)
+          const vaultWithdrawLogs = await this.client.getLogs({
+            address: vault.vaultAddress,
+            event: {
+              type: 'event',
+              name: 'Withdraw',
+              inputs: [
+                { name: 'sender', type: 'address', indexed: true },
+                { name: 'receiver', type: 'address', indexed: true },
+                { name: 'owner', type: 'address', indexed: true },
+                { name: 'assets', type: 'uint256', indexed: false },
+                { name: 'shares', type: 'uint256', indexed: false }
+              ]
+            },
+            args: {
+              receiver: userAddress
+            },
+            fromBlock,
+            toBlock: currentBlock
+          });
+
+          for (const log of vaultWithdrawLogs) {
+            const block = await this.client.getBlock({ blockNumber: log.blockNumber });
+            events.push({
+              type: 'MetaMorpho',
+              action: 'Withdraw',
+              direction: 'WITHDRAW',
+              timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+              block: Number(log.blockNumber),
+              txHash: log.transactionHash,
+              vaultName: vault.name,
+              vaultAddress: vault.vaultAddress,
+              token: vault.assetSymbol,
+              decimals: vault.decimals,
+              args: log.args
+            });
+          }
+        } catch (e) {
+          console.error(`Error fetching MetaMorpho events for ${vault.name}:`, e);
+        }
+      }
+
+      // ブロック番号でソート（新しい順）
+      events.sort((a, b) => b.block - a.block);
+
+      return events;
+    } catch (error) {
+      console.error('Error fetching earn transaction history:', error);
       return [];
     }
   }
