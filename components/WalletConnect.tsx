@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FluidSimulationBackground } from './FluidSimulationBackground';
 import { MiniKitService } from '@/lib/minikit';
 
@@ -11,6 +11,26 @@ interface WalletConnectProps {
 export function WalletConnect({ onConnect }: WalletConnectProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const target = document.body;
+    const previousBackground = target.style.background;
+    const previousBackgroundColor = target.style.backgroundColor;
+    const previousBackgroundImage = target.style.backgroundImage;
+
+    // Ensure the safe-area padding matches the dark hero background.
+    target.style.backgroundColor = '#04070f';
+    target.style.backgroundImage = 'none';
+    target.style.background = '#04070f';
+
+    return () => {
+      target.style.background = previousBackground;
+      target.style.backgroundColor = previousBackgroundColor;
+      target.style.backgroundImage = previousBackgroundImage;
+    };
+  }, []);
 
   const handleConnect = async () => {
     setIsConnecting(true);
