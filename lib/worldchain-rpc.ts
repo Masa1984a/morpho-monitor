@@ -819,7 +819,7 @@ export class WorldChainRPCClient {
 
   // Get World App Vault position
   async getWorldAppVaultPosition(address: string, wldPriceUsd: number): Promise<any | null> {
-    this.log(`\n=== Checking World App Vault (OP Mainnet) ===`);
+    this.log(`\n=== Checking World App Vault (World Chain) ===`);
 
     try {
       const vaultClient = WorldAppVaultClient.getInstance();
@@ -838,17 +838,17 @@ export class WorldChainRPCClient {
         type: 'lend' as const,
         vaultType: 'worldapp-vault' as const,
         market: {
-          uniqueKey: '0x21c4928109acB0659A88AE5329b5374A3024694C', // Vault contract address
+          uniqueKey: '0x14a028cC500108307947dca4a1Aa35029FB66CE0', // Vault contract address (World Chain)
           lltv: '0',
           loanAsset: {
-            address: '0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1', // WLD on OP Mainnet
+            address: '0x2cFc85d8E48F8EAB294be644d9E25C3030863003', // WLD on World Chain
             symbol: 'WLD',
-            decimals: vaultBalance.decimals
+            decimals: 18
           },
           collateralAsset: {
-            address: '0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1',
+            address: '0x2cFc85d8E48F8EAB294be644d9E25C3030863003',
             symbol: 'WLD',
-            decimals: vaultBalance.decimals
+            decimals: 18
           }
         },
         state: {
@@ -859,9 +859,7 @@ export class WorldChainRPCClient {
           principal: vaultBalance.principal,
           principalUsd: vaultBalance.principalUsd,
           accruedInterest: vaultBalance.accruedInterest,
-          accruedInterestUsd: vaultBalance.accruedInterestUsd,
-          endTime: vaultBalance.endTime,
-          lastCalc: vaultBalance.lastCalc
+          accruedInterestUsd: vaultBalance.accruedInterestUsd
         }
       };
     } catch (error) {

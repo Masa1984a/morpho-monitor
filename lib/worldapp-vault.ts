@@ -1,8 +1,7 @@
-// World App Vault on OP Mainnet and World Chain
+// World App Vault on World Chain
 // Reference: Vault.md
 
 import { createPublicClient, http, parseAbi, formatUnits } from 'viem';
-import { optimism } from 'viem/chains';
 
 // World Chain configuration
 const WORLD_CHAIN = {
@@ -15,12 +14,10 @@ const WORLD_CHAIN = {
   }
 } as const;
 
-// Vault contract addresses
-const VAULT_OP_ADDRESS = '0x21c4928109acB0659A88AE5329b5374A3024694C';
+// Vault contract address (World Chain only)
 const VAULT_WORLD_ADDRESS = '0x14a028cC500108307947dca4a1Aa35029FB66CE0';
 
-// WLD token addresses
-const WLD_OP_ADDRESS = '0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1';
+// WLD token address (World Chain only)
 const WLD_WORLD_ADDRESS = '0x2cFc85d8E48F8EAB294be644d9E25C3030863003';
 
 // Vault ABI
@@ -49,33 +46,28 @@ export interface WorldAppVaultBalance {
   decimals: number;
 }
 
-export interface CombinedVaultBalance {
-  optimism: WorldAppVaultBalance | null;
-  worldChain: WorldAppVaultBalance | null;
-  total: {
-    amountNow: string;
-    principal: string;
-    accruedInterest: string;
-    amountNowUsd: number;
-    principalUsd: number;
-    accruedInterestUsd: number;
-  };
+export interface VaultBalance {
+  amountNow: string;
+  principal: string;
+  accruedInterest: string;
+  amountNowUsd: number;
+  principalUsd: number;
+  accruedInterestUsd: number;
+}
+
+export interface SpendingBalance {
+  balance: string;
+  balanceUsd: number;
+  symbol: 'WLD';
 }
 
 export class WorldAppVaultClient {
   private static instance: WorldAppVaultClient;
-  private opClient;
   private worldClient;
   private debugLogs: string[] = [];
   private externalLogger?: (message: string) => void;
 
   private constructor() {
-    // OP Mainnet client
-    this.opClient = createPublicClient({
-      chain: optimism,
-      transport: http('https://mainnet.optimism.io')
-    });
-
     // World Chain client
     this.worldClient = createPublicClient({
       chain: WORLD_CHAIN,
@@ -194,95 +186,56 @@ export class WorldAppVaultClient {
     }
   }
 
-  async getVaultBalance(address: string, wldPriceUsd: number = 0): Promise<WorldAppVaultBalance | null> {
-    // Backwards compatibility: return OP Mainnet vault balance
-    return this.getVaultBalanceFromChain(
-      this.opClient,
-      VAULT_OP_ADDRESS,
-      WLD_OP_ADDRESS,
+  async getVaultBalance(address: string, wldPriceUsd: number = 0): Promise<VaultBalance | null> {
+    this.clearDebugLogs();
+    this.log(`\n=== Fetching Vault Balance (World Chain) ===`);
+
+    const worldBalance = await this.getVaultBalanceFromChain(
+      this.worldClient,
+      VAULT_WORLD_ADDRESS,
+      WLD_WORLD_ADDRESS,
       address,
-      'OP Mainnet',
+      'World Chain',
       wldPriceUsd
     );
-  }
 
-  async getCombinedVaultBalance(address: string, wldPriceUsd: number = 0): Promise<CombinedVaultBalance> {
-    this.clearDebugLogs();
-    this.log(`\n=== Fetching Combined Vault Balance (OP + World Chain) ===`);
-
-    // Fetch from both chains in parallel
-    const [opBalance, worldBalance] = await Promise.all([
-      this.getVaultBalanceFromChain(
-        this.opClient,
-        VAULT_OP_ADDRESS,
-        WLD_OP_ADDRESS,
-        address,
-        'OP Mainnet',
-        wldPriceUsd
-      ),
-      this.getVaultBalanceFromChain(
-        this.worldClient,
-        VAULT_WORLD_ADDRESS,
-        WLD_WORLD_ADDRESS,
-        address,
-        'World Chain',
-        wldPriceUsd
-      )
-    ]);
-
-    // Calculate totals
-    const totalAmountNow = (
-      parseFloat(opBalance?.amountNow || '0') +
-      parseFloat(worldBalance?.amountNow || '0')
-    ).toString();
-
-    const totalPrincipal = (
-      parseFloat(opBalance?.principal || '0') +
-      parseFloat(worldBalance?.principal || '0')
-    ).toString();
-
-    const totalAccruedInterest = (
-      parseFloat(opBalance?.accruedInterest || '0') +
-      parseFloat(worldBalance?.accruedInterest || '0')
-    ).toString();
-
-    const totalAmountNowUsd = (opBalance?.amountNowUsd || 0) + (worldBalance?.amountNowUsd || 0);
-    const totalPrincipalUsd = (opBalance?.principalUsd || 0) + (worldBalance?.principalUsd || 0);
-    const totalAccruedInterestUsd = (opBalance?.accruedInterestUsd || 0) + (worldBalance?.accruedInterestUsd || 0);
-
-    this.log(`\n=== Total Vault Balance ===`);
-    this.log(`  Total amount: ${totalAmountNow} WLD ($${totalAmountNowUsd.toFixed(2)})`);
-    this.log(`  Total principal: ${totalPrincipal} WLD ($${totalPrincipalUsd.toFixed(2)})`);
-    this.log(`  Total accrued interest: ${totalAccruedInterest} WLD ($${totalAccruedInterestUsd.toFixed(2)})`);
+    if (!worldBalance || parseFloat(worldBalance.amountNow) === 0) {
+      this.log('No Vault balance found');
+      return null;
+    }
 
     return {
-      optimism: opBalance,
-      worldChain: worldBalance,
-      total: {
-        amountNow: totalAmountNow,
-        principal: totalPrincipal,
-        accruedInterest: totalAccruedInterest,
-        amountNowUsd: totalAmountNowUsd,
-        principalUsd: totalPrincipalUsd,
-        accruedInterestUsd: totalAccruedInterestUsd
-      }
+      amountNow: worldBalance.amountNow,
+      principal: worldBalance.principal,
+      accruedInterest: worldBalance.accruedInterest,
+      amountNowUsd: worldBalance.amountNowUsd,
+      principalUsd: worldBalance.principalUsd,
+      accruedInterestUsd: worldBalance.accruedInterestUsd
     };
   }
 
   // Get spending balance (normal WLD balance)
-  async getSpendingBalance(address: string, wldPriceUsd: number = 0): Promise<{
-    balance: string;
-    balanceUsd: number;
-    symbol: 'WLD';
-  } | null> {
-    // Backwards compatibility: return OP Mainnet spending balance
-    return this.getSpendingBalanceFromChain(
-      this.opClient,
-      WLD_OP_ADDRESS,
+  async getSpendingBalance(address: string, wldPriceUsd: number = 0): Promise<SpendingBalance | null> {
+    this.log(`\n=== Fetching Spending Balance (World Chain) ===`);
+
+    const worldBalance = await this.getSpendingBalanceFromChain(
+      this.worldClient,
+      WLD_WORLD_ADDRESS,
       address,
-      'OP Mainnet',
+      'World Chain',
       wldPriceUsd
     );
+
+    if (!worldBalance || parseFloat(worldBalance.balance) === 0) {
+      this.log('No Spending balance found');
+      return null;
+    }
+
+    return {
+      balance: worldBalance.balance,
+      balanceUsd: worldBalance.balanceUsd,
+      symbol: 'WLD'
+    };
   }
 
   private async getSpendingBalanceFromChain(
@@ -344,50 +297,4 @@ export class WorldAppVaultClient {
     }
   }
 
-  async getCombinedSpendingBalance(address: string, wldPriceUsd: number = 0): Promise<{
-    optimism: { balance: string; balanceUsd: number; symbol: 'WLD' } | null;
-    worldChain: { balance: string; balanceUsd: number; symbol: 'WLD' } | null;
-    total: { balance: string; balanceUsd: number; symbol: 'WLD' };
-  }> {
-    this.log(`\n=== Fetching Combined Spending Balance (OP + World Chain) ===`);
-
-    // Fetch from both chains in parallel
-    const [opBalance, worldBalance] = await Promise.all([
-      this.getSpendingBalanceFromChain(
-        this.opClient,
-        WLD_OP_ADDRESS,
-        address,
-        'OP Mainnet',
-        wldPriceUsd
-      ),
-      this.getSpendingBalanceFromChain(
-        this.worldClient,
-        WLD_WORLD_ADDRESS,
-        address,
-        'World Chain',
-        wldPriceUsd
-      )
-    ]);
-
-    // Calculate totals
-    const totalBalance = (
-      parseFloat(opBalance?.balance || '0') +
-      parseFloat(worldBalance?.balance || '0')
-    ).toString();
-
-    const totalBalanceUsd = (opBalance?.balanceUsd || 0) + (worldBalance?.balanceUsd || 0);
-
-    this.log(`\n=== Total Spending Balance ===`);
-    this.log(`  Total balance: ${totalBalance} WLD ($${totalBalanceUsd.toFixed(2)})`);
-
-    return {
-      optimism: opBalance,
-      worldChain: worldBalance,
-      total: {
-        balance: totalBalance,
-        balanceUsd: totalBalanceUsd,
-        symbol: 'WLD'
-      }
-    };
-  }
 }

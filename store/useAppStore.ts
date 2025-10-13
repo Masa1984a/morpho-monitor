@@ -78,13 +78,13 @@ export const useAppStore = create<AppState>((set, get) => ({
 
         const wldPriceUsd = prices.WLD || 0;
 
-        // Fetch wallet balances (including WLD Vault and Spending from OP + World Chain)
+        // Fetch wallet balances (including WLD Vault and Spending from World Chain)
         actions.addDebugLog('Fetching wallet balances...');
-        const [tokenBalancesRaw, nativeBalanceRaw, vaultBalanceCombined, spendingBalanceCombined] = await Promise.all([
+        const [tokenBalancesRaw, nativeBalanceRaw, vaultBalance, spendingBalance] = await Promise.all([
           rpcClient.getTokenBalances(walletAddress as `0x${string}`, WORLD_CHAIN_TOKENS),
           rpcClient.getNativeBalance(walletAddress as `0x${string}`),
-          vaultClient.getCombinedVaultBalance(walletAddress, wldPriceUsd),
-          vaultClient.getCombinedSpendingBalance(walletAddress, wldPriceUsd)
+          vaultClient.getVaultBalance(walletAddress, wldPriceUsd),
+          vaultClient.getSpendingBalance(walletAddress, wldPriceUsd)
         ]);
 
         actions.addDebugLog(`Token balances raw count: ${tokenBalancesRaw.length}`);
@@ -117,28 +117,26 @@ export const useAppStore = create<AppState>((set, get) => ({
         };
 
         // Format WLD Vault balance (locked)
-        const wldVaultBalance: WLDVaultBalance | null =
-          parseFloat(vaultBalanceCombined.total.amountNow) > 0
-            ? {
-                amountNow: vaultBalanceCombined.total.amountNow,
-                principal: vaultBalanceCombined.total.principal,
-                accruedInterest: vaultBalanceCombined.total.accruedInterest,
-                amountNowUsd: vaultBalanceCombined.total.amountNowUsd,
-                principalUsd: vaultBalanceCombined.total.principalUsd,
-                accruedInterestUsd: vaultBalanceCombined.total.accruedInterestUsd,
-                symbol: 'WLD'
-              }
-            : null;
+        const wldVaultBalance: WLDVaultBalance | null = vaultBalance
+          ? {
+              amountNow: vaultBalance.amountNow,
+              principal: vaultBalance.principal,
+              accruedInterest: vaultBalance.accruedInterest,
+              amountNowUsd: vaultBalance.amountNowUsd,
+              principalUsd: vaultBalance.principalUsd,
+              accruedInterestUsd: vaultBalance.accruedInterestUsd,
+              symbol: 'WLD'
+            }
+          : null;
 
         // Format WLD Spending balance (liquid)
-        const wldSpendingBalance: WLDSpendingBalance | null =
-          parseFloat(spendingBalanceCombined.total.balance) > 0
-            ? {
-                balance: spendingBalanceCombined.total.balance,
-                balanceUsd: spendingBalanceCombined.total.balanceUsd,
-                symbol: 'WLD'
-              }
-            : null;
+        const wldSpendingBalance: WLDSpendingBalance | null = spendingBalance
+          ? {
+              balance: spendingBalance.balance,
+              balanceUsd: spendingBalance.balanceUsd,
+              symbol: 'WLD'
+            }
+          : null;
 
         actions.addDebugLog(`WLD Vault balance: ${wldVaultBalance?.amountNow || '0'} WLD`);
         actions.addDebugLog(`WLD Spending balance: ${wldSpendingBalance?.balance || '0'} WLD`);
