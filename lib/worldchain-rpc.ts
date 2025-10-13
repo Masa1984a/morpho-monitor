@@ -782,14 +782,11 @@ export class WorldChainRPCClient {
 
   // Helper to separate lend and borrow positions
   async getLendPositions(address: string): Promise<any[]> {
-    // Get WLD price first for World App Vault calculation
-    const wldPrice = await this.getTokenPrice('WLD');
-
-    // Get positions from Morpho Blue markets, MetaMorpho vaults, and World App Vault
-    const [morphoPositions, vaultPositions, worldAppVault] = await Promise.all([
+    // Get positions from Morpho Blue markets and MetaMorpho vaults
+    // Note: World App Vault is displayed in Wallet tab, not here
+    const [morphoPositions, vaultPositions] = await Promise.all([
       this.getUserPositions(address),
-      this.getMetaMorphoPositions(address),
-      this.getWorldAppVaultPosition(address, wldPrice)
+      this.getMetaMorphoPositions(address)
     ]);
 
     // Filter Morpho Blue positions for lend only
@@ -806,13 +803,8 @@ export class WorldChainRPCClient {
         }
       }));
 
-    // Combine all types of positions
+    // Combine Morpho Blue and MetaMorpho positions only
     const allPositions = [...morphoLendPositions, ...vaultPositions];
-
-    // Add World App Vault if it exists
-    if (worldAppVault) {
-      allPositions.push(worldAppVault);
-    }
 
     return allPositions;
   }
