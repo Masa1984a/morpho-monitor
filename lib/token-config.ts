@@ -97,6 +97,12 @@ export const WORLD_CHAIN_TOKENS: Token[] = [
     symbol: 'oXAUt',
     decimals: 6,
     name: 'Tether Gold'
+  },
+  {
+    address: '0xab09a728e53d3d6bc438be95eed46da0bbe7fb38',
+    symbol: 'SUSHI',
+    decimals: 18,
+    name: 'SUSHI Token'
   }
 ];
 

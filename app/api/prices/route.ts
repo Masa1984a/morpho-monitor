@@ -59,6 +59,7 @@ interface UnifiedPriceResponse {
   ORO?: number;
   ORB?: number;
   oXAUt?: number;
+  SUSHI?: number;
 }
 
 // Fetch with timeout and retry logic
@@ -189,7 +190,7 @@ export async function GET(request: Request) {
       console.error('CoinGecko API error:', error);
     }
 
-    // Fetch ORO and ORB prices from GeckoTerminal (World Chain DEX pools)
+    // Fetch ORO, ORB, and SUSHI prices from GeckoTerminal (World Chain DEX pools)
     try {
       // ORO/WLD pool on Uniswap V3 (World Chain)
       const oroPoolAddress = '0x8b9ffc6909cb826d8dc5a2f7f720fa7a818b8574';
@@ -232,6 +233,28 @@ export async function GET(request: Request) {
         // GeckoTerminal returns price in USD directly
         if (orbData.data?.attributes?.base_token_price_usd) {
           prices.ORB = parseFloat(orbData.data.attributes.base_token_price_usd);
+        }
+      }
+
+      // SUSHI/WLD pool on Uniswap V3 (World Chain)
+      const sushiPoolAddress = '0xe2b3bbe86da7463e3995488ad07d832760906e54';
+      const sushiPoolResponse = await fetchWithTimeout(
+        `https://api.geckoterminal.com/api/v2/networks/world-chain/pools/${sushiPoolAddress}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+          },
+          next: { revalidate: 60 }, // Cache for 60 seconds
+        },
+        5000,
+        2
+      );
+
+      if (sushiPoolResponse.ok) {
+        const sushiData: GeckoTerminalPoolResponse = await sushiPoolResponse.json();
+        // GeckoTerminal returns price in USD directly
+        if (sushiData.data?.attributes?.base_token_price_usd) {
+          prices.SUSHI = parseFloat(sushiData.data.attributes.base_token_price_usd);
         }
       }
     } catch (error) {
