@@ -27,7 +27,17 @@ interface CoinGeckoPriceResponse {
   'shiba-inu'?: { usd: number };
   cardano?: { usd: number };
   chainlink?: { usd: number };
-  // Note: ORO, ORB, and oXAUt might not be available on CoinGecko
+  'tether-gold'?: { usd: number };
+  // Note: ORO and ORB prices are fetched from GeckoTerminal
+}
+
+interface GeckoTerminalPoolResponse {
+  data?: {
+    attributes?: {
+      base_token_price_usd?: string;
+      quote_token_price_usd?: string;
+    };
+  };
 }
 
 interface UnifiedPriceResponse {
@@ -138,7 +148,8 @@ export async function GET(request: Request) {
         'litecoin',
         'shiba-inu',
         'cardano',
-        'chainlink'
+        'chainlink',
+        'tether-gold'
       ].join(',');
 
       const coinGeckoResponse = await fetchWithTimeout(
@@ -171,11 +182,60 @@ export async function GET(request: Request) {
         if (data.cardano?.usd) prices.uADA = data.cardano.usd;
         if (data.chainlink?.usd) prices.uLINK = data.chainlink.usd;
 
-        // Note: ORO, ORB, and oXAUt prices are not available from CoinGecko
-        // These would need to be fetched from a DEX or other source
+        // Tether Gold (oXAUt)
+        if (data['tether-gold']?.usd) prices.oXAUt = data['tether-gold'].usd;
       }
     } catch (error) {
       console.error('CoinGecko API error:', error);
+    }
+
+    // Fetch ORO and ORB prices from GeckoTerminal (World Chain DEX pools)
+    try {
+      // ORO/WLD pool on Uniswap V3 (World Chain)
+      const oroPoolAddress = '0x8b9ffc6909cb826d8dc5a2f7f720fa7a818b8574';
+      const oroPoolResponse = await fetchWithTimeout(
+        `https://api.geckoterminal.com/api/v2/networks/world-chain/pools/${oroPoolAddress}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+          },
+          next: { revalidate: 60 }, // Cache for 60 seconds
+        },
+        5000,
+        2
+      );
+
+      if (oroPoolResponse.ok) {
+        const oroData: GeckoTerminalPoolResponse = await oroPoolResponse.json();
+        // GeckoTerminal returns price in USD directly
+        if (oroData.data?.attributes?.base_token_price_usd) {
+          prices.ORO = parseFloat(oroData.data.attributes.base_token_price_usd);
+        }
+      }
+
+      // ORB/WLD pool on Uniswap V3 (World Chain)
+      const orbPoolAddress = '0xee21af1d049211206b20b957d07794e7d0b140b3';
+      const orbPoolResponse = await fetchWithTimeout(
+        `https://api.geckoterminal.com/api/v2/networks/world-chain/pools/${orbPoolAddress}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+          },
+          next: { revalidate: 60 }, // Cache for 60 seconds
+        },
+        5000,
+        2
+      );
+
+      if (orbPoolResponse.ok) {
+        const orbData: GeckoTerminalPoolResponse = await orbPoolResponse.json();
+        // GeckoTerminal returns price in USD directly
+        if (orbData.data?.attributes?.base_token_price_usd) {
+          prices.ORB = parseFloat(orbData.data.attributes.base_token_price_usd);
+        }
+      }
+    } catch (error) {
+      console.error('GeckoTerminal API error:', error);
     }
 
     // Return unified prices

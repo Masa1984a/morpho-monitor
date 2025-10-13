@@ -19,18 +19,31 @@ export function BalanceRow({ symbol, balance, balanceUsd, priceUsd, logoPath, co
     maximumFractionDigits: symbol === 'USDC' ? 2 : 6
   });
 
+  // For very small prices (< $0.01), show more decimal places
+  const getPriceDecimals = () => {
+    if (priceUsd < 0.01 && priceUsd > 0) return 6;
+    if (symbol === 'USDC') return 4;
+    return 2;
+  };
+
   const formattedPrice = priceUsd.toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2,
-    maximumFractionDigits: symbol === 'USDC' ? 4 : 2
+    maximumFractionDigits: getPriceDecimals()
   });
+
+  // For very small USD amounts (< $0.01), show more decimal places
+  const getBalanceUsdDecimals = () => {
+    if (balanceUsd < 0.01 && balanceUsd > 0) return 6;
+    return 2;
+  };
 
   const formattedBalanceUsd = balanceUsd.toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    maximumFractionDigits: getBalanceUsdDecimals()
   });
 
   const handleCopyContract = async () => {

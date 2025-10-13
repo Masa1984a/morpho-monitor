@@ -95,7 +95,7 @@ export const WORLD_CHAIN_TOKENS: Token[] = [
   {
     address: '0x30974f73a4ac9e606ed80da928e454977ac486d2',
     symbol: 'oXAUt',
-    decimals: 18,
+    decimals: 6,
     name: 'Tether Gold'
   }
 ];
