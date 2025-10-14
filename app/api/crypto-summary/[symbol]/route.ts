@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const CRYPTO_API_BASE = 'https://morpho-jaidkqvl0-masanori-yoshidas-projects.vercel.app';
+const CRYPTO_API_BASE = 'https://morpho-ai.vercel.app/';
 const BEARER_TOKEN = 'CTS_TOKENS_20251008';
 
 export async function GET(
@@ -14,10 +14,10 @@ export async function GET(
     const symbol = resolvedParams.symbol.toUpperCase();
 
     // Validate symbol
-    const validSymbols = ['WLD', 'USDC', 'WBTC', 'WETH'];
+    const validSymbols = ['WLD', 'USDC', 'WBTC', 'WETH', 'OXAUT'];
     if (!validSymbols.includes(symbol)) {
       return NextResponse.json(
-        { error: 'Invalid symbol. Must be one of: WLD, USDC, WBTC, WETH' },
+        { error: 'Invalid symbol. Must be one of: WLD, USDC, WBTC, WETH, oXAUt' },
         { status: 400 }
       );
     }
@@ -31,11 +31,14 @@ export async function GET(
       );
     }
 
-    console.log(`Fetching crypto summary for ${symbol} in ${lang}...`);
+    // Map oXAUt to XAUt for API requests
+    const apiSymbol = symbol === 'OXAUT' ? 'XAUt' : symbol;
+
+    console.log(`Fetching crypto summary for ${apiSymbol} in ${lang}...`);
 
     // Fetch from Crypto Insight Ingestor API with authentication
     const response = await fetch(
-      `${CRYPTO_API_BASE}/api/assets/${symbol}/summary?lang=${lang}`,
+      `${CRYPTO_API_BASE}/api/assets/${apiSymbol}/summary?lang=${lang}`,
       {
         headers: {
           'Authorization': `Bearer ${BEARER_TOKEN}`,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = 'https://morpho-pyjvb3f9q-masanori-yoshidas-projects.vercel.app';
+const API_BASE_URL = 'https://morpho-ai.vercel.app';
 const BEARER_TOKEN = 'CTS_TOKENS_20251008';
 
 export async function GET(
@@ -9,19 +9,23 @@ export async function GET(
 ) {
   try {
     const { symbol } = await params;
+    const upperSymbol = symbol.toUpperCase();
 
     // Validate symbol
-    const validSymbols = ['WLD', 'USDC', 'WBTC', 'WETH'];
-    if (!validSymbols.includes(symbol.toUpperCase())) {
+    const validSymbols = ['WLD', 'USDC', 'WBTC', 'WETH', 'OXAUT'];
+    if (!validSymbols.includes(upperSymbol)) {
       return NextResponse.json(
         { error: 'Invalid symbol' },
         { status: 400 }
       );
     }
 
+    // Map oXAUt to XAUt for API requests
+    const apiSymbol = upperSymbol === 'OXAUT' ? 'XAUt' : upperSymbol;
+
     // Fetch from external API
     const response = await fetch(
-      `${API_BASE_URL}/api/assets/${symbol.toUpperCase()}/summary`,
+      `${API_BASE_URL}/api/assets/${apiSymbol}/summary`,
       {
         headers: {
           'Authorization': `Bearer ${BEARER_TOKEN}`,

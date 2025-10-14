@@ -301,29 +301,28 @@ export default function Home() {
 
       {/* Crypto Buttons (shown on all tabs) */}
       <div className="mb-6">
-        <div className="grid grid-cols-4 gap-3">
-          {['WLD', 'USDC', 'WBTC', 'WETH'].map((symbol) => (
+        <div className="grid grid-cols-5 gap-3">
+          {['WLD', 'USDC', 'WBTC', 'WETH', 'oXAUt'].map((symbol) => (
             <button
               key={symbol}
               onClick={() => handleCryptoClick(symbol)}
               className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all px-3 py-3 text-center border-2 border-transparent hover:border-morpho-blue"
             >
-              <div className="flex items-center justify-center mb-1">
+              <div className="flex items-center justify-center mb-2">
                 <img
                   src={`/crypto-logos/${symbol}.png`}
                   alt={`${symbol} logo`}
-                  className="w-5 h-5 mr-2"
+                  className="w-8 h-8"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}
                 />
-                <span className="font-semibold text-gray-900">{symbol}</span>
               </div>
               {cryptoPrices[symbol] ? (
                 <div className="text-xs text-gray-600">
                   ${cryptoPrices[symbol].toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: symbol === 'USDC' ? 4 : 2,
+                    minimumFractionDigits: symbol === 'WBTC' ? 0 : 2,
+                    maximumFractionDigits: symbol === 'USDC' ? 4 : symbol === 'WBTC' ? 0 : 2,
                   })}
                 </div>
               ) : (

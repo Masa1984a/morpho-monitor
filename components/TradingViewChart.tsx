@@ -12,6 +12,7 @@ const symbolMapping: Record<string, string[]> = {
   USDC: ['KRAKEN:USDCUSD', 'BITSTAMP:USDCUSD', 'USDCUSD'],
   WBTC: ['BINANCE:BTCUSD', 'COINBASE:BTCUSD', 'KRAKEN:BTCUSD'], // WBTC tracks BTC price
   WETH: ['BINANCE:ETHUSD', 'COINBASE:ETHUSD', 'KRAKEN:ETHUSD'], // WETH tracks ETH price
+  oXAUt: ['TVC:GOLD', 'OANDA:XAUUSD', 'FX:XAUUSD'], // oXAUt (Tether Gold) tracks Gold price
 };
 
 export function TradingViewChart({ symbol }: TradingViewChartProps) {
