@@ -18,6 +18,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   lendPositions: [],
   borrowPositions: [],
   isLoading: false,
+  isLoadingWallet: false,
+  isLoadingLend: false,
+  isLoadingBorrow: false,
   error: null,
   activeTab: 'wallet',
   lastUpdate: null,
@@ -81,7 +84,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
 
       actions.addDebugLog(`Starting fetchWalletData for wallet: ${walletAddress}`);
-      set({ isLoading: true, error: null });
+      set({ isLoading: true, isLoadingWallet: true, error: null });
 
       try {
         const rpcClient = WorldChainRPCClient.getInstance();
@@ -169,6 +172,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           wldSpendingBalance,
           walletDataLoaded: true,
           isLoading: false,
+          isLoadingWallet: false,
           lastUpdate: new Date()
         });
       } catch (error) {
@@ -177,7 +181,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         console.error('[Store] Error fetching wallet data:', error);
         set({
           error: errorMsg,
-          isLoading: false
+          isLoading: false,
+          isLoadingWallet: false
         });
       }
     },
@@ -193,7 +198,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
 
       actions.addDebugLog(`Starting fetchLendData for wallet: ${walletAddress}`);
-      set({ isLoading: true, error: null });
+      set({ isLoading: true, isLoadingLend: true, error: null });
 
       try {
         const rpcClient = WorldChainRPCClient.getInstance();
@@ -208,6 +213,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           lendPositions,
           lendDataLoaded: true,
           isLoading: false,
+          isLoadingLend: false,
           lastUpdate: new Date()
         });
 
@@ -218,7 +224,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         console.error('[Store] Error fetching lend data:', error);
         set({
           error: errorMsg,
-          isLoading: false
+          isLoading: false,
+          isLoadingLend: false
         });
       }
     },
@@ -234,7 +241,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
 
       actions.addDebugLog(`Starting fetchBorrowData for wallet: ${walletAddress}`);
-      set({ isLoading: true, error: null });
+      set({ isLoading: true, isLoadingBorrow: true, error: null });
 
       try {
         const rpcClient = WorldChainRPCClient.getInstance();
@@ -249,7 +256,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           borrowPositions,
           borrowDataLoaded: true,
           isLoading: false,
-          lastUpdate: new Date()
+          isLoadingBorrow: false,
+          lastUpdate: new date()
         });
 
         actions.addDebugLog('Borrow data loaded successfully');
@@ -259,7 +267,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         console.error('[Store] Error fetching borrow data:', error);
         set({
           error: errorMsg,
-          isLoading: false
+          isLoading: false,
+          isLoadingBorrow: false
         });
       }
     },
@@ -269,7 +278,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (!walletAddress) return;
 
       actions.addDebugLog(`Starting fetchDashboardData for wallet: ${walletAddress}`);
-      set({ isLoading: true, error: null });
+      set({
+        isLoading: true,
+        isLoadingWallet: true,
+        isLoadingLend: true,
+        isLoadingBorrow: true,
+        error: null
+      });
 
       try {
         const rpcClient = WorldChainRPCClient.getInstance();
@@ -330,6 +345,12 @@ export const useAppStore = create<AppState>((set, get) => ({
           lendPositions,
           borrowPositions,
           isLoading: false,
+          isLoadingWallet: false,
+          isLoadingLend: false,
+          isLoadingBorrow: false,
+          walletDataLoaded: true,
+          lendDataLoaded: true,
+          borrowDataLoaded: true,
           lastUpdate: new Date()
         });
 
@@ -340,7 +361,10 @@ export const useAppStore = create<AppState>((set, get) => ({
         console.error('[Store] Error fetching dashboard data:', error);
         set({
           error: errorMsg,
-          isLoading: false
+          isLoading: false,
+          isLoadingWallet: false,
+          isLoadingLend: false,
+          isLoadingBorrow: false
         });
       }
     },
@@ -376,6 +400,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         lendPositions: [],
         borrowPositions: [],
         isLoading: false,
+        isLoadingWallet: false,
+        isLoadingLend: false,
+        isLoadingBorrow: false,
         error: null,
         lastUpdate: null,
         walletDataLoaded: false,

@@ -44,6 +44,9 @@ export default function Home() {
     lendPositions,
     borrowPositions,
     isLoading,
+    isLoadingWallet,
+    isLoadingLend,
+    isLoadingBorrow,
     error,
     activeTab,
     lastUpdate,
@@ -386,7 +389,7 @@ export default function Home() {
             nativeBalance={nativeBalance}
             wldVaultBalance={wldVaultBalance}
             wldSpendingBalance={wldSpendingBalance}
-            isLoading={isLoading}
+            isLoading={isLoadingWallet}
             error={error}
             debugLogs={debugLogs}
             showDebugInfo={settings.showDebugInfo}
@@ -399,7 +402,7 @@ export default function Home() {
         {activeTab === 'lend' && (
           <LendPositionView
             positions={lendPositions}
-            isLoading={isLoading}
+            isLoading={isLoadingLend}
             error={error}
             debugLogs={debugLogs}
             showDebugInfo={settings.showDebugInfo}
@@ -412,7 +415,7 @@ export default function Home() {
         {activeTab === 'borrow' && (
           <BorrowPositionView
             positions={borrowPositions}
-            isLoading={isLoading}
+            isLoading={isLoadingBorrow}
             error={error}
             thresholds={settings}
             onSimulatePosition={handleSimulatePosition}
