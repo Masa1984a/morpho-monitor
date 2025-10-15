@@ -3,7 +3,7 @@
 import { TokenBalance, NativeBalance, WLDVaultBalance, WLDSpendingBalance } from './wallet';
 import { LendPosition, BorrowPosition } from './morpho';
 
-export type TabType = 'wallet' | 'lend' | 'borrow';
+export type TabType = 'wallet' | 'lend' | 'borrow' | 'analysis';
 
 export interface AppState {
   // Wallet connection
