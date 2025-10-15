@@ -57,6 +57,24 @@ export default function Home() {
   // Settings hook
   const { settings, isLoaded: settingsLoaded, saveSettings, resetSettings, defaultSettings } = useSettings();
 
+  // Track previous showDebugInfo value to detect changes
+  const prevShowDebugInfoRef = React.useRef(settings.showDebugInfo);
+
+  // Clear debug logs when showDebugInfo is toggled from On to Off
+  useEffect(() => {
+    const prevShowDebugInfo = prevShowDebugInfoRef.current;
+    const currentShowDebugInfo = settings.showDebugInfo;
+
+    // If changed from true to false, clear debug logs
+    if (prevShowDebugInfo === true && currentShowDebugInfo === false) {
+      actions.clearDebugLogs();
+      setChainDebug('');
+    }
+
+    // Update ref for next comparison
+    prevShowDebugInfoRef.current = currentShowDebugInfo;
+  }, [settings.showDebugInfo, actions]);
+
   // Check if running in World App
   useEffect(() => {
     const checkWorldApp = () => {
@@ -108,13 +126,16 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [walletAddress]);
 
-  // Get debug info for chain
+  // Get debug info for chain (only when debug info is enabled)
   useEffect(() => {
-    if (walletAddress) {
+    if (walletAddress && settings.showDebugInfo) {
       const morphoClient = MorphoAPIClient.getInstance();
       setChainDebug(morphoClient.getChainDebugInfo());
+    } else if (!settings.showDebugInfo) {
+      // Clear chain debug when disabled
+      setChainDebug('');
     }
-  }, [walletAddress, borrowPositions]);
+  }, [walletAddress, borrowPositions, settings.showDebugInfo]);
 
   const handleWalletConnect = (address: string) => {
     actions.setWalletAddress(address);
@@ -399,7 +420,7 @@ export default function Home() {
           />
         )}
 
-        {activeTab === 'analysis' && (
+        {activeTab === 'analysis' && walletAddress && (
           <AnalysisView walletAddress={walletAddress} />
         )}
 

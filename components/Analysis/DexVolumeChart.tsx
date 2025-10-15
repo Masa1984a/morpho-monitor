@@ -52,34 +52,62 @@ export function DexVolumeChart({ data, isLoading }: DexVolumeChartProps) {
   }
 
   // Group data by date and blockchain
-  const groupedData: Record<string, { isoDate: string; data: Record<string, number> }> = {};
+  const groupedData: Record<string, { isoDate: string; displayDate: string; data: Record<string, number> }> = {};
   const blockchains = new Set<string>();
 
   data.forEach((item) => {
     const isoDate = item.date;
-    const date = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const dateObj = new Date(item.date);
+
+    // Check for invalid date
+    if (isNaN(dateObj.getTime())) {
+      console.error('Invalid date:', item.date);
+      return;
+    }
+
+    const displayDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const blockchain = item.blockchain;
     const volumeUsd = parseFloat(item.chain_volume_usd || '0');
 
-    blockchains.add(blockchain);
-
-    if (!groupedData[date]) {
-      groupedData[date] = { isoDate, data: {} };
+    // Skip invalid numeric values
+    if (isNaN(volumeUsd) || !isFinite(volumeUsd)) {
+      console.error('Invalid volume value:', item.chain_volume_usd);
+      return;
     }
 
-    groupedData[date].data[blockchain] = (groupedData[date].data[blockchain] || 0) + volumeUsd;
+    blockchains.add(blockchain);
+
+    // Use isoDate as the unique key to prevent date collisions
+    if (!groupedData[isoDate]) {
+      groupedData[isoDate] = { isoDate, displayDate, data: {} };
+    }
+
+    groupedData[isoDate].data[blockchain] = (groupedData[isoDate].data[blockchain] || 0) + volumeUsd;
   });
 
   // Convert to chart data format and sort by date (oldest to newest)
   const chartData = Object.keys(groupedData)
-    .map((date) => ({
-      date,
-      isoDate: groupedData[date].isoDate,
-      ...groupedData[date].data,
+    .map((isoDate) => ({
+      key: isoDate, // Use isoDate as unique key
+      date: groupedData[isoDate].displayDate,
+      isoDate: groupedData[isoDate].isoDate,
+      ...groupedData[isoDate].data,
     }))
     .sort((a, b) => new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime());
 
   const blockchainArray = Array.from(blockchains);
+
+  // If no valid data after processing, show no data message
+  if (chartData.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h3 className="text-lg font-semibold mb-4">WLD DEX Volume</h3>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">No valid data available</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">

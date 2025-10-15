@@ -40,6 +40,26 @@ export const useAppStore = create<AppState>((set, get) => ({
     setActiveTab: (tab) => set({ activeTab: tab }),
 
     addDebugLog: (log: string) => {
+      // Check if debug info is enabled before logging
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('morpho-monitor-settings');
+          if (stored) {
+            const settings = JSON.parse(stored);
+            if (!settings.showDebugInfo) {
+              // Debug info is disabled, skip logging
+              return;
+            }
+          } else {
+            // No settings stored, default is false, skip logging
+            return;
+          }
+        } catch (error) {
+          // If we can't read settings, skip logging to be safe
+          return;
+        }
+      }
+
       const timestamp = new Date().toLocaleTimeString();
       const logWithTime = `[${timestamp}] ${log}`;
       console.log(logWithTime);

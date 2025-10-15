@@ -22,6 +22,9 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
     return ninetyDaysAgo.toISOString().split('T')[0];
   });
 
+  // Refresh key to force re-fetch
+  const [refreshKey, setRefreshKey] = useState(0);
+
   // Data state
   const [collateralData, setCollateralData] = useState<any[]>([]);
   const [borrowData, setBorrowData] = useState<any[]>([]);
@@ -37,88 +40,101 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
   // Error state
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch all data
-  const fetchData = async () => {
-    setError(null);
-
-    // Build query parameters
-    const params = new URLSearchParams();
-    if (fromDate) params.append('from', fromDate);
-    if (toDate) params.append('to', toDate);
-    params.append('limit', '1000');
-
-    // Fetch collateral data
-    setIsLoadingCollateral(true);
-    try {
-      const response = await fetch(`/api/morpho-data/collateral?${params.toString()}`);
-      if (response.ok) {
-        const result = await response.json();
-        setCollateralData(result.data || []);
-      } else {
-        console.error('Failed to fetch collateral data');
-      }
-    } catch (err) {
-      console.error('Error fetching collateral data:', err);
-    } finally {
-      setIsLoadingCollateral(false);
-    }
-
-    // Fetch borrow data
-    setIsLoadingBorrow(true);
-    try {
-      const response = await fetch(`/api/morpho-data/borrow?${params.toString()}`);
-      if (response.ok) {
-        const result = await response.json();
-        setBorrowData(result.data || []);
-      } else {
-        console.error('Failed to fetch borrow data');
-      }
-    } catch (err) {
-      console.error('Error fetching borrow data:', err);
-    } finally {
-      setIsLoadingBorrow(false);
-    }
-
-    // Fetch DEX volume data
-    setIsLoadingDexVolume(true);
-    try {
-      const response = await fetch(`/api/morpho-data/dex-volume?${params.toString()}`);
-      if (response.ok) {
-        const result = await response.json();
-        setDexVolumeData(result.data || []);
-      } else {
-        console.error('Failed to fetch DEX volume data');
-      }
-    } catch (err) {
-      console.error('Error fetching DEX volume data:', err);
-    } finally {
-      setIsLoadingDexVolume(false);
-    }
-
-    // Fetch earn data
-    setIsLoadingEarn(true);
-    try {
-      const response = await fetch(`/api/morpho-data/earn?${params.toString()}`);
-      if (response.ok) {
-        const result = await response.json();
-        setEarnData(result.data || []);
-      } else {
-        console.error('Failed to fetch earn data');
-      }
-    } catch (err) {
-      console.error('Error fetching earn data:', err);
-    } finally {
-      setIsLoadingEarn(false);
-    }
-  };
-
   // Fetch data on mount and when date range changes
   useEffect(() => {
+    const fetchData = async () => {
+      setError(null);
+
+      try {
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (fromDate) params.append('from', fromDate);
+        if (toDate) params.append('to', toDate);
+        params.append('limit', '1000');
+
+        // Fetch collateral data
+        setIsLoadingCollateral(true);
+        try {
+          const response = await fetch(`/api/morpho-data/collateral?${params.toString()}`);
+          if (response.ok) {
+            const result = await response.json();
+            setCollateralData(result.data || []);
+          } else {
+            console.error('Failed to fetch collateral data:', response.status);
+          }
+        } catch (err) {
+          console.error('Error fetching collateral data:', err);
+          setCollateralData([]);
+        } finally {
+          setIsLoadingCollateral(false);
+        }
+
+        // Fetch borrow data
+        setIsLoadingBorrow(true);
+        try {
+          const response = await fetch(`/api/morpho-data/borrow?${params.toString()}`);
+          if (response.ok) {
+            const result = await response.json();
+            setBorrowData(result.data || []);
+          } else {
+            console.error('Failed to fetch borrow data:', response.status);
+          }
+        } catch (err) {
+          console.error('Error fetching borrow data:', err);
+          setBorrowData([]);
+        } finally {
+          setIsLoadingBorrow(false);
+        }
+
+        // Fetch DEX volume data
+        setIsLoadingDexVolume(true);
+        try {
+          const response = await fetch(`/api/morpho-data/dex-volume?${params.toString()}`);
+          if (response.ok) {
+            const result = await response.json();
+            setDexVolumeData(result.data || []);
+          } else {
+            console.error('Failed to fetch DEX volume data:', response.status);
+          }
+        } catch (err) {
+          console.error('Error fetching DEX volume data:', err);
+          setDexVolumeData([]);
+        } finally {
+          setIsLoadingDexVolume(false);
+        }
+
+        // Fetch earn data
+        setIsLoadingEarn(true);
+        try {
+          const response = await fetch(`/api/morpho-data/earn?${params.toString()}`);
+          if (response.ok) {
+            const result = await response.json();
+            setEarnData(result.data || []);
+          } else {
+            console.error('Failed to fetch earn data:', response.status);
+          }
+        } catch (err) {
+          console.error('Error fetching earn data:', err);
+          setEarnData([]);
+        } finally {
+          setIsLoadingEarn(false);
+        }
+      } catch (err) {
+        console.error('Error in fetchData:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load analysis data');
+        setIsLoadingCollateral(false);
+        setIsLoadingBorrow(false);
+        setIsLoadingDexVolume(false);
+        setIsLoadingEarn(false);
+      }
+    };
+
     fetchData();
-  }, [fromDate, toDate]);
+  }, [fromDate, toDate, refreshKey]);
 
   const handleApplyDateRange = () => {
-    fetchData();
+    // Trigger re-fetch by incrementing refreshKey
+    setRefreshKey(prev => prev + 1);
   };
 
   return (

@@ -159,7 +159,7 @@ export function SettingsModal({
 
           {/* Debug Info Section */}
           <div className="flex items-center justify-between mb-6">
-            <label className="text-sm font-medium text-gray-700">Show Debug Info</label>
+            <label className="text-sm font-medium text-gray-700">Enable Debug Info</label>
             <button
               type="button"
               onClick={() => setShowDebugInfo(!showDebugInfo)}

@@ -56,34 +56,62 @@ export function EarnChart({ data, isLoading }: EarnChartProps) {
   }
 
   // Group data by date and vault symbol
-  const groupedData: Record<string, { isoDate: string; data: Record<string, number> }> = {};
+  const groupedData: Record<string, { isoDate: string; displayDate: string; data: Record<string, number> }> = {};
   const vaultSymbols = new Set<string>();
 
   data.forEach((item) => {
     const isoDate = item.day;
-    const date = new Date(item.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const dateObj = new Date(item.day);
+
+    // Check for invalid date
+    if (isNaN(dateObj.getTime())) {
+      console.error('Invalid date:', item.day);
+      return;
+    }
+
+    const displayDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const vaultSymbol = item.vault_symbol;
     const tvlUsd = parseFloat(item.tvl_usd || '0');
 
-    vaultSymbols.add(vaultSymbol);
-
-    if (!groupedData[date]) {
-      groupedData[date] = { isoDate, data: {} };
+    // Skip invalid numeric values
+    if (isNaN(tvlUsd) || !isFinite(tvlUsd)) {
+      console.error('Invalid TVL value:', item.tvl_usd);
+      return;
     }
 
-    groupedData[date].data[vaultSymbol] = (groupedData[date].data[vaultSymbol] || 0) + tvlUsd;
+    vaultSymbols.add(vaultSymbol);
+
+    // Use isoDate as the unique key to prevent date collisions
+    if (!groupedData[isoDate]) {
+      groupedData[isoDate] = { isoDate, displayDate, data: {} };
+    }
+
+    groupedData[isoDate].data[vaultSymbol] = (groupedData[isoDate].data[vaultSymbol] || 0) + tvlUsd;
   });
 
   // Convert to chart data format and sort by date (oldest to newest)
   const chartData = Object.keys(groupedData)
-    .map((date) => ({
-      date,
-      isoDate: groupedData[date].isoDate,
-      ...groupedData[date].data,
+    .map((isoDate) => ({
+      key: isoDate, // Use isoDate as unique key
+      date: groupedData[isoDate].displayDate,
+      isoDate: groupedData[isoDate].isoDate,
+      ...groupedData[isoDate].data,
     }))
     .sort((a, b) => new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime());
 
   const vaultSymbolArray = Array.from(vaultSymbols);
+
+  // If no valid data after processing, show no data message
+  if (chartData.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h3 className="text-lg font-semibold mb-4">World Chain Morpho Earn</h3>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">No valid data available</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
