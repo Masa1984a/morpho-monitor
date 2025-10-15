@@ -11,6 +11,11 @@ interface WalletConnectProps {
 export function WalletConnect({ onConnect }: WalletConnectProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [manualAddress, setManualAddress] = useState('');
+  const [showManualInput, setShowManualInput] = useState(false);
+
+  // Check if development mode is enabled
+  const isDevMode = process.env.NEXT_PUBLIC_ENABLE_DEV_MODE === 'true';
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -51,6 +56,19 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
     } finally {
       setIsConnecting(false);
     }
+  };
+
+  const handleManualConnect = () => {
+    setError(null);
+
+    // Validate Ethereum address format (0x followed by 40 hex characters)
+    const addressRegex = /^0x[a-fA-F0-9]{40}$/;
+    if (!addressRegex.test(manualAddress)) {
+      setError('Invalid wallet address format. Must be a valid Ethereum address (0x...)');
+      return;
+    }
+
+    onConnect(manualAddress);
   };
 
   return (
@@ -138,6 +156,39 @@ export function WalletConnect({ onConnect }: WalletConnectProps) {
                 </span>
               )}
             </button>
+
+            {/* Development Mode: Manual Wallet Input */}
+            {isDevMode && (
+              <div className="mt-6">
+                <button
+                  onClick={() => setShowManualInput(!showManualInput)}
+                  className="w-full text-xs text-gray-500 hover:text-gray-700 underline"
+                >
+                  {showManualInput ? 'Hide' : 'Show'} Developer Mode (Manual Input)
+                </button>
+
+                {showManualInput && (
+                  <div className="mt-4 space-y-3">
+                    <div className="text-xs text-gray-600 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      Development Mode: Enter a wallet address manually for testing
+                    </div>
+                    <input
+                      type="text"
+                      value={manualAddress}
+                      onChange={(e) => setManualAddress(e.target.value)}
+                      placeholder="0x..."
+                      className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-morpho-blue focus:border-transparent text-gray-900"
+                    />
+                    <button
+                      onClick={handleManualConnect}
+                      className="w-full px-4 py-2 text-sm font-medium text-white bg-gray-700 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      Connect with Manual Address
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="mt-10 space-y-5 text-xs text-gray-600">
               <p className="text-gray-600">

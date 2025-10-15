@@ -34,6 +34,9 @@ export default function Home() {
   const [chainDebug, setChainDebug] = useState<string>('');
   const [addressCopied, setAddressCopied] = useState(false);
 
+  // Check if development mode is enabled
+  const isDevMode = process.env.NEXT_PUBLIC_ENABLE_DEV_MODE === 'true';
+
   // Zustand store
   const {
     walletAddress,
@@ -235,8 +238,8 @@ export default function Home() {
     return <LoadingState message="Initializing..." />;
   }
 
-  // Show error if not in World App
-  if (!isWorldApp) {
+  // Show error if not in World App (skip check in development mode)
+  if (!isWorldApp && !isDevMode) {
     return (
       <div className="flex items-center justify-center min-h-screen px-4">
         <div className="bg-white rounded-lg shadow-xl p-8 max-w-md text-center">
