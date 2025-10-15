@@ -50,10 +50,11 @@ export function BorrowChart({ data, isLoading }: BorrowChartProps) {
   }
 
   // Group data by date and symbol
-  const groupedData: Record<string, Record<string, number>> = {};
+  const groupedData: Record<string, { isoDate: string; data: Record<string, number> }> = {};
   const symbols = new Set<string>();
 
   data.forEach((item) => {
+    const isoDate = item.day;
     const date = new Date(item.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const symbol = item.loan_symbol;
     const amountUsd = parseFloat(item.borrow_amount_usd || '0');
@@ -61,17 +62,20 @@ export function BorrowChart({ data, isLoading }: BorrowChartProps) {
     symbols.add(symbol);
 
     if (!groupedData[date]) {
-      groupedData[date] = {};
+      groupedData[date] = { isoDate, data: {} };
     }
 
-    groupedData[date][symbol] = (groupedData[date][symbol] || 0) + amountUsd;
+    groupedData[date].data[symbol] = (groupedData[date].data[symbol] || 0) + amountUsd;
   });
 
-  // Convert to chart data format
-  const chartData = Object.keys(groupedData).map((date) => ({
-    date,
-    ...groupedData[date],
-  }));
+  // Convert to chart data format and sort by date (oldest to newest)
+  const chartData = Object.keys(groupedData)
+    .map((date) => ({
+      date,
+      isoDate: groupedData[date].isoDate,
+      ...groupedData[date].data,
+    }))
+    .sort((a, b) => new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime());
 
   const symbolArray = Array.from(symbols);
 

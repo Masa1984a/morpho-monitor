@@ -56,10 +56,11 @@ export function EarnChart({ data, isLoading }: EarnChartProps) {
   }
 
   // Group data by date and vault symbol
-  const groupedData: Record<string, Record<string, number>> = {};
+  const groupedData: Record<string, { isoDate: string; data: Record<string, number> }> = {};
   const vaultSymbols = new Set<string>();
 
   data.forEach((item) => {
+    const isoDate = item.day;
     const date = new Date(item.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const vaultSymbol = item.vault_symbol;
     const tvlUsd = parseFloat(item.tvl_usd || '0');
@@ -67,17 +68,20 @@ export function EarnChart({ data, isLoading }: EarnChartProps) {
     vaultSymbols.add(vaultSymbol);
 
     if (!groupedData[date]) {
-      groupedData[date] = {};
+      groupedData[date] = { isoDate, data: {} };
     }
 
-    groupedData[date][vaultSymbol] = (groupedData[date][vaultSymbol] || 0) + tvlUsd;
+    groupedData[date].data[vaultSymbol] = (groupedData[date].data[vaultSymbol] || 0) + tvlUsd;
   });
 
-  // Convert to chart data format
-  const chartData = Object.keys(groupedData).map((date) => ({
-    date,
-    ...groupedData[date],
-  }));
+  // Convert to chart data format and sort by date (oldest to newest)
+  const chartData = Object.keys(groupedData)
+    .map((date) => ({
+      date,
+      isoDate: groupedData[date].isoDate,
+      ...groupedData[date].data,
+    }))
+    .sort((a, b) => new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime());
 
   const vaultSymbolArray = Array.from(vaultSymbols);
 

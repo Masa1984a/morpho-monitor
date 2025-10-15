@@ -52,10 +52,11 @@ export function DexVolumeChart({ data, isLoading }: DexVolumeChartProps) {
   }
 
   // Group data by date and blockchain
-  const groupedData: Record<string, Record<string, number>> = {};
+  const groupedData: Record<string, { isoDate: string; data: Record<string, number> }> = {};
   const blockchains = new Set<string>();
 
   data.forEach((item) => {
+    const isoDate = item.date;
     const date = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const blockchain = item.blockchain;
     const volumeUsd = parseFloat(item.chain_volume_usd || '0');
@@ -63,17 +64,20 @@ export function DexVolumeChart({ data, isLoading }: DexVolumeChartProps) {
     blockchains.add(blockchain);
 
     if (!groupedData[date]) {
-      groupedData[date] = {};
+      groupedData[date] = { isoDate, data: {} };
     }
 
-    groupedData[date][blockchain] = (groupedData[date][blockchain] || 0) + volumeUsd;
+    groupedData[date].data[blockchain] = (groupedData[date].data[blockchain] || 0) + volumeUsd;
   });
 
-  // Convert to chart data format
-  const chartData = Object.keys(groupedData).map((date) => ({
-    date,
-    ...groupedData[date],
-  }));
+  // Convert to chart data format and sort by date (oldest to newest)
+  const chartData = Object.keys(groupedData)
+    .map((date) => ({
+      date,
+      isoDate: groupedData[date].isoDate,
+      ...groupedData[date].data,
+    }))
+    .sort((a, b) => new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime());
 
   const blockchainArray = Array.from(blockchains);
 
