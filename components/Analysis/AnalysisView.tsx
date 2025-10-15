@@ -24,11 +24,11 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
   const [dexVolumeData, setDexVolumeData] = useState<any[]>([]);
   const [earnData, setEarnData] = useState<any[]>([]);
 
-  // Loading state
-  const [isLoadingCollateral, setIsLoadingCollateral] = useState(false);
-  const [isLoadingBorrow, setIsLoadingBorrow] = useState(false);
-  const [isLoadingDexVolume, setIsLoadingDexVolume] = useState(false);
-  const [isLoadingEarn, setIsLoadingEarn] = useState(false);
+  // Loading state (start with true to show loading immediately)
+  const [isLoadingCollateral, setIsLoadingCollateral] = useState(true);
+  const [isLoadingBorrow, setIsLoadingBorrow] = useState(true);
+  const [isLoadingDexVolume, setIsLoadingDexVolume] = useState(true);
+  const [isLoadingEarn, setIsLoadingEarn] = useState(true);
 
   // Error state
   const [error, setError] = useState<string | null>(null);
