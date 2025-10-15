@@ -11,11 +11,15 @@ interface AnalysisViewProps {
 }
 
 export function AnalysisView({ walletAddress }: AnalysisViewProps) {
-  // Date range state (default: 2025-04-30 to current date)
-  const [fromDate, setFromDate] = useState('2025-04-30');
+  // Date range state (default: UTC now - 90 days to UTC now)
   const [toDate, setToDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
+  });
+  const [fromDate, setFromDate] = useState(() => {
+    const today = new Date();
+    const ninetyDaysAgo = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
+    return ninetyDaysAgo.toISOString().split('T')[0];
   });
 
   // Data state
