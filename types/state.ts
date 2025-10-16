@@ -20,6 +20,7 @@ export interface AppState {
 
   // UI State
   isLoading: boolean;
+  lendLoading: boolean;
   error: string | null;
   activeTab: TabType;
   lastUpdate: Date | null;

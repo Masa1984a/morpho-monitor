@@ -47,6 +47,7 @@ export default function Home() {
     lendPositions,
     borrowPositions,
     isLoading,
+    lendLoading,
     error,
     activeTab,
     lastUpdate,
@@ -403,6 +404,7 @@ export default function Home() {
           <LendPositionView
             positions={lendPositions}
             isLoading={isLoading}
+            lendLoading={lendLoading}
             error={error}
             debugLogs={debugLogs}
             showDebugInfo={settings.showDebugInfo}

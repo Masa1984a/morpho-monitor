@@ -10,6 +10,7 @@ import { WorldChainRPCClient } from '@/lib/worldchain-rpc';
 interface LendPositionViewProps {
   positions: LendPosition[];
   isLoading: boolean;
+  lendLoading?: boolean;
   error: string | null;
   debugLogs?: string[];
   showDebugInfo?: boolean;
@@ -21,6 +22,7 @@ interface LendPositionViewProps {
 export function LendPositionView({
   positions,
   isLoading,
+  lendLoading = false,
   error,
   debugLogs = [],
   showDebugInfo = false,
@@ -32,7 +34,7 @@ export function LendPositionView({
     const rpcClient = WorldChainRPCClient.getInstance();
     return await rpcClient.getEarnTransactionHistory(address);
   };
-  if (isLoading) {
+  if (isLoading || lendLoading) {
     return <LoadingState message="Loading lending positions..." />;
   }
 
