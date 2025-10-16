@@ -10,7 +10,7 @@ const WORLD_CHAIN = {
   network: 'worldchain',
   nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://worldchain-mainnet.g.alchemy.com/public'] }
+    default: { http: ['/api/rpc'] } // Use Next.js API route as proxy
   }
 } as const;
 
