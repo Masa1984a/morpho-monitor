@@ -28,7 +28,7 @@ const BLOCKCHAIN_COLORS: Record<string, string> = {
   'worldchain': '#000000',
 };
 
-export function DexVolumeChart({ data, isLoading }: DexVolumeChartProps) {
+export const DexVolumeChart = React.memo(function DexVolumeChart({ data, isLoading }: DexVolumeChartProps) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -144,4 +144,4 @@ export function DexVolumeChart({ data, isLoading }: DexVolumeChartProps) {
       </ResponsiveContainer>
     </div>
   );
-}
+});

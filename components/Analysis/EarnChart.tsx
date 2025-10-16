@@ -32,7 +32,7 @@ const VAULT_COLORS: Record<string, string> = {
   'TESTUSDCVAULT': '#f39c12',
 };
 
-export function EarnChart({ data, isLoading }: EarnChartProps) {
+export const EarnChart = React.memo(function EarnChart({ data, isLoading }: EarnChartProps) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -148,4 +148,4 @@ export function EarnChart({ data, isLoading }: EarnChartProps) {
       </ResponsiveContainer>
     </div>
   );
-}
+});

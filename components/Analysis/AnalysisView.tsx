@@ -43,8 +43,6 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
   // Fetch data on mount and when date range changes
   useEffect(() => {
     const fetchData = async () => {
-      setError(null);
-
       try {
         // Build query parameters
         const params = new URLSearchParams();
@@ -52,75 +50,66 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
         if (toDate) params.append('to', toDate);
         params.append('limit', '1000');
 
-        // Fetch collateral data
-        setIsLoadingCollateral(true);
+        // Temporary variables to store fetched data
+        let tempCollateralData: any[] = [];
+        let tempBorrowData: any[] = [];
+        let tempDexVolumeData: any[] = [];
+        let tempEarnData: any[] = [];
+
+        // Fetch all data WITHOUT updating state
         try {
           const response = await fetch(`/api/morpho-data/collateral?${params.toString()}`);
           if (response.ok) {
             const result = await response.json();
-            setCollateralData(result.data || []);
-          } else {
-            console.error('Failed to fetch collateral data:', response.status);
+            tempCollateralData = result.data || [];
           }
         } catch (err) {
           console.error('Error fetching collateral data:', err);
-          setCollateralData([]);
-        } finally {
-          setIsLoadingCollateral(false);
         }
 
-        // Fetch borrow data
-        setIsLoadingBorrow(true);
         try {
           const response = await fetch(`/api/morpho-data/borrow?${params.toString()}`);
           if (response.ok) {
             const result = await response.json();
-            setBorrowData(result.data || []);
-          } else {
-            console.error('Failed to fetch borrow data:', response.status);
+            tempBorrowData = result.data || [];
           }
         } catch (err) {
           console.error('Error fetching borrow data:', err);
-          setBorrowData([]);
-        } finally {
-          setIsLoadingBorrow(false);
         }
 
-        // Fetch DEX volume data
-        setIsLoadingDexVolume(true);
         try {
           const response = await fetch(`/api/morpho-data/dex-volume?${params.toString()}`);
           if (response.ok) {
             const result = await response.json();
-            setDexVolumeData(result.data || []);
-          } else {
-            console.error('Failed to fetch DEX volume data:', response.status);
+            tempDexVolumeData = result.data || [];
           }
         } catch (err) {
-          console.error('Error fetching DEX volume data:', err);
-          setDexVolumeData([]);
-        } finally {
-          setIsLoadingDexVolume(false);
+          console.error('Error fetching dex volume data:', err);
         }
 
-        // Fetch earn data
-        setIsLoadingEarn(true);
         try {
           const response = await fetch(`/api/morpho-data/earn?${params.toString()}`);
           if (response.ok) {
             const result = await response.json();
-            setEarnData(result.data || []);
-          } else {
-            console.error('Failed to fetch earn data:', response.status);
+            tempEarnData = result.data || [];
           }
         } catch (err) {
           console.error('Error fetching earn data:', err);
-          setEarnData([]);
-        } finally {
-          setIsLoadingEarn(false);
         }
+
+        // Update ALL state at ONCE
+        // This prevents cascading re-renders
+        setCollateralData(tempCollateralData);
+        setBorrowData(tempBorrowData);
+        setDexVolumeData(tempDexVolumeData);
+        setEarnData(tempEarnData);
+        setIsLoadingCollateral(false);
+        setIsLoadingBorrow(false);
+        setIsLoadingDexVolume(false);
+        setIsLoadingEarn(false);
+        setError(null);
       } catch (err) {
-        console.error('Error in fetchData:', err);
+        console.error('Error fetching analysis data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load analysis data');
         setIsLoadingCollateral(false);
         setIsLoadingBorrow(false);

@@ -26,7 +26,7 @@ const SYMBOL_COLORS: Record<string, string> = {
   'WETH': '#627eea',
 };
 
-export function BorrowChart({ data, isLoading }: BorrowChartProps) {
+export const BorrowChart = React.memo(function BorrowChart({ data, isLoading }: BorrowChartProps) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -142,4 +142,4 @@ export function BorrowChart({ data, isLoading }: BorrowChartProps) {
       </ResponsiveContainer>
     </div>
   );
-}
+});

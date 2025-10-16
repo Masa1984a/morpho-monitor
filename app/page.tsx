@@ -424,7 +424,7 @@ export default function Home() {
         )}
 
         {activeTab === 'analysis' && walletAddress && (
-          <AnalysisView walletAddress={walletAddress} />
+          <AnalysisView key={`analysis-${walletAddress}`} walletAddress={walletAddress} />
         )}
 
         {/* Chain Debug Info */}

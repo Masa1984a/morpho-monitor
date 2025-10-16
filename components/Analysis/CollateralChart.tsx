@@ -26,7 +26,7 @@ const SYMBOL_COLORS: Record<string, string> = {
   'ezETH': '#9b59b6',
 };
 
-export function CollateralChart({ data, isLoading }: CollateralChartProps) {
+export const CollateralChart = React.memo(function CollateralChart({ data, isLoading }: CollateralChartProps) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -142,4 +142,4 @@ export function CollateralChart({ data, isLoading }: CollateralChartProps) {
       </ResponsiveContainer>
     </div>
   );
-}
+});
