@@ -119,13 +119,13 @@ export const EarnChart = React.memo(function EarnChart({ data, isLoading, wldPri
     }
   });
 
+  const vaultSymbolArray = Array.from(vaultSymbols);
+
   // Add WLD price to chart data
   chartData.forEach((item: any) => {
     const isoDate = item.isoDate.split('T')[0]; // Extract date part only
     item.wldPrice = wldPriceMap[isoDate] || null;
   });
-
-  const vaultSymbolArray = Array.from(vaultSymbols);
 
   // If no valid data after processing, show no data message
   if (chartData.length === 0) {

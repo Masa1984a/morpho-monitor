@@ -5,11 +5,15 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const from = searchParams.get('from');
     const to = searchParams.get('to');
+    const limit = searchParams.get('limit');
+    const offset = searchParams.get('offset');
 
     // Build query parameters
     const params = new URLSearchParams();
     if (from) params.append('from', from);
     if (to) params.append('to', to);
+    if (limit) params.append('limit', limit);
+    if (offset) params.append('offset', offset);
 
     const queryString = params.toString();
     const apiUrl = `https://morpho-analyst.vercel.app/api/data/wld-price${queryString ? `?${queryString}` : ''}`;
