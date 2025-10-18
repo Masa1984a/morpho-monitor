@@ -29,6 +29,8 @@ interface DexVolumeChartProps {
   isLoading: boolean;
   wldPriceData: WldPriceData[];
   isLoadingWldPrice: boolean;
+  fromDate: string;
+  toDate: string;
 }
 
 // Color mapping for different blockchains
@@ -38,7 +40,7 @@ const BLOCKCHAIN_COLORS: Record<string, string> = {
   'worldchain': '#000000',
 };
 
-export const DexVolumeChart = React.memo(function DexVolumeChart({ data, isLoading, wldPriceData, isLoadingWldPrice }: DexVolumeChartProps) {
+export const DexVolumeChart = React.memo(function DexVolumeChart({ data, isLoading, wldPriceData, isLoadingWldPrice, fromDate, toDate }: DexVolumeChartProps) {
   if (isLoading || isLoadingWldPrice) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -95,15 +97,45 @@ export const DexVolumeChart = React.memo(function DexVolumeChart({ data, isLoadi
     groupedData[isoDate].data[blockchain] = (groupedData[isoDate].data[blockchain] || 0) + volumeUsd;
   });
 
-  // Convert to chart data format and sort by date (oldest to newest)
-  const chartData = Object.keys(groupedData)
-    .map((isoDate) => ({
-      key: isoDate, // Use isoDate as unique key
-      date: groupedData[isoDate].displayDate,
-      isoDate: groupedData[isoDate].isoDate,
-      ...groupedData[isoDate].data,
-    }))
-    .sort((a, b) => new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime());
+  // Generate all dates from fromDate to toDate
+  const allDates: Array<{ isoDate: string; displayDate: string }> = [];
+  if (fromDate && toDate) {
+    const startDate = new Date(fromDate);
+    const endDate = new Date(toDate);
+
+    // Validate dates
+    if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+      const currentDate = new Date(startDate);
+      while (currentDate <= endDate) {
+        const isoDate = currentDate.toISOString().split('T')[0];
+        const displayDate = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        allDates.push({ isoDate, displayDate });
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    }
+  }
+
+  // Convert to chart data format, merging with all dates
+  const chartData = allDates.map(({ isoDate, displayDate }) => {
+    // Find matching data for this date (check both exact match and with time)
+    const matchingData = Object.keys(groupedData).find(key => key.startsWith(isoDate));
+
+    if (matchingData) {
+      return {
+        key: isoDate,
+        date: displayDate,
+        isoDate: matchingData,
+        ...groupedData[matchingData].data,
+      };
+    } else {
+      // No data for this date - return empty object
+      return {
+        key: isoDate,
+        date: displayDate,
+        isoDate: `${isoDate}T00:00:00.000Z`,
+      };
+    }
+  });
 
   // Merge WLD price data into chart data
   const wldPriceMap: Record<string, number> = {};

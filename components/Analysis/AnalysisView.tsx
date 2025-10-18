@@ -66,10 +66,11 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
           const MS_PER_DAY = 24 * 60 * 60 * 1000;
           const diffMs = Math.max(toDateObj.getTime() - fromDateObj.getTime(), 0);
           const diffDays = Math.floor(diffMs / MS_PER_DAY) + 1;
-          const calculatedLimit = Math.min(Math.max(Math.ceil(diffDays * 3), 120), 1000);
+          // Multiply by 10 to account for multiple records per day (e.g., multiple vaults, blockchains, symbols)
+          const calculatedLimit = Math.min(Math.max(Math.ceil(diffDays * 10), 300), 3000);
           params.set('limit', calculatedLimit.toString());
         } else {
-          params.set('limit', '1000');
+          params.set('limit', '3000');
         }
 
         const queryString = params.toString();
@@ -195,10 +196,10 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
 
       {/* Charts */}
       <div className="space-y-6">
-        <DexVolumeChart data={dexVolumeData} isLoading={isLoadingDexVolume} wldPriceData={wldPriceData} isLoadingWldPrice={isLoadingWldPrice} />
-        <EarnChart data={earnData} isLoading={isLoadingEarn} wldPriceData={wldPriceData} isLoadingWldPrice={isLoadingWldPrice} />
-        <BorrowChart data={borrowData} isLoading={isLoadingBorrow} wldPriceData={wldPriceData} isLoadingWldPrice={isLoadingWldPrice} />
-        <CollateralChart data={collateralData} isLoading={isLoadingCollateral} wldPriceData={wldPriceData} isLoadingWldPrice={isLoadingWldPrice} />
+        <DexVolumeChart data={dexVolumeData} isLoading={isLoadingDexVolume} wldPriceData={wldPriceData} isLoadingWldPrice={isLoadingWldPrice} fromDate={fromDate} toDate={toDate} />
+        <EarnChart data={earnData} isLoading={isLoadingEarn} wldPriceData={wldPriceData} isLoadingWldPrice={isLoadingWldPrice} fromDate={fromDate} toDate={toDate} />
+        <BorrowChart data={borrowData} isLoading={isLoadingBorrow} wldPriceData={wldPriceData} isLoadingWldPrice={isLoadingWldPrice} fromDate={fromDate} toDate={toDate} />
+        <CollateralChart data={collateralData} isLoading={isLoadingCollateral} wldPriceData={wldPriceData} isLoadingWldPrice={isLoadingWldPrice} fromDate={fromDate} toDate={toDate} />
       </div>
     </div>
   );
