@@ -4,8 +4,9 @@ import React from 'react';
 import { TokenBalance, NativeBalance, WLDVaultBalance, WLDSpendingBalance } from '@/types/wallet';
 import { BalanceRow } from './BalanceRow';
 import { LoadingState } from '../LoadingState';
-import { WalletTransactionHistory } from '../WalletTransactionHistory';
-import { WorldChainRPCClient } from '@/lib/worldchain-rpc';
+// Transaction History機能は無料プランの制約により非表示
+// import { WalletTransactionHistory } from '../WalletTransactionHistory';
+// import { WorldChainRPCClient } from '@/lib/worldchain-rpc';
 
 interface WalletBalanceViewProps {
   tokenBalances: TokenBalance[];
@@ -46,10 +47,11 @@ export function WalletBalanceView({
     }
   };
 
-  const fetchHistory = async (address: string) => {
-    const rpcClient = WorldChainRPCClient.getInstance();
-    return await rpcClient.getWalletTransactionHistory(address);
-  };
+  // Transaction History機能は無料プランの制約により非表示
+  // const fetchHistory = async (address: string) => {
+  //   const rpcClient = WorldChainRPCClient.getInstance();
+  //   return await rpcClient.getWalletTransactionHistory(address);
+  // };
   if (isLoading) {
     return <LoadingState message="Loading wallet balances..." />;
   }
@@ -264,13 +266,13 @@ export function WalletBalanceView({
         )}
       </div>
 
-      {/* Transaction History */}
-      {walletAddress && (
+      {/* Transaction History機能は無料プランの制約により非表示 */}
+      {/* {walletAddress && (
         <WalletTransactionHistory
           walletAddress={walletAddress}
           onFetchHistory={fetchHistory}
         />
-      )}
+      )} */}
 
       {/* Debug Info */}
       {showDebugInfo && debugLogs.length > 0 && (

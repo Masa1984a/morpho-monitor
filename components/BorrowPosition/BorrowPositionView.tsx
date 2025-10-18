@@ -6,8 +6,9 @@ import { MarketPosition } from '@/types/morpho';
 import { PositionList } from '../PositionDisplay';
 import { LoadingState } from '../LoadingState';
 import { HealthFactorThresholds } from '@/lib/calculations';
-import { TransactionHistory } from '../TransactionHistory';
-import { WorldChainRPCClient } from '@/lib/worldchain-rpc';
+// Transaction History機能は無料プランの制約により非表示
+// import { TransactionHistory } from '../TransactionHistory';
+// import { WorldChainRPCClient } from '@/lib/worldchain-rpc';
 
 interface BorrowPositionViewProps {
   positions: BorrowPosition[];
@@ -26,10 +27,11 @@ export function BorrowPositionView({
   onSimulatePosition,
   walletAddress
 }: BorrowPositionViewProps) {
-  const fetchHistory = async (address: string) => {
-    const rpcClient = WorldChainRPCClient.getInstance();
-    return await rpcClient.getTransactionHistory(address, 5);
-  };
+  // Transaction History機能は無料プランの制約により非表示
+  // const fetchHistory = async (address: string) => {
+  //   const rpcClient = WorldChainRPCClient.getInstance();
+  //   return await rpcClient.getTransactionHistory(address, 5);
+  // };
   if (isLoading) {
     return <LoadingState message="Loading borrow positions..." />;
   }
@@ -115,13 +117,13 @@ export function BorrowPositionView({
         onSimulatePosition={onSimulatePosition}
       />
 
-      {/* 取引明細 */}
-      {walletAddress && (
+      {/* Transaction History機能は無料プランの制約により非表示 */}
+      {/* {walletAddress && (
         <TransactionHistory
           walletAddress={walletAddress}
           onFetchHistory={fetchHistory}
         />
-      )}
+      )} */}
     </div>
   );
 }

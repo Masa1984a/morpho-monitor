@@ -4,8 +4,9 @@ import React from 'react';
 import { LendPosition } from '@/types/morpho';
 import { LendPositionCard } from './LendPositionCard';
 import { LoadingState } from '../LoadingState';
-import { EarnTransactionHistory } from '../EarnTransactionHistory';
-import { WorldChainRPCClient } from '@/lib/worldchain-rpc';
+// Transaction History機能は無料プランの制約により非表示
+// import { EarnTransactionHistory } from '../EarnTransactionHistory';
+// import { WorldChainRPCClient } from '@/lib/worldchain-rpc';
 
 interface LendPositionViewProps {
   positions: LendPosition[];
@@ -30,10 +31,11 @@ export function LendPositionView({
   debugCopied = false,
   walletAddress
 }: LendPositionViewProps) {
-  const fetchHistory = async (address: string) => {
-    const rpcClient = WorldChainRPCClient.getInstance();
-    return await rpcClient.getEarnTransactionHistory(address);
-  };
+  // Transaction History機能は無料プランの制約により非表示
+  // const fetchHistory = async (address: string) => {
+  //   const rpcClient = WorldChainRPCClient.getInstance();
+  //   return await rpcClient.getEarnTransactionHistory(address);
+  // };
   if (isLoading || lendLoading) {
     return <LoadingState message="Loading lending positions..." />;
   }
@@ -98,13 +100,13 @@ export function LendPositionView({
         ))}
       </div>
 
-      {/* Transaction History */}
-      {walletAddress && (
+      {/* Transaction History機能は無料プランの制約により非表示 */}
+      {/* {walletAddress && (
         <EarnTransactionHistory
           walletAddress={walletAddress}
           onFetchHistory={fetchHistory}
         />
-      )}
+      )} */}
 
       {/* Debug Info */}
       {showDebugInfo && debugLogs.length > 0 && (
