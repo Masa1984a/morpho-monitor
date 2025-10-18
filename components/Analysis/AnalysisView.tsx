@@ -30,12 +30,14 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
   const [borrowData, setBorrowData] = useState<any[]>([]);
   const [dexVolumeData, setDexVolumeData] = useState<any[]>([]);
   const [earnData, setEarnData] = useState<any[]>([]);
+  const [wldPriceData, setWldPriceData] = useState<any[]>([]);
 
   // Loading state (start with true to show loading immediately)
   const [isLoadingCollateral, setIsLoadingCollateral] = useState(true);
   const [isLoadingBorrow, setIsLoadingBorrow] = useState(true);
   const [isLoadingDexVolume, setIsLoadingDexVolume] = useState(true);
   const [isLoadingEarn, setIsLoadingEarn] = useState(true);
+  const [isLoadingWldPrice, setIsLoadingWldPrice] = useState(true);
 
   // Error state
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +50,7 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
         setIsLoadingBorrow(true);
         setIsLoadingDexVolume(true);
         setIsLoadingEarn(true);
+        setIsLoadingWldPrice(true);
 
         // Build query parameters
         const params = new URLSearchParams();
@@ -86,11 +89,27 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
           }
         };
 
-        const [collateralResult, borrowResult, dexVolumeResult, earnResult] = await Promise.all([
+        // Fetch WLD price data
+        const fetchWldPriceData = async () => {
+          try {
+            const response = await fetch(`/api/data/wld-price?${queryString}`);
+            if (!response.ok) {
+              throw new Error('Failed to fetch WLD price data');
+            }
+            const result = await response.json();
+            return { data: result.data || [], error: null };
+          } catch (err) {
+            console.error('Error fetching WLD price data:', err);
+            return { data: [], error: err instanceof Error ? err : new Error(String(err)) };
+          }
+        };
+
+        const [collateralResult, borrowResult, dexVolumeResult, earnResult, wldPriceResult] = await Promise.all([
           fetchMorphoData('collateral'),
           fetchMorphoData('borrow'),
           fetchMorphoData('dex-volume'),
-          fetchMorphoData('earn')
+          fetchMorphoData('earn'),
+          fetchWldPriceData()
         ]);
 
         // Update ALL state at ONCE
@@ -99,15 +118,18 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
         setBorrowData(borrowResult.data);
         setDexVolumeData(dexVolumeResult.data);
         setEarnData(earnResult.data);
+        setWldPriceData(wldPriceResult.data);
         setIsLoadingCollateral(false);
         setIsLoadingBorrow(false);
         setIsLoadingDexVolume(false);
         setIsLoadingEarn(false);
+        setIsLoadingWldPrice(false);
         const errors = [
           collateralResult.error,
           borrowResult.error,
           dexVolumeResult.error,
-          earnResult.error
+          earnResult.error,
+          wldPriceResult.error
         ].filter(Boolean);
         setError(errors.length > 0 ? 'Some analysis data failed to load.' : null);
       } catch (err) {
@@ -117,6 +139,7 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
         setIsLoadingBorrow(false);
         setIsLoadingDexVolume(false);
         setIsLoadingEarn(false);
+        setIsLoadingWldPrice(false);
       }
     };
 
@@ -172,10 +195,10 @@ export function AnalysisView({ walletAddress }: AnalysisViewProps) {
 
       {/* Charts */}
       <div className="space-y-6">
-        <DexVolumeChart data={dexVolumeData} isLoading={isLoadingDexVolume} />
-        <EarnChart data={earnData} isLoading={isLoadingEarn} />
-        <BorrowChart data={borrowData} isLoading={isLoadingBorrow} />
-        <CollateralChart data={collateralData} isLoading={isLoadingCollateral} />
+        <DexVolumeChart data={dexVolumeData} isLoading={isLoadingDexVolume} wldPriceData={wldPriceData} isLoadingWldPrice={isLoadingWldPrice} />
+        <EarnChart data={earnData} isLoading={isLoadingEarn} wldPriceData={wldPriceData} isLoadingWldPrice={isLoadingWldPrice} />
+        <BorrowChart data={borrowData} isLoading={isLoadingBorrow} wldPriceData={wldPriceData} isLoadingWldPrice={isLoadingWldPrice} />
+        <CollateralChart data={collateralData} isLoading={isLoadingCollateral} wldPriceData={wldPriceData} isLoadingWldPrice={isLoadingWldPrice} />
       </div>
     </div>
   );

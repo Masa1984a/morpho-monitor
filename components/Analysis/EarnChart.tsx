@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface EarnData {
   day: string;
@@ -18,9 +18,19 @@ interface EarnData {
   updated_at: string;
 }
 
+interface WldPriceData {
+  date: string;
+  symbol: string;
+  close_price: string;
+  created_at: string;
+  updated_at: string;
+}
+
 interface EarnChartProps {
   data: EarnData[];
   isLoading: boolean;
+  wldPriceData: WldPriceData[];
+  isLoadingWldPrice: boolean;
 }
 
 // Color mapping for different vault symbols
@@ -32,8 +42,8 @@ const VAULT_COLORS: Record<string, string> = {
   'TESTUSDCVAULT': '#f39c12',
 };
 
-export const EarnChart = React.memo(function EarnChart({ data, isLoading }: EarnChartProps) {
-  if (isLoading) {
+export const EarnChart = React.memo(function EarnChart({ data, isLoading, wldPriceData, isLoadingWldPrice }: EarnChartProps) {
+  if (isLoading || isLoadingWldPrice) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-semibold mb-4">World Chain Morpho Earn</h3>
@@ -99,6 +109,22 @@ export const EarnChart = React.memo(function EarnChart({ data, isLoading }: Earn
     }))
     .sort((a, b) => new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime());
 
+  // Merge WLD price data into chart data
+  const wldPriceMap: Record<string, number> = {};
+  wldPriceData.forEach((item) => {
+    const isoDate = item.date.split('T')[0]; // Extract date part only
+    const price = parseFloat(item.close_price || '0');
+    if (!isNaN(price) && isFinite(price)) {
+      wldPriceMap[isoDate] = price;
+    }
+  });
+
+  // Add WLD price to chart data
+  chartData.forEach((item: any) => {
+    const isoDate = item.isoDate.split('T')[0]; // Extract date part only
+    item.wldPrice = wldPriceMap[isoDate] || null;
+  });
+
   const vaultSymbolArray = Array.from(vaultSymbols);
 
   // If no valid data after processing, show no data message
@@ -117,7 +143,7 @@ export const EarnChart = React.memo(function EarnChart({ data, isLoading }: Earn
     <div className="bg-white rounded-lg shadow-sm p-6">
       <h3 className="text-lg font-semibold mb-4">World Chain Morpho Earn</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData}>
+        <ComposedChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="date"
@@ -127,24 +153,47 @@ export const EarnChart = React.memo(function EarnChart({ data, isLoading }: Earn
             height={80}
           />
           <YAxis
+            yAxisId="left"
             tick={{ fontSize: 12 }}
             tickFormatter={(value) => `$${(value / 1000000).toFixed(0)}m`}
           />
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            tick={{ fontSize: 12 }}
+            tickFormatter={(value) => `$${value.toFixed(2)}`}
+          />
           <Tooltip
-            formatter={(value: number) => `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            formatter={(value: number, name: string) => {
+              if (name === 'WLD Price') {
+                return [`$${value.toFixed(4)}`, name];
+              }
+              return [`$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, name];
+            }}
             labelStyle={{ color: '#000' }}
           />
           <Legend wrapperStyle={{ fontSize: '12px' }} />
           {vaultSymbolArray.map((vaultSymbol) => (
             <Bar
               key={vaultSymbol}
+              yAxisId="left"
               dataKey={vaultSymbol}
               stackId="a"
               fill={VAULT_COLORS[vaultSymbol] || '#8884d8'}
               name={vaultSymbol}
             />
           ))}
-        </BarChart>
+          <Line
+            yAxisId="right"
+            type="monotone"
+            dataKey="wldPrice"
+            stroke="#ff0000"
+            strokeWidth={2}
+            dot={{ r: 3 }}
+            name="WLD Price"
+            connectNulls
+          />
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   );
