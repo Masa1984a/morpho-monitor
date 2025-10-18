@@ -217,7 +217,7 @@ export const DexVolumeChart = React.memo(function DexVolumeChart({ data, isLoadi
             dataKey="wldPrice"
             stroke="#ff0000"
             strokeWidth={2}
-            dot={{ r: 3 }}
+            dot={false}
             name="WLD Price"
             connectNulls
           />

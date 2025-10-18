@@ -215,7 +215,7 @@ export const CollateralChart = React.memo(function CollateralChart({ data, isLoa
             dataKey="wldPrice"
             stroke="#ff0000"
             strokeWidth={2}
-            dot={{ r: 3 }}
+            dot={false}
             name="WLD Price"
             connectNulls
           />

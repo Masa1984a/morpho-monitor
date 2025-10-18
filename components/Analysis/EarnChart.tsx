@@ -221,7 +221,7 @@ export const EarnChart = React.memo(function EarnChart({ data, isLoading, wldPri
             dataKey="wldPrice"
             stroke="#ff0000"
             strokeWidth={2}
-            dot={{ r: 3 }}
+            dot={false}
             name="WLD Price"
             connectNulls
           />
