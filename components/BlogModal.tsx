@@ -26,6 +26,19 @@ interface BlogModalProps {
   onClose: () => void;
 }
 
+type Language = 'en' | 'ja' | 'es' | 'pt' | 'ko' | 'zh' | 'tw' | 'th';
+
+const LANGUAGES: { code: Language; label: string; flag: string }[] = [
+  { code: 'en', label: 'English', flag: '🇺🇸' },
+  { code: 'ja', label: '日本語', flag: '🇯🇵' },
+  { code: 'zh', label: '简体中文', flag: '🇨🇳' },
+  { code: 'tw', label: '繁體中文', flag: '🇹🇼' },
+  { code: 'ko', label: '한국어', flag: '🇰🇷' },
+  { code: 'th', label: 'ไทย', flag: '🇹🇭' },
+  { code: 'pt', label: 'Português', flag: '🇵🇹' },
+  { code: 'es', label: 'Español', flag: '🇪🇸' },
+];
+
 // Simple markdown to HTML converter for basic formatting
 function parseMarkdown(md: string): string {
   let html = md;
@@ -68,15 +81,21 @@ export function BlogModal({ isOpen, onClose }: BlogModalProps) {
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
   const [error, setError] = useState<string>('');
+  const [selectedLang, setSelectedLang] = useState<Language>('en');
   const contentRef = useRef<HTMLDivElement>(null);
   const limit = 5;
 
-  // Fetch initial posts when modal opens
+  // Fetch initial posts when modal opens or language changes
   useEffect(() => {
-    if (isOpen && posts.length === 0) {
+    if (isOpen) {
+      // Reset and fetch new posts when language changes
+      setPosts([]);
+      setPostDetails(new Map());
+      setOffset(0);
+      setHasMore(true);
       fetchPosts(0);
     }
-  }, [isOpen]);
+  }, [isOpen, selectedLang]);
 
   // Reset state when modal closes
   const handleClose = () => {
@@ -85,7 +104,14 @@ export function BlogModal({ isOpen, onClose }: BlogModalProps) {
     setOffset(0);
     setHasMore(true);
     setError('');
+    setSelectedLang('en'); // Reset to English
     onClose();
+  };
+
+  const handleLanguageChange = (lang: Language) => {
+    if (lang !== selectedLang) {
+      setSelectedLang(lang);
+    }
   };
 
   const fetchPosts = async (currentOffset: number) => {
@@ -95,7 +121,7 @@ export function BlogModal({ isOpen, onClose }: BlogModalProps) {
     setError('');
 
     try {
-      const response = await fetch(`/api/blog/posts?limit=${limit}&offset=${currentOffset}`);
+      const response = await fetch(`/api/blog/posts?limit=${limit}&offset=${currentOffset}&lang=${selectedLang}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch blog posts');
@@ -129,7 +155,7 @@ export function BlogModal({ isOpen, onClose }: BlogModalProps) {
 
   const fetchPostDetail = async (postId: string) => {
     try {
-      const response = await fetch(`/api/blog/posts/${postId}`);
+      const response = await fetch(`/api/blog/posts/${postId}?lang=${selectedLang}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch post detail');
@@ -157,19 +183,37 @@ export function BlogModal({ isOpen, onClose }: BlogModalProps) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <svg className="w-6 h-6 text-morpho-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-            <h2 className="text-xl font-bold text-gray-900">Developer Blog</h2>
+        <div className="border-b border-gray-200 p-6">
+          <div className="flex justify-end items-center mb-4">
+            <button
+              onClick={handleClose}
+              className="text-gray-400 hover:text-gray-600 text-2xl"
+            >
+              ×
+            </button>
           </div>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
-          >
-            ×
-          </button>
+
+          {/* Language Selector */}
+          <div>
+            <h4 className="text-xs font-semibold text-gray-600 mb-2">Language</h4>
+            <div className="flex flex-wrap gap-2">
+              {LANGUAGES.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => handleLanguageChange(lang.code)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    selectedLang === lang.code
+                      ? 'bg-morpho-blue text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                  disabled={isLoading}
+                >
+                  <span className="mr-1">{lang.flag}</span>
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Content */}
@@ -208,11 +252,6 @@ export function BlogModal({ isOpen, onClose }: BlogModalProps) {
                     />
                   </div>
                 )}
-
-                {/* Title */}
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  {post.title}
-                </h3>
 
                 {/* Published Date */}
                 <p className="text-sm text-gray-500 mb-4">
