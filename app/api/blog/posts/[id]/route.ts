@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const BLOG_API_BASE_URL = 'https://cts-blog-three.vercel.app';
-const BLOG_API_TOKEN = 'CTS_BLOG_TOKEN_20251026';
+const BLOG_API_TOKEN = process.env.BLOG_API_TOKEN;
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Check if token is configured
+    if (!BLOG_API_TOKEN) {
+      return NextResponse.json(
+        { error: 'Blog API token not configured' },
+        { status: 500 }
+      );
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const lang = searchParams.get('lang') || 'ja';
     const { id } = await params;

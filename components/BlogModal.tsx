@@ -184,7 +184,8 @@ export function BlogModal({ isOpen, onClose }: BlogModalProps) {
       <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full h-[90vh] flex flex-col">
         {/* Header */}
         <div className="border-b border-gray-200 p-6">
-          <div className="flex justify-end items-center mb-4">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-gray-900">Our messages</h2>
             <button
               onClick={handleClose}
               className="text-gray-400 hover:text-gray-600 text-2xl"
