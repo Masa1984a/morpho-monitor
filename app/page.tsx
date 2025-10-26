@@ -287,8 +287,9 @@ export default function Home() {
           className="flex items-center space-x-2 text-sm hover:bg-gray-50 rounded-lg px-3 py-2 transition-colors"
           title="Click to copy wallet address"
         >
-          <span className="text-gray-700 font-mono">
-            Wallet ID: {walletAddress.slice(0, 5)}...{walletAddress.slice(-3)}
+          <span className="text-gray-600">Wallet ID:</span>
+          <span className="text-gray-600 font-mono">
+            {walletAddress.slice(0, 5)}...{walletAddress.slice(-3)}
           </span>
           {addressCopied ? (
             <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -300,10 +301,10 @@ export default function Home() {
             </svg>
           )}
         </button>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
           <button
             onClick={() => setShowBlog(true)}
-            className="p-2 text-gray-600 hover:text-morpho-blue hover:bg-gray-100 rounded-lg transition-colors"
+            className="text-gray-600 hover:text-morpho-blue transition-colors"
             title="Developer Blog"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -312,7 +313,7 @@ export default function Home() {
           </button>
           <button
             onClick={() => setShowSettings(true)}
-            className="p-2 text-gray-600 hover:text-morpho-blue hover:bg-gray-100 rounded-lg transition-colors"
+            className="text-gray-600 hover:text-morpho-blue transition-colors"
             title="Settings"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
