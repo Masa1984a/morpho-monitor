@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const limit = searchParams.get('limit') || '10';
     const offset = searchParams.get('offset') || '0';
-    const lang = searchParams.get('lang') || 'ja';
+    const lang = searchParams.get('lang') || 'en';
 
     const response = await fetch(
       `${BLOG_API_BASE_URL}/api/public/posts?limit=${limit}&offset=${offset}&lang=${lang}`,

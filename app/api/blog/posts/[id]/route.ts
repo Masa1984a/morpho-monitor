@@ -17,7 +17,7 @@ export async function GET(
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const lang = searchParams.get('lang') || 'ja';
+    const lang = searchParams.get('lang') || 'en';
     const { id } = await params;
 
     const response = await fetch(

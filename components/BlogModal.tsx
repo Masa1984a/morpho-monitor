@@ -130,13 +130,26 @@ export function BlogModal({ isOpen, onClose }: BlogModalProps) {
       const data = await response.json();
 
       if (data.posts && data.posts.length > 0) {
-        setPosts(prev => [...prev, ...data.posts]);
-        setOffset(currentOffset + data.posts.length);
+        // Fetch details for all posts in this batch before displaying
+        const detailPromises = data.posts.map((post: BlogPost) =>
+          fetchPostDetail(post.id, selectedLang)
+        );
 
-        // Fetch details for each post
-        for (const post of data.posts) {
-          fetchPostDetail(post.id);
-        }
+        const details = await Promise.all(detailPromises);
+
+        // Update posts and details together once all details are fetched
+        setPosts(prev => [...prev, ...data.posts]);
+        setPostDetails(prev => {
+          const newMap = new Map(prev);
+          details.forEach(detail => {
+            if (detail) {
+              newMap.set(detail.id, detail);
+            }
+          });
+          return newMap;
+        });
+
+        setOffset(currentOffset + data.posts.length);
 
         // Check if there are more posts
         if (data.posts.length < limit || currentOffset + data.posts.length >= data.meta.total) {
@@ -153,18 +166,23 @@ export function BlogModal({ isOpen, onClose }: BlogModalProps) {
     }
   };
 
-  const fetchPostDetail = async (postId: string) => {
+  const fetchPostDetail = async (postId: string, lang: Language): Promise<BlogPostDetail | null> => {
     try {
-      const response = await fetch(`/api/blog/posts/${postId}?lang=${selectedLang}`);
+      const response = await fetch(`/api/blog/posts/${postId}?lang=${lang}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch post detail');
       }
 
       const detail = await response.json();
-      setPostDetails(prev => new Map(prev).set(postId, detail));
+      // Only return if the language matches
+      if (detail.language === lang) {
+        return detail;
+      }
+      return null;
     } catch (err) {
       console.error(`Error fetching post detail for ${postId}:`, err);
+      return null;
     }
   };
 
@@ -229,6 +247,18 @@ export function BlogModal({ isOpen, onClose }: BlogModalProps) {
             </div>
           )}
 
+          {isLoading && posts.length === 0 && (
+            <div className="flex justify-center py-12">
+              <div className="flex items-center space-x-2 text-gray-500">
+                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Loading posts...</span>
+              </div>
+            </div>
+          )}
+
           {posts.length === 0 && !isLoading && (
             <div className="text-center py-12">
               <p className="text-gray-500">No blog posts available</p>
@@ -237,6 +267,8 @@ export function BlogModal({ isOpen, onClose }: BlogModalProps) {
 
           {posts.map((post, index) => {
             const detail = postDetails.get(post.id);
+            // Only show detail if it matches the current selected language
+            const shouldShowDetail = detail && detail.language === selectedLang;
 
             return (
               <article key={post.id} className={`mb-8 ${index > 0 ? 'border-t border-gray-200 pt-8' : ''}`}>
@@ -269,18 +301,12 @@ export function BlogModal({ isOpen, onClose }: BlogModalProps) {
                 </p>
 
                 {/* Content */}
-                {detail ? (
+                {shouldShowDetail ? (
                   <div
                     className="prose prose-sm max-w-none text-gray-700"
                     dangerouslySetInnerHTML={{ __html: parseMarkdown(detail.content_md) }}
                   />
                 ) : (
-                  <div className="text-gray-600 mb-3">
-                    {post.excerpt}
-                  </div>
-                )}
-
-                {!detail && (
                   <div className="flex items-center space-x-2 text-sm text-gray-500">
                     <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
