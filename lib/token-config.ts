@@ -79,6 +79,84 @@ export const WORLD_CHAIN_TOKENS: Token[] = [
     decimals: 18,
     name: 'Universal LINK'
   },
+  {
+    address: '0x6814e4BE03aEB33fe135Fe0e85CA6b0A03247519',
+    symbol: 'uPNUT',
+    decimals: 18,
+    name: 'Universal PNUT'
+  },
+  {
+    address: '0xd6a34b430C05ac78c24985f8abEE2616BC1788Cb',
+    symbol: 'uAVAX',
+    decimals: 18,
+    name: 'Universal AVAX'
+  },
+  {
+    address: '0xc79e06860Aa9564f95E08fb7E5b61458d0C63898',
+    symbol: 'uHBAR',
+    decimals: 18,
+    name: 'Universal HBAR'
+  },
+  {
+    address: '0xc79e06860Aa9564f95E08fb7E5b61458d0C63898',
+    symbol: 'uDOT',
+    decimals: 18,
+    name: 'Universal DOT'
+  },
+  {
+    address: '0xfb3CB973B2a9e2E09746393C59e7FB0d5189d290',
+    symbol: 'uUNI',
+    decimals: 18,
+    name: 'Universal UNI'
+  },
+  {
+    address: '0xE5c436B0a34DF18F1dae98af344Ca5122E7d57c4',
+    symbol: 'uPEPE',
+    decimals: 18,
+    name: 'Universal PEPE'
+  },
+  {
+    address: '0xf383074c4B993d1ccd196188d27D0dDf22AD463c',
+    symbol: 'uAAVE',
+    decimals: 18,
+    name: 'Universal AAVE'
+  },
+  {
+    address: '0x90131D95a9a5b48b6a3eE0400807248bEcf4B7A4',
+    symbol: 'uONDO',
+    decimals: 18,
+    name: 'Universal ONDO'
+  },
+  {
+    address: '0xf653E8B6Fcbd2A63246c6B7722d1e9d819611241',
+    symbol: 'uCRO',
+    decimals: 18,
+    name: 'Universal CRO'
+  },
+  {
+    address: '0x5ed25E305E08F58AFD7995EaC72563E6BE65A617',
+    symbol: 'uNEAR',
+    decimals: 18,
+    name: 'Universal NEAR'
+  },
+  {
+    address: '0x9c0e042d65a2e1fF31aC83f404E5Cb79F452c337',
+    symbol: 'uAPT',
+    decimals: 18,
+    name: 'Universal APT'
+  },
+  {
+    address: '0xD01CB4171A985571dEFF48c9dC2F6E153A244d64',
+    symbol: 'uARB',
+    decimals: 18,
+    name: 'Universal ARB'
+  },
+  {
+    address: '0x40318eE213227894b5316E5EC84f6a5caf3bBEDd',
+    symbol: 'uICP',
+    decimals: 18,
+    name: 'Universal ICP'
+  },
   // Other Tokens
   {
     address: '0xcd1E32B86953D79a6AC58e813D2EA7a1790cAb63',

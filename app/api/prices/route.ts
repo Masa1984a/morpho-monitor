@@ -28,6 +28,19 @@ interface CoinGeckoPriceResponse {
   cardano?: { usd: number };
   chainlink?: { usd: number };
   'tether-gold'?: { usd: number };
+  'peanut-the-squirrel'?: { usd: number };
+  'avalanche-2'?: { usd: number };
+  'hedera-hashgraph'?: { usd: number };
+  polkadot?: { usd: number };
+  uniswap?: { usd: number };
+  pepe?: { usd: number };
+  aave?: { usd: number };
+  'ondo-finance'?: { usd: number };
+  'crypto-com-chain'?: { usd: number };
+  near?: { usd: number };
+  aptos?: { usd: number };
+  arbitrum?: { usd: number };
+  'internet-computer'?: { usd: number };
   // Note: ORO and ORB prices are fetched from GeckoTerminal
 }
 
@@ -55,6 +68,19 @@ interface UnifiedPriceResponse {
   uSHIB?: number;
   uADA?: number;
   uLINK?: number;
+  uPNUT?: number;
+  uAVAX?: number;
+  uHBAR?: number;
+  uDOT?: number;
+  uUNI?: number;
+  uPEPE?: number;
+  uAAVE?: number;
+  uONDO?: number;
+  uCRO?: number;
+  uNEAR?: number;
+  uAPT?: number;
+  uARB?: number;
+  uICP?: number;
   // Other Tokens
   ORO?: number;
   ORB?: number;
@@ -150,7 +176,20 @@ export async function GET(request: Request) {
         'shiba-inu',
         'cardano',
         'chainlink',
-        'tether-gold'
+        'tether-gold',
+        'peanut-the-squirrel',
+        'avalanche-2',
+        'hedera-hashgraph',
+        'polkadot',
+        'uniswap',
+        'pepe',
+        'aave',
+        'ondo-finance',
+        'crypto-com-chain',
+        'near',
+        'aptos',
+        'arbitrum',
+        'internet-computer'
       ].join(',');
 
       const coinGeckoResponse = await fetchWithTimeout(
@@ -182,6 +221,19 @@ export async function GET(request: Request) {
         if (data['shiba-inu']?.usd) prices.uSHIB = data['shiba-inu'].usd;
         if (data.cardano?.usd) prices.uADA = data.cardano.usd;
         if (data.chainlink?.usd) prices.uLINK = data.chainlink.usd;
+        if (data['peanut-the-squirrel']?.usd) prices.uPNUT = data['peanut-the-squirrel'].usd;
+        if (data['avalanche-2']?.usd) prices.uAVAX = data['avalanche-2'].usd;
+        if (data['hedera-hashgraph']?.usd) prices.uHBAR = data['hedera-hashgraph'].usd;
+        if (data.polkadot?.usd) prices.uDOT = data.polkadot.usd;
+        if (data.uniswap?.usd) prices.uUNI = data.uniswap.usd;
+        if (data.pepe?.usd) prices.uPEPE = data.pepe.usd;
+        if (data.aave?.usd) prices.uAAVE = data.aave.usd;
+        if (data['ondo-finance']?.usd) prices.uONDO = data['ondo-finance'].usd;
+        if (data['crypto-com-chain']?.usd) prices.uCRO = data['crypto-com-chain'].usd;
+        if (data.near?.usd) prices.uNEAR = data.near.usd;
+        if (data.aptos?.usd) prices.uAPT = data.aptos.usd;
+        if (data.arbitrum?.usd) prices.uARB = data.arbitrum.usd;
+        if (data['internet-computer']?.usd) prices.uICP = data['internet-computer'].usd;
 
         // Tether Gold (oXAUt)
         if (data['tether-gold']?.usd) prices.oXAUt = data['tether-gold'].usd;
